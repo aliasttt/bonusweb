@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}Loyalty-Programm für moderne Unternehmen{% endblock %}
+{% block content %}
+<section class="relative overflow-hidden">
+  <div class="absolute -top-24 -right-24 w-96 h-96 bg-secondary/20 blur-3xl rounded-full"></div>
+  <div class="max-w-7xl mx-auto px-4 py-20 grid md:grid-cols-2 gap-12 items-center">
+    <div class="fade-up">
+      <h1 class="text-5xl md:text-6xl font-extrabold leading-tight">
+        Modernes Treueprogramm für Unternehmen
+      </h1>
+      <p class="mt-6 text-lg text-slate-600">
+        Einfache Einrichtung, vollständig anpassbar und bereit, Stammkunden zu
+        schaffen. Keine physischen Karten – nur QR-Code Scans.
+      </p>
+      <div class="mt-8 flex gap-4">
+        <a href="/partners/login/" class="px-6 py-3 rounded-lg bg-primary text-white shadow-lg shadow-primary/30">Kostenlos starten</a>
+        <a href="/fiyatlandirma/" class="px-6 py-3 rounded-lg border">Mehr erfahren</a>
+      </div>
+    </div>
+    <div class="fade-up">
+      <div class="relative mx-auto w-full max-w-sm aspect-[9/19] rounded-[2rem] border-8 border-slate-900 shadow-2xl">
+        <div class="absolute inset-0 rounded-[1.6rem] bg-gradient-to-br from-primary/20 to-secondary/20"></div>
+        <div class="absolute inset-6 bg-white rounded-[1.2rem] p-6 flex flex-col gap-3">
+          <div class="text-slate-700 font-semibold">Wallet</div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="h-28 rounded-xl bg-primary/20"></div>
+            <div class="h-28 rounded-xl bg-secondary/20"></div>
+            <div class="col-span-2 h-24 rounded-xl bg-slate-200"></div>
+          </div>
+          <div class="mt-auto text-xs text-slate-500">Demo UI</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-4 py-16">
+  <h2 class="text-3xl font-bold text-center">Warum Bonus?</h2>
+  <div class="mt-10 grid md:grid-cols-3 gap-6">
+    <div class="fade-up p-6 rounded-2xl border hover:shadow-lg transition">
+      <h3 class="font-semibold">QR-basiert</h3>
+      <p class="mt-2 text-slate-600">Partner generieren Codes – Kunden scannen und sammeln Stempel.</p>
+    </div>
+    <div class="fade-up p-6 rounded-2xl border hover:shadow-lg transition">
+      <h3 class="font-semibold">Mehr Umsatz</h3>
+      <p class="mt-2 text-slate-600">Erreiche Wiederkäufe mit klaren Zielen wie 10 Stempel = gratis.</p>
+    </div>
+    <div class="fade-up p-6 rounded-2xl border hover:shadow-lg transition">
+      <h3 class="font-semibold">Schnelle Einrichtung</h3>
+      <p class="mt-2 text-slate-600">In wenigen Minuten live – Web + React Native App via API.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+

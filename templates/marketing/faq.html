@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}FAQ{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-16">
+  <h1 class="text-4xl font-extrabold">Häufige Fragen</h1>
+  <div class="mt-6 space-y-4">
+    <details class="p-4 border rounded-xl">
+      <summary class="font-semibold">Braucht der Kunde eine App?</summary>
+      <p class="mt-2 text-slate-600">Ja, React Native App oder Web-App – beides unterstützt.</p>
+    </details>
+    <details class="p-4 border rounded-xl">
+      <summary class="font-semibold">Wie sicher sind QR-Codes?</summary>
+      <p class="mt-2 text-slate-600">Server-seitige Validierung verhindert Missbrauch.</p>
+    </details>
+  </div>
+</div>
+{% endblock %}
+
+

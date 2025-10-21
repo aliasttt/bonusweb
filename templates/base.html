@@ -1,0 +1,61 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bonus - {% block title %}{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#7c3aed',
+              secondary: '#06b6d4',
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .fade-up { opacity: 0; transform: translateY(20px); transition: all .7s ease; }
+      .fade-up.show { opacity: 1; transform: translateY(0); }
+    </style>
+  </head>
+  <body class="bg-white text-slate-800">
+    <header class="sticky top-0 z-40 backdrop-blur bg-white/70 border-b">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <a href="/" class="text-2xl font-extrabold text-primary">Bonus</a>
+        <nav class="hidden md:flex gap-6 text-sm">
+          <a href="/kullanim-alanlari/" class="hover:text-primary">Anwendungsfälle</a>
+          <a href="/ozellikler/" class="hover:text-primary">Funktionen</a>
+          <a href="/nasil-calisir/" class="hover:text-primary">So Funktioniert's</a>
+          <a href="/entegrasyonlar/" class="hover:text-primary">Integrationen</a>
+          <a href="/fiyatlandirma/" class="hover:text-primary">Preise</a>
+          <a href="/sss/" class="hover:text-primary">FAQ</a>
+          <a href="/blog/" class="hover:text-primary">Blog</a>
+        </nav>
+        <div class="flex items-center gap-3">
+          <a href="/partners/login/" class="px-4 py-2 rounded-md border">Einloggen</a>
+          <a href="/partners/login/" class="px-4 py-2 rounded-md bg-primary text-white">Registrieren</a>
+        </div>
+      </div>
+    </header>
+
+    {% block content %}{% endblock %}
+
+    <footer class="border-t mt-16 py-10 text-center text-sm text-slate-500">
+      <div class="max-w-7xl mx-auto">© {% now "Y" %} Bonus. {% trans "All rights reserved" %}.</div>
+    </footer>
+
+    <script>
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((e) => e.target.classList.toggle('show', e.isIntersecting));
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
+    </script>
+  </body>
+  </html>
+
+
