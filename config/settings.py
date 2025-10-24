@@ -22,10 +22,21 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
+    "django_filters",
+    "drf_spectacular",
     # Local apps
     "marketing",
     "partners",
     "loyalty",
+    "accounts",
+    "campaigns",
+    "qr",
+    "rewards",
+    "reviews",
+    "payments",
+    "analytics",
+    "securityapp",
+    "notifications",
 ]
 
 
@@ -39,6 +50,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
+    "securityapp.middleware.AuditLogMiddleware",
 ]
 
 
@@ -119,6 +131,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.AllowAny",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_FILTER_BACKENDS": (
+        "django_filters.rest_framework.DjangoFilterBackend",
+    ),
 }
 
 
@@ -127,4 +143,19 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
 }
 
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Restaurant–Customer Platform API",
+    "DESCRIPTION": "Multi-phase backend API for web admin and mobile app",
+    "VERSION": "1.0.0",
+}
+
+
+# External services
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
+FIREBASE_CREDENTIALS_FILE = os.environ.get("FIREBASE_CREDENTIALS_FILE", "")
+
+
+# Audit logging toggle (enabled by default)
+AUDIT_LOGGING_ENABLED = os.environ.get("AUDIT_LOGGING_ENABLED", "1") == "1"
 
