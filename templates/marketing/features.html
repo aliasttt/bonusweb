@@ -1,18 +1,93 @@
 {% extends 'base.html' %}
-{% block title %}ویژگی‌ها{% endblock %}
+{% block title %}Features - Modern Customer Loyalty Platform{% endblock %}
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 py-16 grid md:grid-cols-2 gap-10">
-  <div>
-    <h1 class="text-4xl font-extrabold">ویژگی‌ها</h1>
-    <ul class="mt-6 space-y-3 list-disc list-inside text-slate-700">
-      <li>تولید QR برای هر کسب‌وکار</li>
-      <li>کیف‌پول امتیازی با هدف قابل تنظیم</li>
-      <li>دریافت منوی رایگان پس از رسیدن به هدف</li>
-      <li>API و JWT برای اپلیکیشن موبایل</li>
-    </ul>
+
+<!-- Hero Section -->
+<section class="relative py-20 gradient-bg overflow-hidden">
+  <div class="absolute inset-0">
+    <div class="absolute top-20 right-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-float"></div>
+    <div class="absolute bottom-20 left-20 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-float" style="animation-delay: -2s;"></div>
   </div>
-  <div class="rounded-2xl border p-6">به‌زودی تصویرسازی‌های زیبا اضافه می‌شود.</div>
+  
+  <div class="relative z-10 max-w-7xl mx-auto px-4 text-center">
+    <div class="fade-up">
+      <h1 class="text-5xl lg:text-7xl font-black text-white mb-6">
+        Powerful <span class="text-gradient">Features</span>
+      </h1>
+      <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+        Everything you need to build and manage a successful customer loyalty program
+      </p>
+    </div>
   </div>
+</section>
+
+<!-- Features Grid -->
+<section class="py-20 bg-dark-light">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group">
+        <div class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="qrcode" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-4">QR Code Generation</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Generate unique QR codes for each business with customizable branding and tracking capabilities.
+        </p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group" style="animation-delay: 0.1s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="wallet" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-4">Digital Wallet</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Digital points wallet with customizable goals and instant reward redemption system.
+        </p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group" style="animation-delay: 0.2s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="gift" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-4">Reward System</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Free menu items and rewards when customers reach their points goals automatically.
+        </p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group" style="animation-delay: 0.3s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="smartphone" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-4">Mobile API</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Complete API with JWT authentication for seamless mobile app integration.
+        </p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group" style="animation-delay: 0.4s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-primary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="bar-chart-3" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-4">Analytics Dashboard</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Real-time analytics and insights to track customer behavior and program performance.
+        </p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group" style="animation-delay: 0.5s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-accent to-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="settings" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-4">Customizable Rules</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Flexible point rules, reward thresholds, and campaign settings for any business type.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
 {% endblock %}
 
 

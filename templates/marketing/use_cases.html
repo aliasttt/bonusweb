@@ -1,10 +1,65 @@
 {% extends 'base.html' %}
-{% block title %}موارد استفاده{% endblock %}
+{% block title %}Use Cases - Perfect for Every Business{% endblock %}
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 py-16">
-  <h1 class="text-4xl font-extrabold">موارد استفاده</h1>
-  <p class="mt-4 text-slate-600">کافه‌ها، رستوران‌ها، سالن‌های زیبایی، باشگاه‌ها و هر کسب‌وکاری که مشتریان تکراری دارد.</p>
-</div>
+
+<!-- Hero Section -->
+<section class="relative py-20 gradient-bg overflow-hidden">
+  <div class="absolute inset-0">
+    <div class="absolute top-20 right-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-float"></div>
+    <div class="absolute bottom-20 left-20 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-float" style="animation-delay: -2s;"></div>
+  </div>
+  
+  <div class="relative z-10 max-w-7xl mx-auto px-4 text-center">
+    <div class="fade-up">
+      <h1 class="text-5xl lg:text-7xl font-black text-white mb-6">
+        Perfect for <span class="text-gradient">Every Business</span>
+      </h1>
+      <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+        From small cafes to large retail chains, our platform adapts to your needs
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Use Cases Grid -->
+<section class="py-20 bg-dark-light">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group text-center">
+        <div class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="coffee" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-4">Restaurants & Cafes</h3>
+        <p class="text-gray-400">Build loyalty with every meal and coffee order</p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group text-center" style="animation-delay: 0.1s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-accent rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="shopping-bag" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-4">Retail Stores</h3>
+        <p class="text-gray-400">Reward customers for their shopping frequency</p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group text-center" style="animation-delay: 0.2s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="scissors" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-4">Beauty Salons</h3>
+        <p class="text-gray-400">Encourage repeat visits with beauty rewards</p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group text-center" style="animation-delay: 0.3s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="globe" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-4">E-commerce</h3>
+        <p class="text-gray-400">Integrate loyalty with your online store</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 {% endblock %}
 
 
