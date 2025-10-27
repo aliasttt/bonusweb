@@ -10,6 +10,7 @@ class Business(models.Model):
     description = models.TextField(blank=True)
     address = models.CharField(max_length=300, blank=True)
     website = models.URLField(blank=True)
+    free_reward_threshold = models.PositiveIntegerField(default=10)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:  # pragma: no cover - readable admin
@@ -29,6 +30,8 @@ class Product(models.Model):
     title = models.CharField(max_length=200)
     price_cents = models.PositiveIntegerField(default=0)
     active = models.BooleanField(default=True)
+    points_reward = models.PositiveIntegerField(default=0)
+    image = models.ImageField(upload_to="products/", blank=True, null=True)
 
     def __str__(self) -> str:  # pragma: no cover
         return f"{self.title} @ {self.business.name}"

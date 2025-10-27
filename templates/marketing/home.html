@@ -1,57 +1,256 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}Loyalty-Programm für moderne Unternehmen{% endblock %}
+{% block title %}Modern Customer Loyalty Platform for Businesses{% endblock %}
 {% block content %}
-<section class="relative overflow-hidden">
-  <div class="absolute -top-24 -right-24 w-96 h-96 bg-secondary/20 blur-3xl rounded-full"></div>
-  <div class="max-w-7xl mx-auto px-4 py-20 grid md:grid-cols-2 gap-12 items-center">
-    <div class="fade-up">
-      <h1 class="text-5xl md:text-6xl font-extrabold leading-tight">
-        Modernes Treueprogramm für Unternehmen
+
+<!-- Hero Section -->
+<section class="relative min-h-screen flex items-center gradient-bg overflow-hidden">
+  <!-- Animated Background Elements -->
+  <div class="absolute inset-0">
+    <div class="absolute top-20 right-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-float"></div>
+    <div class="absolute bottom-20 left-20 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-float" style="animation-delay: -2s;"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent/20 rounded-full blur-3xl animate-pulse-slow"></div>
+  </div>
+  
+  <!-- Floating Icons -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-1/4 left-1/4 text-primary/30 animate-bounce-slow">
+      <i data-lucide="qrcode" class="w-16 h-16"></i>
+    </div>
+    <div class="absolute top-1/3 right-1/3 text-secondary/30 animate-bounce-slow" style="animation-delay: -1s;">
+      <i data-lucide="gift" class="w-12 h-12"></i>
+    </div>
+    <div class="absolute bottom-1/3 left-1/3 text-accent/30 animate-bounce-slow" style="animation-delay: -2s;">
+      <i data-lucide="star" class="w-14 h-14"></i>
+    </div>
+    <div class="absolute bottom-1/4 right-1/4 text-primary/30 animate-bounce-slow" style="animation-delay: -3s;">
+      <i data-lucide="trending-up" class="w-10 h-10"></i>
+    </div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-4 py-20 grid lg:grid-cols-2 gap-16 items-center">
+    <div class="fade-left space-y-8">
+      <div class="space-y-6">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-effect text-sm font-medium text-primary">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          #1 Platform in Iran
+        </div>
+        <h1 class="text-5xl lg:text-7xl font-black leading-tight">
+          <span class="text-gradient">Customer Loyalty</span><br>
+          <span class="text-white">Made Modern & Smart</span>
       </h1>
-      <p class="mt-6 text-lg text-slate-600">
-        Einfache Einrichtung, vollständig anpassbar und bereit, Stammkunden zu
-        schaffen. Keine physischen Karten – nur QR-Code Scans.
-      </p>
-      <div class="mt-8 flex gap-4">
-        <a href="/partners/login/" class="px-6 py-3 rounded-lg bg-primary text-white shadow-lg shadow-primary/30">Kostenlos starten</a>
-        <a href="/fiyatlandirma/" class="px-6 py-3 rounded-lg border">Mehr erfahren</a>
+        <p class="text-xl text-gray-300 leading-relaxed max-w-2xl">
+          Quick setup, fully customizable, and completely digital. 
+          Just scan QR codes to award points, build loyal customers, and boost your sales.
+        </p>
+      </div>
+      
+      <div class="flex flex-col sm:flex-row gap-4">
+        <a href="/partners/login/" class="group px-8 py-4 rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-lg hover:shadow-2xl hover:shadow-primary/25 transition-all duration-300 flex items-center justify-center gap-2 animate-glow">
+          <i data-lucide="rocket" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+          Start Free
+        </a>
+        <a href="/pricing/" class="px-8 py-4 rounded-2xl glass-effect text-white font-semibold text-lg hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-2">
+          <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+          View Pricing
+        </a>
+      </div>
+      
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-8 pt-8">
+        <div class="text-center">
+          <div class="text-3xl font-bold text-gradient">500+</div>
+          <div class="text-sm text-gray-400">Active Businesses</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold text-gradient">50K+</div>
+          <div class="text-sm text-gray-400">Happy Customers</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold text-gradient">99.9%</div>
+          <div class="text-sm text-gray-400">Uptime</div>
+        </div>
       </div>
     </div>
-    <div class="fade-up">
-      <div class="relative mx-auto w-full max-w-sm aspect-[9/19] rounded-[2rem] border-8 border-slate-900 shadow-2xl">
-        <div class="absolute inset-0 rounded-[1.6rem] bg-gradient-to-br from-primary/20 to-secondary/20"></div>
-        <div class="absolute inset-6 bg-white rounded-[1.2rem] p-6 flex flex-col gap-3">
-          <div class="text-slate-700 font-semibold">Wallet</div>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="h-28 rounded-xl bg-primary/20"></div>
-            <div class="h-28 rounded-xl bg-secondary/20"></div>
-            <div class="col-span-2 h-24 rounded-xl bg-slate-200"></div>
+    
+    <div class="fade-right">
+      <!-- Mobile App Mockup -->
+      <div class="relative mx-auto w-80 h-[600px]">
+        <div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-[3rem] blur-xl"></div>
+        <div class="relative bg-dark-lighter rounded-[3rem] p-2 shadow-2xl">
+          <div class="bg-dark rounded-[2.5rem] h-full p-6 flex flex-col">
+            <!-- Status Bar -->
+            <div class="flex justify-between items-center mb-6">
+              <div class="text-sm font-medium">9:41</div>
+              <div class="flex gap-1">
+                <div class="w-1 h-1 bg-white rounded-full"></div>
+                <div class="w-1 h-1 bg-white rounded-full"></div>
+                <div class="w-1 h-1 bg-white rounded-full"></div>
+              </div>
+            </div>
+            
+            <!-- App Header -->
+            <div class="text-center mb-8">
+              <div class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <i data-lucide="gift" class="w-8 h-8 text-white"></i>
+              </div>
+              <h3 class="text-xl font-bold text-white">Bonus</h3>
+              <p class="text-gray-400 text-sm">Your Loyalty App</p>
+            </div>
+            
+            <!-- Points Card -->
+            <div class="bg-gradient-to-r from-primary to-secondary rounded-2xl p-6 mb-6">
+              <div class="flex justify-between items-center mb-4">
+                <span class="text-white/80 text-sm">Your Points</span>
+                <i data-lucide="star" class="w-5 h-5 text-yellow-400"></i>
+              </div>
+              <div class="text-3xl font-bold text-white">1,250</div>
+              <div class="text-white/60 text-sm">Next reward: 250 points</div>
+            </div>
+            
+            <!-- QR Code -->
+            <div class="bg-white/5 rounded-2xl p-6 text-center mb-6">
+              <div class="w-24 h-24 bg-white rounded-xl mx-auto mb-4 flex items-center justify-center">
+                <i data-lucide="qrcode" class="w-12 h-12 text-dark"></i>
+              </div>
+              <p class="text-white text-sm font-medium">Scan to Earn</p>
+              <p class="text-gray-400 text-xs">Get points instantly</p>
+            </div>
+            
+            <!-- Menu -->
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+                <i data-lucide="gift" class="w-5 h-5 text-primary"></i>
+                <span class="text-white text-sm">Rewards</span>
+              </div>
+              <div class="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+                <i data-lucide="history" class="w-5 h-5 text-secondary"></i>
+                <span class="text-white text-sm">History</span>
+              </div>
+              <div class="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+                <i data-lucide="settings" class="w-5 h-5 text-accent"></i>
+                <span class="text-white text-sm">Settings</span>
+              </div>
+            </div>
           </div>
-          <div class="mt-auto text-xs text-slate-500">Demo UI</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="max-w-7xl mx-auto px-4 py-16">
-  <h2 class="text-3xl font-bold text-center">Warum Bonus?</h2>
-  <div class="mt-10 grid md:grid-cols-3 gap-6">
-    <div class="fade-up p-6 rounded-2xl border hover:shadow-lg transition">
-      <h3 class="font-semibold">QR-basiert</h3>
-      <p class="mt-2 text-slate-600">Partner generieren Codes – Kunden scannen und sammeln Stempel.</p>
+<!-- Features Section -->
+<section class="py-20 bg-dark-light">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="text-center mb-16 fade-up">
+      <h2 class="text-4xl lg:text-5xl font-black text-white mb-6">
+        Why Choose <span class="text-gradient">Bonus</span>?
+      </h2>
+      <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+        Comprehensive customer loyalty management platform with advanced features and modern UI
+      </p>
     </div>
-    <div class="fade-up p-6 rounded-2xl border hover:shadow-lg transition">
-      <h3 class="font-semibold">Mehr Umsatz</h3>
-      <p class="mt-2 text-slate-600">Erreiche Wiederkäufe mit klaren Zielen wie 10 Stempel = gratis.</p>
-    </div>
-    <div class="fade-up p-6 rounded-2xl border hover:shadow-lg transition">
-      <h3 class="font-semibold">Schnelle Einrichtung</h3>
-      <p class="mt-2 text-slate-600">In wenigen Minuten live – Web + React Native App via API.</p>
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group">
+        <div class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="qrcode" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-4">QR-Based</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Admin generates codes; customers scan and earn points. 
+          Simple, fast, and no physical cards needed.
+        </p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group" style="animation-delay: 0.1s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="trending-up" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-4">Boost Sales</h3>
+        <p class="text-gray-400 leading-relaxed">
+          With clear goals like 10 points = free menu item, 
+          get repeat purchases and increase your revenue.
+        </p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group" style="animation-delay: 0.2s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="zap" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-4">Quick Setup</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Get started in minutes; web and mobile app with full API. 
+          No complex technical knowledge required.
+        </p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group" style="animation-delay: 0.3s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="bar-chart-3" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-4">Advanced Analytics</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Comprehensive reports on customer behavior, sales, and campaign performance 
+          for better decision making.
+        </p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group" style="animation-delay: 0.4s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-secondary to-primary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="smartphone" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-4">Mobile App</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Dedicated app for customers with beautiful UI 
+          and complete points management features.
+        </p>
+      </div>
+      
+      <div class="fade-up card-hover glass-effect p-8 rounded-3xl group" style="animation-delay: 0.5s;">
+        <div class="w-16 h-16 bg-gradient-to-br from-accent to-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <i data-lucide="shield-check" class="w-8 h-8 text-white"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-4">High Security</h3>
+        <p class="text-gray-400 leading-relaxed">
+          Advanced encryption and complete security to protect 
+          customer and business information.
+        </p>
+      </div>
     </div>
   </div>
 </section>
+
+<!-- CTA Section -->
+<section class="py-20 gradient-bg relative overflow-hidden">
+  <div class="absolute inset-0">
+    <div class="absolute top-10 left-10 w-32 h-32 bg-primary/30 rounded-full blur-2xl animate-float"></div>
+    <div class="absolute bottom-10 right-10 w-40 h-40 bg-secondary/30 rounded-full blur-2xl animate-float" style="animation-delay: -3s;"></div>
+  </div>
+  
+  <div class="relative z-10 max-w-4xl mx-auto px-4 text-center">
+    <div class="fade-up">
+      <h2 class="text-4xl lg:text-6xl font-black text-white mb-6">
+        Ready to Get Started?
+      </h2>
+      <p class="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
+        Start free now and set up your customer loyalty program 
+        in less than 5 minutes.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-6 justify-center">
+        <a href="/partners/login/" class="group px-10 py-5 rounded-2xl bg-white text-dark font-bold text-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3">
+          <i data-lucide="rocket" class="w-6 h-6 group-hover:rotate-12 transition-transform"></i>
+          Start Free
+        </a>
+        <a href="/pricing/" class="px-10 py-5 rounded-2xl glass-effect text-white font-bold text-xl hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-3">
+          <i data-lucide="phone" class="w-6 h-6"></i>
+          Contact Us
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
 {% endblock %}
 
 

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}کمپین‌ها و آفرها{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-12">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">کمپین‌های فعال</h1>
+    <a href="/admin/campaigns/campaign/add/" class="px-4 py-2 rounded-md bg-primary text-white">ایجاد کمپین</a>
+  </div>
+
+  <div class="mt-6 grid md:grid-cols-3 gap-6">
+    {% for c in campaigns %}
+      <div class="p-6 rounded-2xl border">
+        <div class="font-semibold">{{ c.name }}</div>
+        <div class="mt-2 text-sm text-slate-600">{{ c.description }}</div>
+        <div class="mt-3 text-sm text-slate-500">امتیاز هر اسکن: {{ c.points_per_scan }}</div>
+        <div class="mt-1 text-sm text-slate-500">وضعیت: {% if c.is_active %}فعال{% else %}غیرفعال{% endif %}</div>
+      </div>
+    {% empty %}
+      <div class="col-span-3 text-center text-slate-500">کمپینی ثبت نشده است.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+
+

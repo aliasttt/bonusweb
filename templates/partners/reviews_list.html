@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}نظرات مشتریان{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-12">
+  <h1 class="text-2xl font-bold">نظرات</h1>
+  <div class="mt-6 grid md:grid-cols-2 gap-6">
+    {% for r in reviews %}
+      <div class="p-6 rounded-2xl border">
+        <div class="flex items-center justify-between">
+          <div class="font-semibold">{{ r.customer.user.username }}</div>
+          <div class="text-amber-500">⭐ {{ r.rating }}</div>
+        </div>
+        <div class="mt-2 text-slate-700">{{ r.comment }}</div>
+        <div class="mt-2 text-xs text-slate-500">{{ r.created_at|date:'Y-m-d H:i' }}</div>
+      </div>
+    {% empty %}
+      <div class="col-span-2 text-center text-slate-500">نظری ثبت نشده است.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+
+

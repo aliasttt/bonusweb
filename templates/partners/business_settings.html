@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}تنظیمات کسب‌وکار{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-12">
+  <h1 class="text-2xl font-bold">تنظیمات کسب‌وکار</h1>
+  <form method="post" class="mt-6 p-6 rounded-2xl border bg-white">
+    {% csrf_token %}
+    <label class="block text-sm text-slate-600">نام</label>
+    <input name="name" value="{{ business.name }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+
+    <label class="mt-4 block text-sm text-slate-600">توضیحات</label>
+    <textarea name="description" class="mt-2 w-full px-3 py-2 border rounded-md">{{ business.description }}</textarea>
+
+    <label class="mt-4 block text-sm text-slate-600">آدرس</label>
+    <input name="address" value="{{ business.address }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+
+    <label class="mt-4 block text-sm text-slate-600">وب‌سایت</label>
+    <input name="website" value="{{ business.website }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+
+    <label class="mt-4 block text-sm text-slate-600">تعداد امتیاز لازم برای منو رایگان</label>
+    <input name="free_reward_threshold" value="{{ business.free_reward_threshold }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+
+    <div class="mt-6 flex items-center gap-3">
+      <button class="px-4 py-2 rounded-md bg-primary text-white">ذخیره</button>
+      <a href="/partners/dashboard/" class="px-4 py-2 rounded-md border">بازگشت</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+
+

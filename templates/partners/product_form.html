@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}{% if product %}ویرایش آیتم{% else %}آیتم جدید{% endif %}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-12">
+  <h1 class="text-2xl font-bold">{% if product %}ویرایش آیتم{% else %}آیتم جدید{% endif %}</h1>
+  <form method="post" enctype="multipart/form-data" class="mt-6 p-6 rounded-2xl border bg-white">
+    {% csrf_token %}
+    <label class="block text-sm text-slate-600">عنوان</label>
+    <input name="title" value="{{ product.title }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <div>
+        <label class="mt-4 block text-sm text-slate-600">قیمت (تومان)</label>
+        <input name="price_cents" value="{{ product.price_cents }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+      </div>
+      <div>
+        <label class="mt-4 block text-sm text-slate-600">امتیاز</label>
+        <input name="points_reward" value="{{ product.points_reward }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+      </div>
+    </div>
+
+    <label class="mt-4 block text-sm text-slate-600">تصویر</label>
+    <input name="image" type="file" class="mt-2 w-full" />
+    {% if product and product.image %}
+      <img src="{{ product.image.url }}" class="mt-3 w-40 h-28 object-cover rounded-md" />
+    {% endif %}
+
+    <div class="mt-6 flex items-center gap-3">
+      <button class="px-4 py-2 rounded-md bg-primary text-white">ذخیره</button>
+      <a href="/partners/products/" class="px-4 py-2 rounded-md border">انصراف</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+
+
