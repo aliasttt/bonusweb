@@ -8,6 +8,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("marketing.urls")),
     path("partners/", include("partners.urls")),
+    path("super-admin/", include("admin.urls")),
     path("api/", include("loyalty.urls")),
     # Accounts and RBAC
     path("api/accounts/", include("accounts.urls")),

@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Super User Dashboard - Bonus{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-dark via-dark-light to-dark-lighter">
+    <!-- Header -->
+    <div class="bg-dark-light/50 backdrop-blur-sm border-b border-primary/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
+                        <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Super User Dashboard</h1>
+                        <p class="text-gray-400">System Administration & Monitoring</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-white font-medium">{{ user.username }}</p>
+                        <p class="text-gray-400 text-sm">Super User</p>
+                    </div>
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                        <i data-lucide="user" class="w-5 h-5 text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-dark-light/50 backdrop-blur-sm rounded-xl p-6 border border-primary/20 hover:border-primary/40 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Users</p>
+                        <p class="text-3xl font-bold text-white" id="total-users">-</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                        <i data-lucide="users" class="w-6 h-6 text-blue-400"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-dark-light/50 backdrop-blur-sm rounded-xl p-6 border border-primary/20 hover:border-primary/40 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Active Users</p>
+                        <p class="text-3xl font-bold text-white" id="active-users">-</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+                        <i data-lucide="user-check" class="w-6 h-6 text-green-400"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-dark-light/50 backdrop-blur-sm rounded-xl p-6 border border-primary/20 hover:border-primary/40 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Businesses</p>
+                        <p class="text-3xl font-bold text-white" id="total-businesses">-</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                        <i data-lucide="building" class="w-6 h-6 text-purple-400"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-dark-light/50 backdrop-blur-sm rounded-xl p-6 border border-primary/20 hover:border-primary/40 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Revenue</p>
+                        <p class="text-3xl font-bold text-white" id="total-revenue">-</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                        <i data-lucide="dollar-sign" class="w-6 h-6 text-yellow-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- User Management -->
+            <div class="lg:col-span-2">
+                <div class="bg-dark-light/50 backdrop-blur-sm rounded-xl border border-primary/20">
+                    <div class="p-6 border-b border-primary/20">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-xl font-bold text-white">User Management</h2>
+                            <button onclick="refreshUsers()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors">
+                                <i data-lucide="refresh-cw" class="w-4 h-4 inline mr-2"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-white">
+                                <thead>
+                                    <tr class="border-b border-primary/20">
+                                        <th class="text-left py-3 px-4">User</th>
+                                        <th class="text-left py-3 px-4">Role</th>
+                                        <th class="text-left py-3 px-4">Status</th>
+                                        <th class="text-left py-3 px-4">Last Activity</th>
+                                        <th class="text-left py-3 px-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-8 text-gray-400">
+                                            <i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto mb-2"></i>
+                                            Loading users...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div>
+                <div class="bg-dark-light/50 backdrop-blur-sm rounded-xl border border-primary/20">
+                    <div class="p-6 border-b border-primary/20">
+                        <h2 class="text-xl font-bold text-white">Recent Activities</h2>
+                    </div>
+                    <div class="p-6">
+                        <div id="recent-activities" class="space-y-4">
+                            <div class="text-center py-8 text-gray-400">
+                                <i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto mb-2"></i>
+                                Loading activities...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Management -->
+        <div class="mt-8">
+            <div class="bg-dark-light/50 backdrop-blur-sm rounded-xl border border-primary/20">
+                <div class="p-6 border-b border-primary/20">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-bold text-white">Business Management</h2>
+                        <button onclick="refreshBusinesses()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors">
+                            <i data-lucide="refresh-cw" class="w-4 h-4 inline mr-2"></i>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-white">
+                            <thead>
+                                <tr class="border-b border-primary/20">
+                                    <th class="text-left py-3 px-4">Business Name</th>
+                                    <th class="text-left py-3 px-4">Owner</th>
+                                    <th class="text-left py-3 px-4">Type</th>
+                                    <th class="text-left py-3 px-4">Customers</th>
+                                    <th class="text-left py-3 px-4">Revenue</th>
+                                    <th class="text-left py-3 px-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="businesses-table">
+                                <tr>
+                                    <td colspan="6" class="text-center py-8 text-gray-400">
+                                        <i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto mb-2"></i>
+                                        Loading businesses...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dashboard functionality
+let authToken = localStorage.getItem('authToken');
+
+async function fetchDashboardStats() {
+    try {
+        const response = await fetch('/api/accounts/dashboard-stats/', {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('total-users').textContent = data.users.total;
+            document.getElementById('active-users').textContent = data.users.active;
+            document.getElementById('total-businesses').textContent = data.businesses.total;
+            document.getElementById('total-revenue').textContent = `$${data.revenue.total.toLocaleString()}`;
+        }
+    } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+    }
+}
+
+async function fetchUsers() {
+    try {
+        const response = await fetch('/api/accounts/users/', {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const users = await response.json();
+            const tbody = document.getElementById('users-table');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-400">No users found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = users.map(user => `
+                <tr class="border-b border-primary/10">
+                    <td class="py-3 px-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                                <i data-lucide="user" class="w-4 h-4 text-primary"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">${user.username}</p>
+                                <p class="text-sm text-gray-400">${user.email}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.profile.role)}">
+                            ${user.profile.role.replace('_', ' ').toUpperCase()}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${user.profile.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">
+                            ${user.profile.is_active ? 'ACTIVE' : 'INACTIVE'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-400">
+                        ${user.profile.last_activity ? new Date(user.profile.last_activity).toLocaleDateString() : 'Never'}
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="flex space-x-2">
+                            <button onclick="toggleUserStatus(${user.id}, ${user.profile.is_active})" 
+                                    class="px-3 py-1 rounded text-xs font-medium ${user.profile.is_active ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'}">
+                                ${user.profile.is_active ? 'Deactivate' : 'Activate'}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // Re-initialize Lucide icons
+            lucide.createIcons();
+        }
+    } catch (error) {
+        console.error('Error fetching users:', error);
+    }
+}
+
+async function fetchRecentActivities() {
+    try {
+        const response = await fetch('/api/accounts/activities/?limit=10', {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const activities = await response.json();
+            const container = document.getElementById('recent-activities');
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-400">No recent activities</div>';
+                return;
+            }
+            
+            container.innerHTML = activities.map(activity => `
+                <div class="flex items-start space-x-3 p-3 rounded-lg bg-dark/50">
+                    <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="${getActivityIcon(activity.activity_type)}" class="w-4 h-4 text-primary"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm text-white font-medium">${activity.user.username}</p>
+                        <p class="text-sm text-gray-400">${activity.description}</p>
+                        <p class="text-xs text-gray-500">${new Date(activity.created_at).toLocaleString()}</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Re-initialize Lucide icons
+            lucide.createIcons();
+        }
+    } catch (error) {
+        console.error('Error fetching activities:', error);
+    }
+}
+
+async function fetchBusinesses() {
+    try {
+        const response = await fetch('/api/accounts/businesses/', {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const businesses = await response.json();
+            const tbody = document.getElementById('businesses-table');
+            
+            if (businesses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">No businesses found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = businesses.map(business => `
+                <tr class="border-b border-primary/10">
+                    <td class="py-3 px-4 font-medium">${business.name}</td>
+                    <td class="py-3 px-4">${business.owner.username}</td>
+                    <td class="py-3 px-4">${business.business_type}</td>
+                    <td class="py-3 px-4">${business.total_customers}</td>
+                    <td class="py-3 px-4">$${business.total_revenue.toLocaleString()}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${business.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">
+                            ${business.is_active ? 'ACTIVE' : 'INACTIVE'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error fetching businesses:', error);
+    }
+}
+
+async function toggleUserStatus(userId, currentStatus) {
+    try {
+        const response = await fetch(`/api/accounts/users/${userId}/activate/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                is_active: !currentStatus
+            })
+        });
+        
+        if (response.ok) {
+            fetchUsers(); // Refresh the users table
+        } else {
+            alert('Error updating user status');
+        }
+    } catch (error) {
+        console.error('Error updating user status:', error);
+        alert('Error updating user status');
+    }
+}
+
+function getRoleColor(role) {
+    const colors = {
+        'superuser': 'bg-red-500/20 text-red-400',
+        'admin': 'bg-blue-500/20 text-blue-400',
+        'business_owner': 'bg-green-500/20 text-green-400',
+        'customer': 'bg-gray-500/20 text-gray-400'
+    };
+    return colors[role] || 'bg-gray-500/20 text-gray-400';
+}
+
+function getActivityIcon(activityType) {
+    const icons = {
+        'login': 'log-in',
+        'logout': 'log-out',
+        'profile_update': 'user',
+        'business_update': 'building',
+        'qr_generate': 'qr-code',
+        'campaign_create': 'megaphone',
+        'customer_add': 'user-plus',
+        'payment_process': 'credit-card'
+    };
+    return icons[activityType] || 'activity';
+}
+
+function refreshUsers() {
+    fetchUsers();
+}
+
+function refreshBusinesses() {
+    fetchBusinesses();
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    fetchDashboardStats();
+    fetchUsers();
+    fetchRecentActivities();
+    fetchBusinesses();
+    
+    // Refresh data every 30 seconds
+    setInterval(() => {
+        fetchDashboardStats();
+        fetchRecentActivities();
+    }, 30000);
+});
+</script>
+{% endblock %}
