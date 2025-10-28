@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}QR Code Generator - {{ business.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-qrcode me-2"></i>
+                        QR Code Generator for {{ business.name }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Create QR codes for your customers' in-person payments. 
+                        Customers can scan these codes to receive stamps.
+                    </p>
+
+                    <!-- Create New QR Code -->
+                    <div class="mb-4">
+                        <button class="btn btn-success" onclick="createNewQR()">
+                            <i class="fas fa-plus me-2"></i>
+                            Create New QR Code
+                        </button>
+                    </div>
+
+                    <!-- QR Codes List -->
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>QR Code</th>
+                                    <th>Campaign</th>
+                                    <th>Image</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for qr in qr_codes %}
+                                <tr>
+                                    <td>
+                                        <code>{{ qr.token|slice:":8" }}...</code>
+                                    </td>
+                                    <td>
+                                        {% if qr.campaign %}
+                                            {{ qr.campaign.name }}
+                                        {% else %}
+                                            <span class="text-muted">No Campaign</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <img src="{% url 'qr_image' qr.token %}" 
+                                             alt="QR Code" 
+                                             style="width: 50px; height: 50px;"
+                                             class="img-thumbnail">
+                                    </td>
+                                    <td>
+                                        {% if qr.active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ qr.created_at|date:"Y/m/d H:i" }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" 
+                                                    onclick="downloadQR('{{ qr.token }}')">
+                                                <i class="fas fa-download"></i>
+                                            </button>
+                                            <button class="btn btn-outline-info" 
+                                                    onclick="showQRDetails('{{ qr.token }}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-warning" 
+                                                    onclick="toggleQRStatus('{{ qr.id }}', {{ qr.active|yesno:"false,true" }})">
+                                                <i class="fas fa-{% if qr.active %}pause{% else %}play{% endif %}"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        No QR codes created yet
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- QR Code Preview -->
+            <div class="card" id="qr-preview-card" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0">QR Code Preview</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div id="qr-preview-container">
+                        <!-- QR code will be displayed here -->
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-primary" onclick="downloadCurrentQR()">
+                            <i class="fas fa-download me-2"></i>
+                            Download
+                        </button>
+                        <button class="btn btn-secondary" onclick="printQR()">
+                            <i class="fas fa-print me-2"></i>
+                            Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">QR Code Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h3 class="text-primary">{{ qr_codes|length }}</h3>
+                            <small class="text-muted">Total QR Codes</small>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-success">
+                                {% for qr in qr_codes %}
+                                    {% if qr.active %}{{ forloop.counter0|add:1 }}{% endif %}
+                                {% empty %}0{% endfor %}
+                            </h3>
+                            <small class="text-muted">Active QR Codes</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Details Modal -->
+<div class="modal fade" id="qrDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">QR Code Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="qr-details-container">
+                    <!-- QR details will be displayed here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="downloadFromModal()">Download</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentQRToken = null;
+
+// Create new QR code
+function createNewQR() {
+    fetch('/api/qr/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            business: {{ business.id }},
+            active: true
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.token) {
+            currentQRToken = data.token;
+            showQRPreview(data.token);
+            location.reload(); // Refresh to show new QR in table
+        } else {
+            alert('Error creating QR code');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error creating QR code');
+    });
+}
+
+// Show QR preview
+function showQRPreview(token) {
+    const container = document.getElementById('qr-preview-container');
+    container.innerHTML = `
+        <img src="/api/qr/image/${token}.png" alt="QR Code" class="img-fluid">
+        <p class="mt-2"><code>${token}</code></p>
+    `;
+    document.getElementById('qr-preview-card').style.display = 'block';
+    currentQRToken = token;
+}
+
+// Download QR code
+function downloadQR(token) {
+    const link = document.createElement('a');
+    link.href = `/api/qr/image/${token}.png`;
+    link.download = `qr-${token.substring(0, 8)}.png`;
+    link.click();
+}
+
+// Download current QR
+function downloadCurrentQR() {
+    if (currentQRToken) {
+        downloadQR(currentQRToken);
+    }
+}
+
+// Show QR details in modal
+function showQRDetails(token) {
+    const container = document.getElementById('qr-details-container');
+    container.innerHTML = `
+        <img src="/api/qr/image/${token}.png" alt="QR Code" class="img-fluid mb-3">
+        <p><strong>QR Code:</strong> <code>${token}</code></p>
+        <p><strong>Link:</strong> <a href="/api/qr/image/${token}.png" target="_blank">View Image</a></p>
+    `;
+    currentQRToken = token;
+    new bootstrap.Modal(document.getElementById('qrDetailsModal')).show();
+}
+
+// Download from modal
+function downloadFromModal() {
+    if (currentQRToken) {
+        downloadQR(currentQRToken);
+    }
+}
+
+// Toggle QR status
+function toggleQRStatus(qrId, currentStatus) {
+    const newStatus = !currentStatus;
+    const action = newStatus ? 'activate' : 'deactivate';
+    
+    if (confirm(`Are you sure you want to ${action} this QR code?`)) {
+        // This would require a new API endpoint to toggle status
+        // For now, we'll just show a message
+        alert(`QR code ${action}d`);
+        location.reload();
+    }
+}
+
+// Print QR code
+function printQR() {
+    if (currentQRToken) {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>QR Code - ${currentQRToken.substring(0, 8)}</title>
+                    <style>
+                        body { text-align: center; font-family: Arial, sans-serif; }
+                        img { max-width: 100%; height: auto; }
+                        .qr-info { margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <h2>QR Code - {{ business.name }}</h2>
+                    <img src="/api/qr/image/${currentQRToken}.png" alt="QR Code">
+                    <div class="qr-info">
+                        <p><strong>Code:</strong> ${currentQRToken}</p>
+                        <p><strong>Date:</strong> ${new Date().toLocaleDateString('en-US')}</p>
+                    </div>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    }
+}
+
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

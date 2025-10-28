@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Customer Dashboard - My Wallets{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-wallet me-2"></i>
+                        My Wallets
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div id="wallets-container">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'qr_scan' %}" class="btn btn-success">
+                            <i class="fas fa-qrcode me-2"></i>
+                            Scan QR Code
+                        </a>
+                        <button class="btn btn-info" onclick="refreshWallets()">
+                            <i class="fas fa-sync me-2"></i>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Overall Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h3 class="text-primary" id="total-wallets">0</h3>
+                            <small class="text-muted">Total Wallets</small>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-success" id="ready-rewards">0</h3>
+                            <small class="text-muted">Ready Rewards</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load wallets on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadWallets();
+});
+
+// Load wallets from API
+function loadWallets() {
+    fetch('/api/qr/wallets/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.wallets) {
+                displayWallets(data.wallets);
+                updateStatistics(data.wallets);
+            } else {
+                showNoWallets();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading wallets:', error);
+            showError();
+        });
+}
+
+// Display wallets
+function displayWallets(wallets) {
+    const container = document.getElementById('wallets-container');
+    
+    if (wallets.length === 0) {
+        showNoWallets();
+        return;
+    }
+    
+    let html = '';
+    wallets.forEach(wallet => {
+        const progress = Math.min(wallet.progress_percentage, 100);
+        const isReady = wallet.can_redeem;
+        
+        html += `
+            <div class="card mb-3 ${isReady ? 'border-success' : ''}">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="card-title mb-1">${wallet.business_name}</h5>
+                            <p class="text-muted mb-0">
+                                <small>Last updated: ${new Date(wallet.updated_at).toLocaleDateString('en-US')}</small>
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Stamps:</span>
+                                <strong>${wallet.stamp_count}/${wallet.target}</strong>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar ${isReady ? 'bg-success' : 'bg-primary'}" 
+                                     role="progressbar" 
+                                     style="width: ${progress}%">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            ${isReady ? 
+                                `<button class="btn btn-success btn-sm" onclick="redeemReward(${wallet.business_id})">
+                                    <i class="fas fa-gift"></i>
+                                </button>` : 
+                                `<span class="text-muted">${wallet.target - wallet.stamp_count} more stamps needed</span>`
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Show no wallets message
+function showNoWallets() {
+    const container = document.getElementById('wallets-container');
+    container.innerHTML = `
+        <div class="text-center py-5">
+            <i class="fas fa-wallet fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No wallets yet</h5>
+            <p class="text-muted">To get started, scan a business QR code</p>
+            <a href="{% url 'qr_scan' %}" class="btn btn-primary">
+                <i class="fas fa-qrcode me-2"></i>
+                Scan QR Code
+            </a>
+        </div>
+    `;
+}
+
+// Show error message
+function showError() {
+    const container = document.getElementById('wallets-container');
+    container.innerHTML = `
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Error loading wallets. Please try again.
+        </div>
+    `;
+}
+
+// Update statistics
+function updateStatistics(wallets) {
+    const totalWallets = wallets.length;
+    const readyRewards = wallets.filter(w => w.can_redeem).length;
+    
+    document.getElementById('total-wallets').textContent = totalWallets;
+    document.getElementById('ready-rewards').textContent = readyRewards;
+}
+
+// Redeem reward
+function redeemReward(businessId) {
+    if (confirm('Are you sure you want to redeem the reward?')) {
+        fetch('/api/qr/redeem/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                business_id: businessId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Reward redeemed successfully!');
+                loadWallets(); // Refresh wallets
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error redeeming reward');
+        });
+    }
+}
+
+// Refresh wallets
+function refreshWallets() {
+    loadWallets();
+}
+
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

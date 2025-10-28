@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password
 
 
 class Business(models.Model):
@@ -10,11 +11,25 @@ class Business(models.Model):
     description = models.TextField(blank=True)
     address = models.CharField(max_length=300, blank=True)
     website = models.URLField(blank=True)
+    phone = models.CharField(max_length=20, blank=True, help_text="Business phone number")
+    password = models.CharField(max_length=128, blank=True, help_text="Business password for in-person access")
     free_reward_threshold = models.PositiveIntegerField(default=10)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:  # pragma: no cover - readable admin
         return self.name
+    
+    def set_password(self, raw_password):
+        """Set password with hashing"""
+        self.password = make_password(raw_password)
+    
+    def check_password(self, raw_password):
+        """Check password"""
+        return check_password(raw_password, self.password)
+    
+    def has_password(self):
+        """Check if password is set"""
+        return bool(self.password)
 
 
 class Customer(models.Model):
