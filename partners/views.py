@@ -38,10 +38,33 @@ def dashboard(request):
     try:
         # Show data for the owner's business
         business = Business.objects.filter(owner=request.user).first()
-        orders_count = Order.objects.filter(business=business).count() if business else 0
-        products_count = Product.objects.filter(business=business).count() if business else 0
-        reviews_count = Review.objects.filter(business=business).count() if business else 0
-        campaigns_count = Campaign.objects.filter(business=business).count() if business else 0
+        
+        # Safely count with error handling
+        orders_count = 0
+        products_count = 0
+        reviews_count = 0
+        campaigns_count = 0
+        
+        if business:
+            try:
+                orders_count = Order.objects.filter(business=business).count()
+            except Exception:
+                orders_count = 0
+            
+            try:
+                products_count = Product.objects.filter(business=business).count()
+            except Exception:
+                products_count = 0
+            
+            try:
+                reviews_count = Review.objects.filter(business=business).count()
+            except Exception:
+                reviews_count = 0
+            
+            try:
+                campaigns_count = Campaign.objects.filter(business=business).count()
+            except Exception:
+                campaigns_count = 0
         
         context = {
             "business": business,
