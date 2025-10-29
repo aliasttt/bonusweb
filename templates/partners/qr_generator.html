@@ -7,9 +7,10 @@
   <div class="mt-8 grid md:grid-cols-2 gap-6 items-center">
     <div>
       <label class="text-sm text-slate-600">Business ID</label>
-      <input id="biz" class="mt-2 w-full px-3 py-2 border rounded-md" placeholder="1" value="{% if business %}{{ business.id }}{% endif %}" />
+      <input id="biz" class="mt-2 w-full px-3 py-2 border rounded-md" placeholder="1" value="{% if business %}{{ business.id }}{% endif %}" readonly style="color: #000000; background-color: #ffffff;" />
+      <p class="text-xs text-slate-500 mt-1">Your Business ID: {% if business %}{{ business.id }}{% else %}Not found{% endif %}</p>
       <label class="mt-4 block text-sm text-slate-600">Points</label>
-      <input id="amt" class="mt-2 w-full px-3 py-2 border rounded-md" placeholder="1" value="1" />
+      <input id="amt" class="mt-2 w-full px-3 py-2 border rounded-md" placeholder="1" value="1" style="color: #000000; background-color: #ffffff;" />
       <button onclick="gen()" class="mt-4 px-4 py-2 bg-primary text-white rounded-md">Generate</button>
     </div>
     <div class="p-6 border rounded-2xl">
@@ -27,6 +28,27 @@
     const dataUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=' + encodeURIComponent(payload);
     document.getElementById('qr').src = dataUrl;
   }
+
+  // Fix input text color
+  document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input[type="text"], input[readonly]');
+    inputs.forEach(input => {
+      input.style.color = '#000000';
+      input.style.backgroundColor = '#ffffff';
+      
+      // Add focus event to ensure text is visible
+      input.addEventListener('focus', function() {
+        this.style.color = '#000000';
+        this.style.backgroundColor = '#ffffff';
+      });
+      
+      // Add input event to ensure text is visible while typing
+      input.addEventListener('input', function() {
+        this.style.color = '#000000';
+        this.style.backgroundColor = '#ffffff';
+      });
+    });
+  });
 </script>
 {% endblock %}
 

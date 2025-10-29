@@ -6,19 +6,19 @@
   <form method="post" class="mt-6 p-6 rounded-2xl border bg-white">
     {% csrf_token %}
     <label class="block text-sm text-slate-600">Name</label>
-    <input name="name" value="{{ business.name }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+    <input name="name" value="{{ business.name }}" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;" />
 
     <label class="mt-4 block text-sm text-slate-600">Description</label>
-    <textarea name="description" class="mt-2 w-full px-3 py-2 border rounded-md">{{ business.description }}</textarea>
+    <textarea name="description" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;">{{ business.description }}</textarea>
 
     <label class="mt-4 block text-sm text-slate-600">Address</label>
-    <input name="address" value="{{ business.address }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+    <input name="address" value="{{ business.address }}" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;" />
 
     <label class="mt-4 block text-sm text-slate-600">Website</label>
-    <input name="website" value="{{ business.website }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+    <input name="website" value="{{ business.website }}" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;" />
 
     <label class="mt-4 block text-sm text-slate-600">Number of points required for free menu</label>
-    <input name="free_reward_threshold" value="{{ business.free_reward_threshold }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+    <input name="free_reward_threshold" value="{{ business.free_reward_threshold }}" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;" />
 
     <div class="mt-6 flex items-center gap-3">
       <button class="px-4 py-2 rounded-md bg-primary text-white">Save</button>
@@ -26,6 +26,29 @@
     </div>
   </form>
 </div>
+
+<script>
+// Fix input text color
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input[type="text"], input[type="url"], input[type="number"], textarea');
+    inputs.forEach(input => {
+        input.style.color = '#000000';
+        input.style.backgroundColor = '#ffffff';
+        
+        // Add focus event to ensure text is visible
+        input.addEventListener('focus', function() {
+            this.style.color = '#000000';
+            this.style.backgroundColor = '#ffffff';
+        });
+        
+        // Add input event to ensure text is visible while typing
+        input.addEventListener('input', function() {
+            this.style.color = '#000000';
+            this.style.backgroundColor = '#ffffff';
+        });
+    });
+});
+</script>
 {% endblock %}
 
 

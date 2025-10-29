@@ -6,21 +6,21 @@
   <form method="post" enctype="multipart/form-data" class="mt-6 p-6 rounded-2xl border bg-white">
     {% csrf_token %}
     <label class="block text-sm text-slate-600">Title</label>
-    <input name="title" value="{{ product.title }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+    <input name="title" value="{{ product.title }}" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;" />
 
     <div class="grid md:grid-cols-2 gap-4">
       <div>
         <label class="mt-4 block text-sm text-slate-600">Price (cents)</label>
-        <input name="price_cents" value="{{ product.price_cents }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+        <input name="price_cents" value="{{ product.price_cents }}" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;" />
       </div>
       <div>
         <label class="mt-4 block text-sm text-slate-600">Points</label>
-        <input name="points_reward" value="{{ product.points_reward }}" class="mt-2 w-full px-3 py-2 border rounded-md" />
+        <input name="points_reward" value="{{ product.points_reward }}" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;" />
       </div>
     </div>
 
     <label class="mt-4 block text-sm text-slate-600">Image</label>
-    <input name="image" type="file" class="mt-2 w-full" />
+    <input name="image" type="file" class="mt-2 w-full" style="color: #000000; background-color: #ffffff;" />
     {% if product and product.image %}
       <img src="{{ product.image.url }}" class="mt-3 w-40 h-28 object-cover rounded-md" />
     {% endif %}
@@ -31,6 +31,29 @@
     </div>
   </form>
 </div>
+
+<script>
+// Fix input text color
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="file"]');
+    inputs.forEach(input => {
+        input.style.color = '#000000';
+        input.style.backgroundColor = '#ffffff';
+        
+        // Add focus event to ensure text is visible
+        input.addEventListener('focus', function() {
+            this.style.color = '#000000';
+            this.style.backgroundColor = '#ffffff';
+        });
+        
+        // Add input event to ensure text is visible while typing
+        input.addEventListener('input', function() {
+            this.style.color = '#000000';
+            this.style.backgroundColor = '#ffffff';
+        });
+    });
+});
+</script>
 {% endblock %}
 
 
