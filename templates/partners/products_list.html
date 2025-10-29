@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
-{% block title %}مدیریت منو{% endblock %}
+{% block title %}Manage Products{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-12">
   <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold">منوهای شما</h1>
-    <a href="/partners/products/new/" class="px-4 py-2 rounded-md bg-primary text-white">افزودن آیتم</a>
+    <h1 class="text-2xl font-bold">Your Products</h1>
+    <a href="/partners/products/new/" class="px-4 py-2 rounded-md bg-primary text-white">Add Item</a>
   </div>
 
   <div class="mt-6 grid md:grid-cols-3 gap-6">
@@ -18,13 +18,13 @@
         <div class="mt-4 flex items-center justify-between">
           <div>
             <div class="font-semibold">{{ p.title }}</div>
-            <div class="text-sm text-slate-500">قیمت: {{ p.price_cents }} تومان • امتیاز: {{ p.points_reward }}</div>
+            <div class="text-sm text-slate-500">Price: {{ p.price_cents }} cents • Points: {{ p.points_reward }}</div>
           </div>
-          <a href="/partners/products/{{ p.id }}/edit/" class="px-3 py-2 rounded-md border">ویرایش</a>
+          <a href="/partners/products/{{ p.id }}/edit/" class="px-3 py-2 rounded-md border">Edit</a>
         </div>
       </div>
     {% empty %}
-      <div class="col-span-3 text-center text-slate-500">فعلاً آیتمی ثبت نشده است.</div>
+      <div class="col-span-3 text-center text-slate-500">No items have been registered yet.</div>
     {% endfor %}
   </div>
 </div>

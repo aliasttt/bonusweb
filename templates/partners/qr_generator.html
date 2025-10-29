@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
-{% block title %}تولیدکننده QR{% endblock %}
+{% block title %}QR Code Generator{% endblock %}
 {% block content %}
 <div class="max-w-3xl mx-auto px-4 py-16">
-  <h1 class="text-3xl font-extrabold">تولید QR</h1>
-  <p class="mt-2 text-slate-600">این کد را به مشتری نشان دهید تا اسکن کند.</p>
+  <h1 class="text-3xl font-extrabold">QR Code Generator</h1>
+  <p class="mt-2 text-slate-600">Show this code to customers to scan.</p>
   <div class="mt-8 grid md:grid-cols-2 gap-6 items-center">
     <div>
-      <label class="text-sm text-slate-600">شناسه کسب‌وکار</label>
+      <label class="text-sm text-slate-600">Business ID</label>
       <input id="biz" class="mt-2 w-full px-3 py-2 border rounded-md" placeholder="1" value="{% if business %}{{ business.id }}{% endif %}" />
-      <label class="mt-4 block text-sm text-slate-600">امتیاز</label>
+      <label class="mt-4 block text-sm text-slate-600">Points</label>
       <input id="amt" class="mt-2 w-full px-3 py-2 border rounded-md" placeholder="1" value="1" />
-      <button onclick="gen()" class="mt-4 px-4 py-2 bg-primary text-white rounded-md">تولید</button>
+      <button onclick="gen()" class="mt-4 px-4 py-2 bg-primary text-white rounded-md">Generate</button>
     </div>
     <div class="p-6 border rounded-2xl">
       <img id="qr" class="w-64 h-64 mx-auto" />

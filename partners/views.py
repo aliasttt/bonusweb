@@ -111,7 +111,7 @@ def product_create(request):
         points_reward = int(request.POST.get("points_reward", "0") or 0)
         image = request.FILES.get("image")
         Product.objects.create(business=business, title=title, price_cents=price_cents, points_reward=points_reward, image=image)
-        messages.success(request, "آیتم با موفقیت افزوده شد")
+        messages.success(request, "Item added successfully")
         return redirect("products_list")
     return render(request, "partners/product_form.html", {"business": business})
 
@@ -122,7 +122,7 @@ def product_edit(request, pk: int):
     business = Business.objects.filter(owner=request.user).first()
     product = Product.objects.filter(id=pk, business=business).first()
     if not product:
-        messages.error(request, "آیتم یافت نشد")
+        messages.error(request, "Item not found")
         return redirect("products_list")
     if request.method == "POST":
         product.title = request.POST.get("title", product.title)
@@ -131,7 +131,7 @@ def product_edit(request, pk: int):
         if request.FILES.get("image"):
             product.image = request.FILES.get("image")
         product.save()
-        messages.success(request, "ذخیره شد")
+        messages.success(request, "Saved")
         return redirect("products_list")
     return render(request, "partners/product_form.html", {"business": business, "product": product})
 
@@ -168,7 +168,7 @@ def business_settings(request):
         business.website = request.POST.get("website", business.website)
         business.free_reward_threshold = int(request.POST.get("free_reward_threshold", business.free_reward_threshold) or business.free_reward_threshold)
         business.save()
-        messages.success(request, "تنظیمات ذخیره شد")
+        messages.success(request, "Settings saved")
         return redirect("business_settings")
     return render(request, "partners/business_settings.html", {"business": business})
 
