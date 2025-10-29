@@ -14,37 +14,49 @@ def partner_login(request):
     if request.method == "POST":
         phone = request.POST.get("phone", "").strip()
         password = request.POST.get("password", "")
-        # Authenticate using username or phone stored in profile
-        user = None
-        if phone:
-            from django.contrib.auth.models import User
-            from accounts.models import Profile
-            profile = Profile.objects.filter(phone=phone).select_related("user").first()
-            if profile:
-                user = authenticate(request, username=profile.user.username, password=password)
-        if not user:
-            messages.error(request, "شماره تلفن یا رمز عبور نادرست است")
-            return render(request, "partners/login.html")
-        login(request, user)
-        return redirect("dashboard")
+        
+        if phone and password:
+            # Try to find business by phone
+            try:
+                business = Business.objects.get(phone=phone)
+                if business.check_password(password):
+                    # Login as business owner
+                    login(request, business.owner)
+                    return redirect("dashboard")
+                else:
+                    messages.error(request, "Invalid phone number or password")
+            except Business.DoesNotExist:
+                messages.error(request, "Invalid phone number or password")
+        else:
+            messages.error(request, "Please enter both phone number and password")
+    
     return render(request, "partners/login.html")
 
 
 @login_required
 def dashboard(request):
-    # Show data for the owner's business
-    business = Business.objects.filter(owner=request.user).first()
-    orders_count = Order.objects.filter(business=business).count() if business else 0
-    products_count = Product.objects.filter(business=business).count() if business else 0
-    reviews_count = Review.objects.filter(business=business).count() if business else 0
-    campaigns_count = Campaign.objects.filter(business=business).count() if business else 0
-    return render(request, "partners/dashboard.html", {
-        "business": business,
-        "orders_count": orders_count,
-        "products_count": products_count,
-        "reviews_count": reviews_count,
-        "campaigns_count": campaigns_count,
-    })
+    try:
+        # Show data for the owner's business
+        business = Business.objects.filter(owner=request.user).first()
+        orders_count = Order.objects.filter(business=business).count() if business else 0
+        products_count = Product.objects.filter(business=business).count() if business else 0
+        reviews_count = Review.objects.filter(business=business).count() if business else 0
+        campaigns_count = Campaign.objects.filter(business=business).count() if business else 0
+        
+        context = {
+            "business": business,
+            "orders_count": orders_count,
+            "products_count": products_count,
+            "reviews_count": reviews_count,
+            "campaigns_count": campaigns_count,
+        }
+        
+        return render(request, "partners/dashboard.html", context)
+    except Exception as e:
+        # Debug information
+        import traceback
+        from django.http import HttpResponse
+        return HttpResponse(f"Error: {str(e)}<br>Traceback: {traceback.format_exc()}<br>User: {request.user}<br>Business: {Business.objects.filter(owner=request.user).first()}")
 
 
 @login_required

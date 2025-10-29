@@ -1,11 +1,53 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 from accounts.models import Profile
 from accounts.permissions import IsSuperUserRole
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
+from loyalty.models import Business
+
+
+def admin_login(request):
+    """
+    Admin login page with phone and password or superuser credentials
+    """
+    if request.user.is_authenticated:
+        return redirect('admin_dashboard')
+    
+    if request.method == 'POST':
+        phone = request.POST.get('phone')
+        password = request.POST.get('password')
+        username = request.POST.get('username')  # For superuser login
+        
+        if phone and password:
+            # Try to find business by phone
+            try:
+                business = Business.objects.get(phone=phone)
+                if business.check_password(password):
+                    # Login as business owner
+                    login(request, business.owner)
+                    return redirect('admin_dashboard')
+                else:
+                    messages.error(request, 'Invalid phone number or password')
+            except Business.DoesNotExist:
+                messages.error(request, 'Invalid phone number or password')
+        elif username and password:
+            # Try superuser login
+            user = authenticate(request, username=username, password=password)
+            if user and user.is_superuser:
+                login(request, user)
+                return redirect('admin_dashboard')
+            else:
+                messages.error(request, 'Invalid superuser credentials')
+        else:
+            messages.error(request, 'Please enter credentials')
+    
+    return render(request, 'admin/login.html')
 
 
 @login_required
