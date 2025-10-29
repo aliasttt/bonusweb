@@ -1,71 +1,38 @@
 # Deployment Guide for Scalingo
 
-## Prerequisites
-- Scalingo account
-- Git repository with your code
-
 ## Environment Variables
+
 Set these environment variables in your Scalingo dashboard:
 
-```
-DJANGO_SECRET_KEY=your-secret-key-here
-DJANGO_DEBUG=0
-ALLOWED_HOSTS=your-app.scalingo.io
-STRIPE_SECRET_KEY=your-stripe-secret-key
-FIREBASE_CREDENTIALS_FILE=path/to/firebase-credentials.json
-AUDIT_LOGGING_ENABLED=1
-```
+### Required Variables:
+- `DJANGO_SECRET_KEY`: Your Django secret key
+- `ALLOWED_HOSTS`: Your app domain (e.g., `your-app-name.scalingo.io`)
+
+### Optional Variables:
+- `DJANGO_DEBUG`: Set to `0` for production
+- `STRIPE_SECRET_KEY`: For payment processing
+- `FIREBASE_CREDENTIALS_FILE`: For Firebase integration
+- `AUDIT_LOGGING_ENABLED`: Set to `1` to enable audit logging
 
 ## Database
-The app will automatically use PostgreSQL addon if available, otherwise it will use SQLite.
+
+The app automatically uses PostgreSQL when `DATABASE_URL` is set (which Scalingo does automatically).
 
 ## Static Files
-Static files are handled by WhiteNoise and will be automatically collected during deployment.
 
-## Deployment Steps
+Static files are handled by WhiteNoise and collected during deployment.
 
-1. **Connect to Scalingo:**
-   ```bash
-   scalingo login
-   ```
+## Build Process
 
-2. **Create a new app:**
-   ```bash
-   scalingo create your-app-name
-   ```
+The build process:
+1. Installs dependencies from `requirements.txt`
+2. Collects static files
+3. Runs database migrations
 
-3. **Add PostgreSQL addon:**
-   ```bash
-   scalingo addons-add postgresql:postgresql-sandbox
-   ```
+## Files Included
 
-4. **Set environment variables:**
-   ```bash
-   scalingo env-set DJANGO_SECRET_KEY=your-secret-key
-   scalingo env-set DJANGO_DEBUG=0
-   scalingo env-set ALLOWED_HOSTS=your-app.scalingo.io
-   ```
-
-5. **Deploy:**
-   ```bash
-   git push scalingo main
-   ```
-
-## Troubleshooting
-
-### Static Files Error
-If you get static files error, make sure:
-- `static/` directory exists
-- `whitenoise` is in INSTALLED_APPS
-- `whitenoise.middleware.WhiteNoiseMiddleware` is in MIDDLEWARE
-
-### Database Error
-If you get database error:
-- Check if PostgreSQL addon is installed
-- Verify DATABASE_URL environment variable
-
-### Build Error
-If build fails:
-- Check Python version in runtime.txt
-- Verify all dependencies in requirements.txt
-- Check for any syntax errors in settings.py
+- `Procfile`: Defines how to start the app
+- `runtime.txt`: Specifies Python version
+- `scalingo.json`: Scalingo configuration
+- `build.sh`: Build script
+- `requirements.txt`: Python dependencies
