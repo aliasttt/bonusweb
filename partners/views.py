@@ -20,8 +20,9 @@ def partner_login(request):
             try:
                 business = Business.objects.get(phone=phone)
                 if business.check_password(password):
-                    # Login as business owner
+                    # Login as business owner and remember which business was chosen
                     login(request, business.owner)
+                    request.session["active_business_id"] = business.id
                     return redirect("dashboard")
                 else:
                     messages.error(request, "Invalid phone number or password")
@@ -33,11 +34,23 @@ def partner_login(request):
     return render(request, "partners/login.html")
 
 
+def _get_active_business(request):
+    """Return the currently active business for this session/user.
+
+    If a business was selected during login, we use that. Otherwise we fall
+    back to the first business owned by the logged-in user.
+    """
+    business_id = request.session.get("active_business_id")
+    if business_id:
+        return Business.objects.filter(id=business_id, owner=request.user).first()
+    return Business.objects.filter(owner=request.user).first()
+
+
 @login_required
 def dashboard(request):
     try:
-        # Show data for the owner's business
-        business = Business.objects.filter(owner=request.user).first()
+        # Show data for the active business tied to this session/user
+        business = _get_active_business(request)
         
         # Safely count with error handling
         orders_count = 0
@@ -79,24 +92,26 @@ def dashboard(request):
         # Debug information
         import traceback
         from django.http import HttpResponse
-        return HttpResponse(f"Error: {str(e)}<br>Traceback: {traceback.format_exc()}<br>User: {request.user}<br>Business: {Business.objects.filter(owner=request.user).first()}")
+        return HttpResponse(f"Error: {str(e)}<br>Traceback: {traceback.format_exc()}<br>User: {request.user}<br>Business: {_get_active_business(request)}")
 
 
 @login_required
 def qr_generator(request):
-    business = Business.objects.filter(owner=request.user).first()
+    business = _get_active_business(request)
     return render(request, "partners/qr_generator.html", {"business": business})
 
 
 @login_required
 def partner_logout(request):
+    # Clear active business selection and logout
+    request.session.pop("active_business_id", None)
     logout(request)
     return redirect("partner_login")
 
 
 @login_required
 def products_list(request):
-    business = Business.objects.filter(owner=request.user).first()
+    business = _get_active_business(request)
     products = Product.objects.filter(business=business).order_by("-id") if business else []
     return render(request, "partners/products_list.html", {"business": business, "products": products})
 
@@ -104,7 +119,7 @@ def products_list(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def product_create(request):
-    business = Business.objects.filter(owner=request.user).first()
+    business = _get_active_business(request)
     if request.method == "POST" and business:
         title = request.POST.get("title", "").strip()
         price_cents = int(request.POST.get("price_cents", "0") or 0)
@@ -119,7 +134,7 @@ def product_create(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def product_edit(request, pk: int):
-    business = Business.objects.filter(owner=request.user).first()
+    business = _get_active_business(request)
     product = Product.objects.filter(id=pk, business=business).first()
     if not product:
         messages.error(request, "Item not found")
@@ -138,21 +153,21 @@ def product_edit(request, pk: int):
 
 @login_required
 def orders_list(request):
-    business = Business.objects.filter(owner=request.user).first()
+    business = _get_active_business(request)
     orders = Order.objects.filter(business=business).select_related("user").order_by("-created_at") if business else []
     return render(request, "partners/orders_list.html", {"business": business, "orders": orders})
 
 
 @login_required
 def campaigns_list(request):
-    business = Business.objects.filter(owner=request.user).first()
+    business = _get_active_business(request)
     campaigns = Campaign.objects.filter(business=business).order_by("-created_at") if business else []
     return render(request, "partners/campaigns_list.html", {"business": business, "campaigns": campaigns})
 
 
 @login_required
 def reviews_list(request):
-    business = Business.objects.filter(owner=request.user).first()
+    business = _get_active_business(request)
     reviews = Review.objects.filter(business=business).select_related("customer", "customer__user").order_by("-created_at") if business else []
     return render(request, "partners/reviews_list.html", {"business": business, "reviews": reviews})
 
@@ -160,7 +175,7 @@ def reviews_list(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def business_settings(request):
-    business = Business.objects.filter(owner=request.user).first()
+    business = _get_active_business(request)
     if request.method == "POST" and business:
         business.name = request.POST.get("name", business.name)
         business.description = request.POST.get("description", business.description)
