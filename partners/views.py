@@ -98,7 +98,10 @@ def dashboard(request):
 @login_required
 def qr_generator(request):
     business = _get_active_business(request)
-    return render(request, "partners/qr_generator.html", {"business": business})
+    products = []
+    if business:
+        products = Product.objects.filter(business=business).order_by("-id")
+    return render(request, "partners/qr_generator.html", {"business": business, "products": products})
 
 
 @login_required

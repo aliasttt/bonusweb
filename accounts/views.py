@@ -17,23 +17,33 @@ class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        
-        # Log user registration activity
-        UserActivity.objects.create(
-            user=user,
-            activity_type=UserActivity.ActivityType.LOGIN,
-            description="User registered successfully",
-            ip_address=self.get_client_ip(request),
-            user_agent=request.META.get('HTTP_USER_AGENT', '')
-        )
-        
-        return Response({
-            "user": UserSerializer(user).data,
-            "profile": ProfileSerializer(user.profile).data,
-        }, status=status.HTTP_201_CREATED)
+        try:
+            serializer = RegisterSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+            
+            # Ensure profile exists (should be created by signal, but just in case)
+            profile, _ = Profile.objects.get_or_create(user=user)
+            
+            # Log user registration activity
+            try:
+                UserActivity.objects.create(
+                    user=user,
+                    activity_type=UserActivity.ActivityType.LOGIN,
+                    description="User registered successfully",
+                    ip_address=self.get_client_ip(request),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+            except Exception as e:
+                # Log activity creation failure but don't fail registration
+                pass
+            
+            return Response({
+                "user": UserSerializer(user).data,
+                "profile": ProfileSerializer(profile).data,
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def get_client_ip(self, request):
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')

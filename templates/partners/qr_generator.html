@@ -6,12 +6,27 @@
   <p class="mt-2 text-slate-600">Show this code to customers to scan.</p>
   <div class="mt-8 grid md:grid-cols-2 gap-6 items-center">
     <div>
-      <label class="text-sm text-slate-600">Business ID</label>
-      <input id="biz" class="mt-2 w-full px-3 py-2 border rounded-md" placeholder="1" value="{% if business %}{{ business.id }}{% endif %}" readonly style="color: #000000; background-color: #ffffff;" />
-      <p class="text-xs text-slate-500 mt-1">Your Business ID: {% if business %}{{ business.id }}{% else %}Not found{% endif %}</p>
-      <label class="mt-4 block text-sm text-slate-600">Points</label>
-      <input id="amt" class="mt-2 w-full px-3 py-2 border rounded-md" placeholder="1" value="1" style="color: #000000; background-color: #ffffff;" />
+      <div class="text-sm text-slate-600">Products (select one or more)</div>
+      <div class="mt-2 space-y-2 max-h-72 overflow-auto border rounded-md p-2 bg-white">
+        {% if products %}
+          {% for p in products %}
+          <label class="flex items-center gap-2 text-slate-800">
+            <input type="checkbox" class="prod" value="{{ p.id }}" data-points="{{ p.points_reward }}" />
+            <span class="flex-1">{{ p.title }}</span>
+            <span class="text-xs text-slate-500">{{ p.points_reward }} pts</span>
+          </label>
+          {% endfor %}
+        {% else %}
+          <div class="text-slate-500 text-sm">No products yet.</div>
+        {% endif %}
+      </div>
+
+      <label class="mt-4 block text-sm text-slate-600">Total points</label>
+      <input id="amt" class="mt-2 w-full px-3 py-2 border rounded-md" value="0" readonly style="color: #000000; background-color: #ffffff;" />
+
       <button onclick="gen()" class="mt-4 px-4 py-2 bg-primary text-white rounded-md">Generate</button>
+      <p class="text-xs text-slate-500 mt-2">Business: {% if business %}#{{ business.id }} - {{ business.name }}{% else %}Not found{% endif %}</p>
+      <input type="hidden" id="biz" value="{% if business %}{{ business.id }}{% endif %}" />
     </div>
     <div class="p-6 border rounded-2xl">
       <img id="qr" class="w-64 h-64 mx-auto" />
@@ -20,10 +35,19 @@
   </div>
 </div>
 <script>
+  function recalc(){
+    const checks = Array.from(document.querySelectorAll('.prod'));
+    const selected = checks.filter(c => c.checked);
+    const total = selected.reduce((s, c) => s + parseInt(c.dataset.points || '0'), 0);
+    document.getElementById('amt').value = total;
+    return selected.map(c => parseInt(c.value));
+  }
+
   function gen(){
-    const biz = document.getElementById('biz').value || '1';
-    const amt = document.getElementById('amt').value || '1';
-    const payload = JSON.stringify({ business_id: parseInt(biz), amount: parseInt(amt) });
+    const biz = parseInt(document.getElementById('biz').value || '0');
+    const productIds = recalc();
+    const total = parseInt(document.getElementById('amt').value || '0');
+    const payload = JSON.stringify({ business_id: biz, product_ids: productIds, total_points: total });
     document.getElementById('payload').innerText = payload;
     const dataUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=' + encodeURIComponent(payload);
     document.getElementById('qr').src = dataUrl;
@@ -48,6 +72,9 @@
         this.style.backgroundColor = '#ffffff';
       });
     });
+
+    // Hook product selection changes to recalc points automatically
+    document.querySelectorAll('.prod').forEach(cb => cb.addEventListener('change', recalc));
   });
 </script>
 {% endblock %}
