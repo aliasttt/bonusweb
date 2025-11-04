@@ -7,24 +7,26 @@
     <a href="/partners/products/new/" class="px-4 py-2 rounded-md bg-primary text-white">Add Item</a>
   </div>
 
-  <div class="mt-6 grid md:grid-cols-3 gap-6">
+  <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
     {% for p in products %}
-      <div class="p-4 rounded-2xl border hover:shadow-lg transition">
+      <div class="p-4 rounded-2xl border hover:shadow-lg transition w-full">
         {% if p.image %}
-          <img src="{{ p.image.url }}" class="w-full h-40 object-cover rounded-xl" />
+          <div class="w-full h-48 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden">
+            <img src="{{ p.image.url }}" class="max-w-full max-h-full object-contain rounded-xl" />
+          </div>
         {% else %}
-          <div class="w-full h-40 rounded-xl bg-slate-100"></div>
+          <div class="w-full h-48 rounded-xl bg-slate-100"></div>
         {% endif %}
         <div class="mt-4 flex items-center justify-between">
-          <div>
-            <div class="font-semibold">{{ p.title }}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold truncate">{{ p.title }}</div>
             <div class="text-sm text-slate-500">Price: {{ p.price_cents }} cents • Points: {{ p.points_reward }}</div>
           </div>
-          <a href="/partners/products/{{ p.id }}/edit/" class="px-3 py-2 rounded-md border">Edit</a>
+          <a href="/partners/products/{{ p.id }}/edit/" class="px-3 py-2 rounded-md border flex-shrink-0 ml-2">Edit</a>
         </div>
       </div>
     {% empty %}
-      <div class="col-span-3 text-center text-slate-500">No items have been registered yet.</div>
+      <div class="col-span-2 sm:col-span-3 text-center text-slate-500">No items have been registered yet.</div>
     {% endfor %}
   </div>
 </div>
