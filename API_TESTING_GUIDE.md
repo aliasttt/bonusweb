@@ -131,6 +131,15 @@ curl -X POST http://127.0.0.1:8000/api/accounts/token/refresh/ \
   }'
 ```
 
+**پاسخ (Response) - 200 OK**:
+```json
+{
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+}
+```
+
+**⚠️ نکته**: این endpoint فقط `access` token جدید برمی‌گرداند (نه `refresh` token).
+
 ---
 
 #### GET `/api/accounts/me/` - دریافت اطلاعات کاربر فعلی
@@ -832,7 +841,15 @@ curl -X POST http://127.0.0.1:8000/api/auth/token/ \
   }'
 ```
 
-**نکته**: این endpoint مشابه `/api/accounts/token/` است اما در مسیر `/api/auth/token/` قرار دارد.
+**پاسخ (Response) - 200 OK**:
+```json
+{
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+}
+```
+
+**⚠️ نکته**: این endpoint مشابه `/api/accounts/token/` است اما در مسیر `/api/auth/token/` قرار دارد. هر دو endpoint توکن `access` و `refresh` برمی‌گردانند.
 
 ---
 
@@ -856,6 +873,15 @@ curl -X POST http://127.0.0.1:8000/api/auth/refresh/ \
     "refresh": "YOUR_REFRESH_TOKEN_HERE"
   }'
 ```
+
+**پاسخ (Response) - 200 OK**:
+```json
+{
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+}
+```
+
+**⚠️ نکته**: این endpoint فقط `access` token جدید برمی‌گرداند (نه `refresh` token).
 
 ---
 
