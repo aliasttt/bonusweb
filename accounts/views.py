@@ -7,6 +7,7 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Profile, UserActivity, Business
 from .serializers import ProfileSerializer, RegisterSerializer, UserSerializer, UserActivitySerializer, BusinessSerializer
@@ -38,7 +39,12 @@ class RegisterView(APIView):
                 # Log activity creation failure but don't fail registration
                 pass
             
+            # Generate JWT tokens for the newly registered user
+            refresh = RefreshToken.for_user(user)
+            
             return Response({
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
                 "user": UserSerializer(user).data,
                 "profile": ProfileSerializer(profile).data,
             }, status=status.HTTP_201_CREATED)
