@@ -27,7 +27,9 @@ urlpatterns = [
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve media files
+# In production, you should configure your web server (nginx, etc.) to serve media files
+# But we'll serve them here for development and as a fallback
+urlpatterns += static(settings.MEDIA_URL, document_root=str(settings.MEDIA_ROOT))
 
 
