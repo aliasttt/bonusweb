@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -14,7 +14,8 @@ router.register(r'activities', UserActivityViewSet, basename='user-activities')
 router.register(r'businesses', BusinessManagementViewSet, basename='business-management')
 
 urlpatterns = [
-    path("sendMobile/", SendMobileView.as_view(), name="send_mobile"),
+    # Case-insensitive URL pattern for sendMobile (supports both with and without trailing slash)
+    re_path(r'^[sS]end[mM]obile/?$', SendMobileView.as_view(), name="send_mobile"),
     path("login/", LoginView.as_view(), name="login"),
     path("register/", RegisterView.as_view(), name="register"),
     path("me/", MeView.as_view(), name="me"),
