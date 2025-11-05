@@ -9,10 +9,22 @@ urlpatterns = [
     path("", include("marketing.urls")),
     path("partners/", include("partners.urls")),
     path("super-admin/", include("admin.urls")),
+    
+    # API v1 - Versioned API routes (recommended)
+    path("api/v1/", include("loyalty.urls")),
+    path("api/v1/accounts/", include("accounts.urls")),
+    path("api/v1/campaigns/", include("campaigns.urls")),
+    path("api/v1/qr/", include("qr.urls")),
+    path("api/v1/rewards/", include("rewards.urls")),
+    path("api/v1/reviews/", include("reviews.urls")),
+    path("api/v1/payments/", include("payments.urls")),
+    path("api/v1/analytics/", include("analytics.urls")),
+    path("api/v1/notifications/", include("notifications.urls")),
+    path("api/v1/security/", include("securityapp.urls")),
+    
+    # Legacy API routes (backward compatibility - without versioning)
     path("api/", include("loyalty.urls")),
-    # Accounts and RBAC
     path("api/accounts/", include("accounts.urls")),
-    # Campaigns / QR / Rewards / Reviews / Payments / Analytics / Notifications
     path("api/campaigns/", include("campaigns.urls")),
     path("api/qr/", include("qr.urls")),
     path("api/rewards/", include("rewards.urls")),
@@ -21,7 +33,13 @@ urlpatterns = [
     path("api/analytics/", include("analytics.urls")),
     path("api/notifications/", include("notifications.urls")),
     path("api/security/", include("securityapp.urls")),
-    # API schema and docs
+    
+    # API schema and docs (versioned)
+    path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema-v1"),
+    path("api/v1/docs/", SpectacularSwaggerView.as_view(url_name="schema-v1"), name="swagger-ui-v1"),
+    path("api/v1/redoc/", SpectacularRedocView.as_view(url_name="schema-v1"), name="redoc-v1"),
+    
+    # Legacy API schema and docs (backward compatibility)
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
