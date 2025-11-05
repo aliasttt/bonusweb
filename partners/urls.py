@@ -14,6 +14,9 @@ urlpatterns = [
     path("campaigns/", views.campaigns_list, name="campaigns_list"),
     path("reviews/", views.reviews_list, name="reviews_list"),
     path("settings/", views.business_settings, name="business_settings"),
+    # QR Code verification endpoints
+    path("qr/send-verification-code/", views.send_verification_code, name="send_verification_code"),
+    path("qr/verify-code/", views.verify_code_and_generate_qr, name="verify_code_and_generate_qr"),
 ]
 
 

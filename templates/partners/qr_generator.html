@@ -8,66 +8,116 @@
     <p class="mt-2 text-slate-400">Show this code to customers to scan.</p>
   </div>
   
-  <div class="mt-8 grid md:grid-cols-2 gap-8 items-start">
-    <div>
-      <div class="text-sm font-semibold text-slate-300 mb-3">Products (select one or more)</div>
-      <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-auto">
-        {% if products %}
-          {% for p in products %}
-          <div class="product-card cursor-pointer p-3 rounded-xl border-2 border-slate-700 bg-slate-800 hover:border-slate-600 transition-all" 
-               data-product-id="{{ p.id }}" 
-               data-points="{{ p.points_reward }}"
-               data-selected="false">
-            <input type="checkbox" class="prod hidden" value="{{ p.id }}" data-points="{{ p.points_reward }}" />
-            <div class="w-full h-32 rounded-lg bg-slate-700 flex items-center justify-center overflow-hidden mb-2">
-              {% if p.image %}
-                <img src="{{ p.image.url }}" class="max-w-full max-h-full object-contain rounded-lg" alt="{{ p.title }}" />
-              {% else %}
-                <div class="text-slate-500 text-xs">No Image</div>
-              {% endif %}
-            </div>
-            <div class="text-center">
-              <div class="font-semibold text-white text-sm truncate">{{ p.title }}</div>
-              <div class="text-xs text-slate-400 mt-1">{{ p.points_reward }} pts</div>
-            </div>
+  <div id="main-content" class="mt-8">
+
+    <!-- Phone and Verification Section - Visible initially -->
+    <div id="auth-section" class="flex justify-center">
+      <div class="w-full max-w-md p-4 rounded-xl bg-slate-800 border border-slate-700">
+        <!-- Phone Number Input - Step 1 -->
+        <div id="phone-section">
+          <label class="block text-sm font-semibold text-slate-300 mb-2">Phone Number</label>
+          <div class="flex gap-2">
+            <input type="tel" id="phone" placeholder="09123456789" class="flex-1 px-4 py-3 border border-slate-600 rounded-lg bg-slate-900 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500" />
+            <button onclick="sendVerificationCode()" id="send-code-btn" class="px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl">
+              Send Code
+            </button>
           </div>
-          {% endfor %}
-        {% else %}
-          <div class="col-span-2 text-slate-500 text-sm text-center py-8">No products yet.</div>
-        {% endif %}
+          <p id="phone-error" class="text-xs text-red-400 mt-1 hidden"></p>
+        </div>
+
+        <!-- Verification Code Input - Step 2 -->
+        <div id="verification-section" class="hidden mt-4">
+          <label class="block text-sm font-semibold text-slate-300 mb-2">Verification Code</label>
+          <div class="flex gap-2">
+            <input type="text" id="verification-code" placeholder="Enter 6-digit code" maxlength="6" class="flex-1 px-4 py-3 border border-slate-600 rounded-lg bg-slate-900 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 text-center text-lg tracking-widest" />
+            <button onclick="verifyAndGenerate()" id="verify-btn" class="px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl">
+              Verify
+            </button>
+          </div>
+          <div class="flex items-center justify-between mt-2">
+            <div class="flex-1">
+              <p id="code-error" class="text-xs text-red-400 hidden"></p>
+              <p id="code-info" class="text-xs text-slate-400"></p>
+            </div>
+            <button onclick="resendVerificationCode()" id="resend-btn" class="text-xs text-purple-400 hover:text-purple-300 underline">
+              Resend Code
+            </button>
+          </div>
+        </div>
       </div>
     </div>
     
-    <div>
-      <div class="p-6 rounded-2xl bg-slate-800 border border-slate-700">
-        <div class="text-center">
-          <div class="w-full max-w-xs mx-auto p-4 bg-white rounded-xl">
-            <img id="qr" class="w-full h-auto mx-auto" style="display: none;" />
-            <div id="qr-placeholder" class="py-16 text-slate-400 text-sm">
-              QR Code will appear here
+    <!-- Products and QR Code Grid - Hidden initially -->
+    <div id="main-grid" class="hidden">
+      <div class="grid md:grid-cols-2 gap-8 items-start">
+      <!-- Products Section -->
+      <div id="products-section">
+        <div class="text-sm font-semibold text-slate-300 mb-3">Products (select one or more)</div>
+        <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-auto">
+        {% if products %}
+          {% for p in products %}
+            <div class="product-card cursor-pointer p-3 rounded-xl border-2 border-slate-700 bg-slate-800 hover:border-slate-600 transition-all" 
+                 data-product-id="{{ p.id }}" 
+                 data-points="{{ p.points_reward }}"
+                 data-selected="false">
+              <input type="checkbox" class="prod hidden" value="{{ p.id }}" data-points="{{ p.points_reward }}" />
+              <div class="w-full h-32 rounded-lg bg-slate-700 flex items-center justify-center overflow-hidden mb-2">
+                {% if p.image %}
+                  <img src="{{ p.image.url }}" class="max-w-full max-h-full object-contain rounded-lg" alt="{{ p.title }}" />
+                {% else %}
+                  <div class="text-slate-500 text-xs">No Image</div>
+                {% endif %}
+              </div>
+              <div class="text-center">
+                <div class="font-semibold text-white text-sm truncate">{{ p.title }}</div>
+                <div class="text-xs text-slate-400 mt-1">{{ p.points_reward }} pts</div>
+              </div>
             </div>
-          </div>
-          <p class="mt-4 text-center text-xs text-slate-400 font-mono break-all" id="payload"></p>
+          {% endfor %}
+        {% else %}
+            <div class="col-span-2 text-slate-500 text-sm text-center py-8">No products yet.</div>
+        {% endif %}
         </div>
       </div>
 
-      <div class="mt-6 p-4 rounded-xl bg-slate-800 border border-slate-700">
-        <label class="block text-sm font-semibold text-slate-300 mb-2">Total points</label>
-        <input id="amt" class="w-full px-4 py-3 border border-slate-600 rounded-lg bg-slate-900 text-white text-lg font-semibold text-center" value="0" readonly />
+      <!-- QR Code Section -->
+      <div id="qr-section">
+        <div class="p-6 rounded-2xl bg-slate-800 border border-slate-700">
+          <div class="text-center">
+            <div class="w-full max-w-xs mx-auto p-4 bg-white rounded-xl">
+              <img id="qr" class="w-full h-auto mx-auto" style="display: none;" />
+              <div id="qr-placeholder" class="py-16 text-slate-400 text-sm">
+                QR Code will appear here
+              </div>
+            </div>
+            <p class="mt-4 text-center text-xs text-slate-400 font-mono break-all" id="payload"></p>
+          </div>
+        </div>
 
-        <button onclick="gen()" class="mt-4 w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl">
-          Generate QR Code
-        </button>
-        
-        <p class="text-xs text-slate-400 mt-3 text-center">
-          Business: {% if business %}#{{ business.id }} - {{ business.name }}{% else %}Not found{% endif %}
-        </p>
-        <input type="hidden" id="biz" value="{% if business %}{{ business.id }}{% endif %}" />
+        <!-- Total Points Section -->
+        <div id="total-points-section" class="mt-6 p-4 rounded-xl bg-slate-800 border border-slate-700">
+          <label class="block text-sm font-semibold text-slate-300 mb-2">Total points</label>
+          <input id="amt" class="w-full px-4 py-3 border border-slate-600 rounded-lg bg-slate-900 text-white text-lg font-semibold text-center" value="0" readonly />
+
+          <!-- Generate QR Code Button -->
+          <button onclick="generateQRCode()" id="generate-btn" class="mt-4 w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl">
+            Generate QR Code
+          </button>
+          
+          <p class="text-xs text-slate-400 mt-3 text-center">
+            Business: {% if business %}#{{ business.id }} - {{ business.name }}{% else %}Not found{% endif %}
+          </p>
+      <input type="hidden" id="biz" value="{% if business %}{{ business.id }}{% endif %}" />
+    </div>
+      </div>
       </div>
     </div>
   </div>
 </div>
 <script>
+  let currentPhone = '';
+  let verificationCodeSent = false;
+
   function recalc(){
     const checks = Array.from(document.querySelectorAll('.prod'));
     const selected = checks.filter(c => c.checked);
@@ -76,7 +126,221 @@
     return selected.map(c => parseInt(c.value));
   }
 
-  function gen(){
+  function showError(elementId, message) {
+    const errorEl = document.getElementById(elementId);
+    errorEl.textContent = message;
+    errorEl.classList.remove('hidden');
+  }
+
+  function hideError(elementId) {
+    const errorEl = document.getElementById(elementId);
+    errorEl.classList.add('hidden');
+  }
+
+  async function sendVerificationCode(phoneNumber = null) {
+    const phone = phoneNumber || document.getElementById('phone').value.trim();
+    const phoneError = document.getElementById('phone-error');
+    const sendBtn = document.getElementById('send-code-btn');
+    const resendBtn = document.getElementById('resend-btn');
+    
+    if (!phone) {
+      showError('phone-error', 'Please enter phone number');
+      return;
+    }
+
+    // Basic phone validation
+    if (phone.length < 10) {
+      showError('phone-error', 'Please enter a valid phone number');
+      return;
+    }
+
+    hideError('phone-error');
+    hideError('code-error');
+    
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending...';
+    }
+    if (resendBtn) {
+      resendBtn.disabled = true;
+      resendBtn.textContent = 'Sending...';
+    }
+
+    try {
+      const response = await fetch('/partners/qr/send-verification-code/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ phone: phone })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        currentPhone = phone;
+        verificationCodeSent = true;
+        
+        // Hide phone section and show verification section
+        if (document.getElementById('phone-section')) {
+          document.getElementById('phone-section').classList.add('hidden');
+        }
+        document.getElementById('verification-section').classList.remove('hidden');
+        document.getElementById('verification-code').value = '';
+        document.getElementById('verification-code').focus();
+        
+        // Show code in development (remove in production)
+        if (data.code) {
+          document.getElementById('code-info').textContent = `Code sent! (Dev: ${data.code})`;
+        } else {
+          document.getElementById('code-info').textContent = 'Code sent! Check your phone.';
+        }
+        
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send Code';
+        }
+        if (resendBtn) {
+          resendBtn.disabled = false;
+          resendBtn.textContent = 'Resend Code';
+        }
+      } else {
+        showError('phone-error', data.error || 'Failed to send verification code');
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send Code';
+        }
+        if (resendBtn) {
+          resendBtn.disabled = false;
+          resendBtn.textContent = 'Resend Code';
+        }
+      }
+    } catch (error) {
+      showError('phone-error', 'Network error. Please try again.');
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Code';
+      }
+      if (resendBtn) {
+        resendBtn.disabled = false;
+        resendBtn.textContent = 'Resend Code';
+      }
+    }
+  }
+
+  async function resendVerificationCode() {
+    if (!currentPhone) {
+      // If no current phone, show phone section again
+      document.getElementById('phone-section').classList.remove('hidden');
+      document.getElementById('verification-section').classList.add('hidden');
+      return;
+    }
+    await sendVerificationCode(currentPhone);
+  }
+
+  async function verifyAndGenerate() {
+    const phone = currentPhone || document.getElementById('phone').value.trim();
+    const code = document.getElementById('verification-code').value.trim();
+    const biz = parseInt(document.getElementById('biz').value || '0');
+    const verifyBtn = document.getElementById('verify-btn');
+    
+    // Validation - only check phone and code, NOT products
+    if (!phone) {
+      showError('phone-error', 'Please enter phone number');
+      return;
+    }
+
+    if (!verificationCodeSent) {
+      showError('phone-error', 'Please send verification code first');
+      return;
+    }
+
+    if (!code || code.length !== 6) {
+      showError('code-error', 'Please enter 6-digit verification code');
+      return;
+    }
+
+    hideError('phone-error');
+    hideError('code-error');
+    
+    if (verifyBtn) {
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying...';
+    }
+
+    try {
+      // First verify the code without products
+      const response = await fetch('/partners/qr/verify-code/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+          phone: phone,
+          code: code,
+          product_ids: [], // Empty array for verification only
+          business_id: biz
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Hide auth section (phone and verification)
+        document.getElementById('auth-section').classList.add('hidden');
+        
+        // Show main grid with products, QR code, and total points sections
+        document.getElementById('main-grid').classList.remove('hidden');
+        
+        // Store verified customer data (without products yet)
+        window.verifiedCustomerData = {
+          phone: phone,
+          customer_id: data.customer_id,
+          is_new_user: data.is_new_user
+        };
+        
+        if (verifyBtn) {
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = 'Verify';
+        }
+      } else {
+        showError('code-error', data.error || 'Invalid verification code');
+        // Show verification section again if code is wrong
+        document.getElementById('verification-section').classList.remove('hidden');
+        if (verifyBtn) {
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = 'Verify';
+        }
+      }
+    } catch (error) {
+      showError('code-error', 'Network error. Please try again.');
+      // Show verification section again on error
+      document.getElementById('verification-section').classList.remove('hidden');
+      if (verifyBtn) {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify';
+      }
+    }
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  async function generateQRCode() {
     const biz = parseInt(document.getElementById('biz').value || '0');
     const productIds = recalc();
     const total = parseInt(document.getElementById('amt').value || '0');
@@ -86,7 +350,24 @@
       return;
     }
     
-    const payload = JSON.stringify({ business_id: biz, product_ids: productIds, total_points: total });
+    // Use verified customer data
+    const phone = window.verifiedCustomerData?.phone || currentPhone || '';
+    const customerId = window.verifiedCustomerData?.customer_id || null;
+    
+    if (!phone || !customerId) {
+      alert('Please verify phone number first!');
+      return;
+    }
+    
+    // Generate QR code payload with selected products
+    const payload = JSON.stringify({
+      business_id: biz,
+      customer_id: customerId,
+      phone: phone,
+      product_ids: productIds,
+      total_points: total
+    });
+    
     document.getElementById('payload').innerText = payload;
     const dataUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=' + encodeURIComponent(payload);
     document.getElementById('qr').src = dataUrl;
@@ -121,6 +402,26 @@
     // Hook product selection changes to recalc points automatically
     document.querySelectorAll('.prod').forEach(cb => {
       cb.addEventListener('change', recalc);
+    });
+
+    // Allow Enter key to submit verification code
+    document.getElementById('verification-code').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        verifyAndGenerate();
+      }
+    });
+
+    // Allow Enter key to submit
+    document.getElementById('phone').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendVerificationCode();
+      }
+    });
+
+    document.getElementById('verification-code').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        verifyAndGenerate();
+      }
     });
   });
 </script>
