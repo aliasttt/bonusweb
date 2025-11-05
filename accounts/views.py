@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.contrib.auth.models import User
 from django.db.models import Count, Q
 from django.utils import timezone
+from django.shortcuts import render
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -14,7 +15,87 @@ from .serializers import ProfileSerializer, RegisterSerializer, UserSerializer, 
 from .permissions import IsSuperUserRole, IsAdminRole, CanManageUsers, IsOwnerOrSuperUser
 
 
+class LoginView(APIView):
+    """
+    Login endpoint - authenticates user with phone number and password
+    Returns JWT tokens on success
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        number = request.data.get('number', '').strip()
+        password = request.data.get('password', '')
+        
+        if not number or not password:
+            return Response({
+                'error': 'Phone number and password are required',
+                'detail': 'Please provide both phone number and password'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Find user by phone number
+        try:
+            profile = Profile.objects.get(phone=number)
+            user = profile.user
+            
+            # Check password
+            if not user.check_password(password):
+                return Response({
+                    'error': 'Invalid credentials',
+                    'detail': 'Phone number or password is incorrect'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
+            # Check if user is active
+            if not user.is_active or not profile.is_active:
+                return Response({
+                    'error': 'Account disabled',
+                    'detail': 'Your account has been disabled'
+                }, status=status.HTTP_403_FORBIDDEN)
+            
+            # Update activity
+            profile.update_activity(ip_address=self.get_client_ip(request))
+            
+            # Log login activity
+            try:
+                UserActivity.objects.create(
+                    user=user,
+                    activity_type=UserActivity.ActivityType.LOGIN,
+                    description="User logged in successfully",
+                    ip_address=self.get_client_ip(request),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+            except Exception:
+                pass
+            
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': UserSerializer(user).data,
+                'profile': ProfileSerializer(profile).data,
+            }, status=status.HTTP_200_OK)
+            
+        except Profile.DoesNotExist:
+            return Response({
+                'error': 'User not found',
+                'detail': 'No account found with this phone number'
+            }, status=status.HTTP_404_NOT_FOUND)
+    
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+
 class RegisterView(APIView):
+    """
+    Register endpoint - creates new user with phone number, password, and interests
+    Returns JWT tokens on success
+    """
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -319,14 +400,39 @@ class DashboardStatsView(APIView):
 
 class SendMobileView(APIView):
     """
-    Send mobile endpoint that returns 201 status code
+    Send mobile endpoint - checks if phone number exists
+    POST /api/accounts/sendMobile/
+    Body: {"number": "09123456789"}
+    
+    Returns:
+    - 200: User exists (go to login)
+    - 201: User doesn't exist (go to register)
+    - 400: Missing phone number
     """
     permission_classes = [permissions.AllowAny]
     
     def post(self, request):
-        mobile = request.data.get('mobile', '')
+        number = request.data.get('number', '').strip()
         
-        return Response({
-            'message': 'Mobile sent successfully',
-            'mobile': mobile
-        }, status=status.HTTP_201_CREATED)
+        if not number:
+            return Response({
+                'error': 'Phone number is required',
+                'detail': 'Please provide a phone number'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if user with this phone number exists
+        try:
+            profile = Profile.objects.get(phone=number)
+            # User exists - return 200 (go to login)
+            return Response({
+                'message': 'User found',
+                'exists': True,
+                'phone': number
+            }, status=status.HTTP_200_OK)
+        except Profile.DoesNotExist:
+            # User doesn't exist - return 201 (go to register)
+            return Response({
+                'message': 'User not found',
+                'exists': False,
+                'phone': number
+            }, status=status.HTTP_201_CREATED)
