@@ -315,3 +315,18 @@ class DashboardStatsView(APIView):
                 'total': float(total_revenue)
             }
         })
+
+
+class SendMobileView(APIView):
+    """
+    Send mobile endpoint that returns 201 status code
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        mobile = request.data.get('mobile', '')
+        
+        return Response({
+            'message': 'Mobile sent successfully',
+            'mobile': mobile
+        }, status=status.HTTP_201_CREATED)

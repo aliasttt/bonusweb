@@ -9,11 +9,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib import messages
 from django.db import transaction
-from loyalty.models import Business, Product, Customer
+from loyalty.models import Business, Product, Customer, Wallet
 from payments.models import Order
 from campaigns.models import Campaign
 from reviews.models import Review
 from accounts.models import Profile
+from rewards.models import PointsTransaction
+from django.db.models import Sum, Count
+from django.utils import timezone
 
 
 @require_http_methods(["GET", "POST"])
@@ -180,6 +183,92 @@ def reviews_list(request):
     business = _get_active_business(request)
     reviews = Review.objects.filter(business=business).select_related("customer", "customer__user").order_by("-created_at") if business else []
     return render(request, "partners/reviews_list.html", {"business": business, "reviews": reviews})
+
+
+@login_required
+def users_list(request):
+    """لیست کاربران برای هر پارتنر - نمایش اطلاعات، خریدها و امتیازها"""
+    business = _get_active_business(request)
+    
+    if not business:
+        return render(request, 'partners/users_list.html', {
+            'business': None,
+            'customers': [],
+            'message': 'No business found. Please register a business first.'
+        })
+    
+    # دریافت تمام Customer هایی که Wallet برای Business این پارتنر دارند
+    wallets = Wallet.objects.filter(business=business).select_related(
+        'customer', 'customer__user', 'business'
+    ).prefetch_related(
+        'points_transactions'
+    )
+    
+    # دریافت اطلاعات کامل هر Customer
+    customers_data = []
+    for wallet in wallets:
+        customer = wallet.customer
+        user = customer.user
+        
+        # دریافت Order های مربوط به این کاربر و Business
+        orders = Order.objects.filter(
+            business=business,
+            user=user
+        ).order_by('-created_at')
+        
+        # دریافت PointsTransaction های مربوط به این Wallet
+        points_transactions = PointsTransaction.objects.filter(
+            wallet=wallet
+        ).order_by('-created_at')
+        
+        # محاسبه مجموع امتیازها
+        total_points_earned = points_transactions.filter(points__gt=0).aggregate(
+            total=Sum('points')
+        )['total'] or 0
+        
+        total_points_redeemed = abs(points_transactions.filter(points__lt=0).aggregate(
+            total=Sum('points')
+        )['total'] or 0)
+        
+        # مجموع مبلغ خریدها
+        total_spent = orders.filter(status=Order.Status.PAID).aggregate(
+            total=Sum('amount_cents')
+        )['total'] or 0
+        
+        customers_data.append({
+            'customer': customer,
+            'user': user,
+            'wallet': wallet,
+            'business': business,
+            'orders': orders[:10],  # آخرین 10 خرید
+            'total_orders': orders.count(),
+            'points_transactions': points_transactions[:10],  # آخرین 10 تراکنش امتیاز
+            'total_points_earned': total_points_earned,
+            'total_points_redeemed': total_points_redeemed,
+            'current_balance': wallet.stamp_count,
+            'total_spent': total_spent,
+            'last_order_date': orders.first().created_at if orders.exists() else None,
+            'last_transaction_date': points_transactions.first().created_at if points_transactions.exists() else None,
+        })
+    
+    # مرتب‌سازی بر اساس آخرین فعالیت
+    customers_data.sort(key=lambda x: (
+        x['last_transaction_date'] or timezone.now() - timezone.timedelta(days=365),
+        x['last_order_date'] or timezone.now() - timezone.timedelta(days=365)
+    ), reverse=True)
+    
+    # محاسبه آمار کلی
+    total_orders_all = sum(c['total_orders'] for c in customers_data)
+    total_points_earned_all = sum(c['total_points_earned'] for c in customers_data)
+    total_spent_all = sum(c['total_spent'] for c in customers_data)
+    
+    return render(request, 'partners/users_list.html', {
+        'business': business,
+        'customers': customers_data,
+        'total_orders_all': total_orders_all,
+        'total_points_earned_all': total_points_earned_all,
+        'total_spent_all': total_spent_all,
+    })
 
 
 @login_required
