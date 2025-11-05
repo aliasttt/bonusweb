@@ -5,11 +5,15 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
+from django.db.models import Count, Sum, Q
+from django.utils import timezone
 from accounts.models import Profile
 from accounts.permissions import IsSuperUserRole
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
-from loyalty.models import Business
+from loyalty.models import Business, Customer, Wallet
+from payments.models import Order
+from rewards.models import PointsTransaction
 
 
 def admin_login(request):
@@ -88,7 +92,8 @@ def admin_stats(request):
     
     from django.db.models import Count, Sum
     from django.contrib.auth.models import User
-    from accounts.models import Business, UserActivity
+    from accounts.models import UserActivity
+    from loyalty.models import Business
     from django.utils import timezone
     
     # User statistics
@@ -140,4 +145,109 @@ def access_denied(request):
     """
     return render(request, 'admin/access_denied.html', {
         'message': request.GET.get('message', 'Access denied')
+    })
+
+
+@login_required
+def admin_users_list(request):
+    """
+    لیست کاربران هر ادمین - نمایش اطلاعات، خریدها و امتیازها
+    """
+    # بررسی اینکه کاربر ادمین است
+    try:
+        profile = request.user.profile
+        if profile.role != Profile.Role.SUPERUSER:
+            return render(request, 'admin/access_denied.html', {
+                'message': 'Access denied. Super user privileges required.'
+            })
+    except Profile.DoesNotExist:
+        return render(request, 'admin/access_denied.html', {
+            'message': 'Profile not found. Please contact administrator.'
+        })
+    
+    # دریافت تمام Business های متعلق به ادمین
+    businesses = Business.objects.filter(owner=request.user)
+    
+    if not businesses.exists():
+        return render(request, 'admin/users_list.html', {
+            'user': request.user,
+            'profile': profile,
+            'customers': [],
+            'businesses': [],
+            'message': 'No business found. Please create a business first.'
+        })
+    
+    # دریافت تمام Customer هایی که Wallet برای Business های ادمین دارند
+    wallets = Wallet.objects.filter(business__in=businesses).select_related(
+        'customer', 'customer__user', 'business'
+    ).prefetch_related(
+        'points_transactions'
+    )
+    
+    # دریافت اطلاعات کامل هر Customer
+    customers_data = []
+    for wallet in wallets:
+        customer = wallet.customer
+        user = customer.user
+        
+        # دریافت Order های مربوط به این کاربر و Business
+        orders = Order.objects.filter(
+            business=wallet.business,
+            user=user
+        ).order_by('-created_at')
+        
+        # دریافت PointsTransaction های مربوط به این Wallet
+        points_transactions = PointsTransaction.objects.filter(
+            wallet=wallet
+        ).order_by('-created_at')
+        
+        # محاسبه مجموع امتیازها
+        total_points_earned = points_transactions.filter(points__gt=0).aggregate(
+            total=Sum('points')
+        )['total'] or 0
+        
+        total_points_redeemed = abs(points_transactions.filter(points__lt=0).aggregate(
+            total=Sum('points')
+        )['total'] or 0)
+        
+        # مجموع مبلغ خریدها
+        total_spent = orders.filter(status=Order.Status.PAID).aggregate(
+            total=Sum('amount_cents')
+        )['total'] or 0
+        
+        customers_data.append({
+            'customer': customer,
+            'user': user,
+            'wallet': wallet,
+            'business': wallet.business,
+            'orders': orders[:10],  # آخرین 10 خرید
+            'total_orders': orders.count(),
+            'points_transactions': points_transactions[:10],  # آخرین 10 تراکنش امتیاز
+            'total_points_earned': total_points_earned,
+            'total_points_redeemed': total_points_redeemed,
+            'current_balance': wallet.stamp_count,
+            'total_spent': total_spent,
+            'last_order_date': orders.first().created_at if orders.exists() else None,
+            'last_transaction_date': points_transactions.first().created_at if points_transactions.exists() else None,
+        })
+    
+    # مرتب‌سازی بر اساس آخرین فعالیت
+    customers_data.sort(key=lambda x: (
+        x['last_transaction_date'] or timezone.now() - timezone.timedelta(days=365),
+        x['last_order_date'] or timezone.now() - timezone.timedelta(days=365)
+    ), reverse=True)
+    
+    # محاسبه آمار کلی
+    total_orders_all = sum(c['total_orders'] for c in customers_data)
+    total_points_earned_all = sum(c['total_points_earned'] for c in customers_data)
+    total_spent_all = sum(c['total_spent'] for c in customers_data)
+    
+    return render(request, 'admin/users_list.html', {
+        'user': request.user,
+        'profile': profile,
+        'customers': customers_data,
+        'businesses': businesses,
+        'total_orders_all': total_orders_all,
+        'total_points_earned_all': total_points_earned_all,
+        'total_spent_all': total_spent_all,
     })

@@ -263,6 +263,22 @@ def verify_code_and_generate_qr(request):
         if not business:
             return JsonResponse({"error": "Business not found"}, status=404)
         
+        # Check if phone belongs to admin/owner - prevent admin phone in QR code
+        if business.phone and phone == business.phone:
+            return JsonResponse({
+                "error": "Admin phone number cannot be used in QR code. Please enter customer phone number."
+            }, status=400)
+        
+        # Also check if phone belongs to business owner profile
+        try:
+            owner_profile = Profile.objects.get(user=business.owner)
+            if owner_profile.phone and phone == owner_profile.phone:
+                return JsonResponse({
+                    "error": "Admin phone number cannot be used in QR code. Please enter customer phone number."
+                }, status=400)
+        except Profile.DoesNotExist:
+            pass
+        
         # Check if customer exists
         try:
             profile = Profile.objects.get(phone=phone)
