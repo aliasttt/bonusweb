@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Profile, UserActivity, Business
+from .models import Profile, UserActivity, Business, EmailVerificationCode
 from .serializers import ProfileSerializer, RegisterSerializer, UserSerializer, UserActivitySerializer, BusinessSerializer
 from .permissions import IsSuperUserRole, IsAdminRole, CanManageUsers, IsOwnerOrSuperUser
 
@@ -130,7 +130,17 @@ class RegisterView(APIView):
                 "profile": ProfileSerializer(profile).data,
             }, status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # Better error handling
+            error_message = str(e)
+            if hasattr(e, 'detail'):
+                error_message = e.detail
+            elif hasattr(e, 'get_full_details'):
+                error_message = e.get_full_details()
+            
+            return Response({
+                "error": error_message,
+                "detail": "Registration failed. Please check your input data."
+            }, status=status.HTTP_400_BAD_REQUEST)
     
     def get_client_ip(self, request):
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -436,3 +446,75 @@ class SendMobileView(APIView):
                 'exists': False,
                 'phone': number
             }, status=status.HTTP_201_CREATED)
+
+
+class VerifyEmailView(APIView):
+    """
+    Verify email endpoint - verifies email verification code
+    POST /api/accounts/verify-email/
+    Body: {"user_id": 1, "code": "123456"}
+    
+    Returns:
+    - 200: Email verified successfully
+    - 400: Invalid code or expired
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        code = request.data.get('code', '').strip()
+        
+        if not user_id or not code:
+            return Response({
+                'error': 'User ID and verification code are required',
+                'detail': 'Please provide both user_id and code'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({
+                'error': 'User not found',
+                'detail': 'Invalid user ID'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Find the most recent verification code for this user
+        try:
+            verification = EmailVerificationCode.objects.filter(
+                user=user,
+                code=code,
+                is_verified=False
+            ).order_by('-created_at').first()
+            
+            if not verification:
+                return Response({
+                    'error': 'Invalid verification code',
+                    'detail': 'The verification code is incorrect or already used'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if code is expired
+            if verification.is_expired():
+                return Response({
+                    'error': 'Verification code expired',
+                    'detail': 'The verification code has expired. Please request a new one.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Verify the code
+            verification.is_verified = True
+            verification.save()
+            
+            # Update user email
+            user.email = verification.email
+            user.save(update_fields=['email'])
+            
+            return Response({
+                'message': 'Email verified successfully',
+                'email': verification.email,
+                'user': UserSerializer(user).data
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                'error': 'Verification failed',
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

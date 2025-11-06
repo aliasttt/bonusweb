@@ -76,6 +76,31 @@ class UserActivity(models.Model):
         return f"{self.user.username} - {self.activity_type} at {self.created_at}"
 
 
+class EmailVerificationCode(models.Model):
+    """
+    Model to store email verification codes
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="email_verification_codes")
+    email = models.EmailField()
+    code = models.CharField(max_length=6)
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'email', 'code']),
+        ]
+    
+    def __str__(self):
+        return f"{self.email} - {self.code} ({'verified' if self.is_verified else 'pending'})"
+    
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+
+
 class Business(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="businesses")
     name = models.CharField(max_length=200)

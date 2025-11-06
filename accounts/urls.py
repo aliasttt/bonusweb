@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
     MeView, RegisterView, LoginView, SetRoleView, UserManagementViewSet, 
     UserActivityViewSet, BusinessManagementViewSet, DashboardStatsView,
-    SendMobileView
+    SendMobileView, VerifyEmailView
 )
 
 router = DefaultRouter()
@@ -18,6 +18,7 @@ urlpatterns = [
     re_path(r'^[sS]end[mM]obile/?$', SendMobileView.as_view(), name="send_mobile"),
     path("login/", LoginView.as_view(), name="login"),
     path("register/", RegisterView.as_view(), name="register"),
+    path("verify-email/", VerifyEmailView.as_view(), name="verify_email"),
     path("me/", MeView.as_view(), name="me"),
     path("users/<int:user_id>/role/", SetRoleView.as_view(), name="set_role"),
     path("dashboard-stats/", DashboardStatsView.as_view(), name="dashboard-stats"),

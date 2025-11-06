@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
-from .models import Profile, UserActivity, Business
+from .models import Profile, UserActivity, Business, EmailVerificationCode
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -29,18 +29,18 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.Serializer):
     number = serializers.CharField(required=True, help_text="Phone number")
+    name = serializers.CharField(required=True, help_text="User name")
+    email = serializers.EmailField(required=True, help_text="Email address")
     password = serializers.CharField(write_only=True, required=True)
-    confirm_password = serializers.CharField(write_only=True, required=True)
-    username = serializers.CharField(max_length=150, required=False, allow_blank=True)
-    email = serializers.EmailField(required=False, allow_blank=True)
-    first_name = serializers.CharField(required=False, allow_blank=True)
-    last_name = serializers.CharField(required=False, allow_blank=True)
-    interests = serializers.ListField(
+    confirmPassword = serializers.CharField(write_only=True, required=True)
+    favorit = serializers.ListField(
         child=serializers.CharField(),
         required=False,
         allow_empty=True,
-        help_text="List of user interests"
+        help_text="List of user favorites/interests"
     )
+    # Optional fields for backward compatibility
+    last_name = serializers.CharField(required=False, allow_blank=True)
     role = serializers.ChoiceField(choices=Profile.Role.choices, default=Profile.Role.CUSTOMER, required=False)
 
     def validate_password(self, value: str) -> str:
@@ -48,27 +48,39 @@ class RegisterSerializer(serializers.Serializer):
         return value
     
     def validate(self, attrs):
-        if attrs['password'] != attrs['confirm_password']:
-            raise serializers.ValidationError({"confirm_password": "Passwords don't match"})
+        password = attrs.get('password')
+        confirm_password = attrs.get('confirmPassword')
+        
+        if password and confirm_password and password != confirm_password:
+            raise serializers.ValidationError({"confirmPassword": "Passwords don't match"})
         
         # Check if phone number already exists
         phone = attrs.get('number', '').strip()
         if phone and Profile.objects.filter(phone=phone).exists():
             raise serializers.ValidationError({"number": "A user with this phone number already exists"})
         
+        # Check if email already exists
+        email = attrs.get('email', '').strip()
+        if email and User.objects.filter(email=email).exists():
+            raise serializers.ValidationError({"email": "A user with this email already exists"})
+        
         return attrs
 
     def create(self, validated_data):
         password = validated_data.pop("password")
-        confirm_password = validated_data.pop("confirm_password")
+        confirm_password = validated_data.pop("confirmPassword")
         phone = validated_data.pop("number", "").strip()
-        interests = validated_data.pop("interests", [])
+        name = validated_data.pop("name", "").strip()
+        interests = validated_data.pop("favorit", [])
         role = validated_data.pop("role", Profile.Role.CUSTOMER)
         
+        # Split name into first_name and last_name if needed
+        name_parts = name.split(maxsplit=1)
+        first_name = name_parts[0] if name_parts else ""
+        last_name = name_parts[1] if len(name_parts) > 1 else validated_data.pop("last_name", "")
+        
         # Generate username from phone if not provided
-        username = validated_data.pop("username", "").strip()
-        if not username:
-            username = f"user_{phone}"
+        username = f"user_{phone}"
         
         # Ensure username is unique
         base_username = username
@@ -77,8 +89,15 @@ class RegisterSerializer(serializers.Serializer):
             username = f"{base_username}_{counter}"
             counter += 1
         
-        # Create user
-        user = User.objects.create(username=username, **validated_data)
+        # Create user (email will be set after verification)
+        email = validated_data.pop("email", "").strip()
+        user = User.objects.create(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            email="",  # Email will be set after verification
+            **validated_data
+        )
         user.set_password(password)
         user.save(update_fields=["password"])
         
@@ -87,13 +106,42 @@ class RegisterSerializer(serializers.Serializer):
         profile.role = role if role != Profile.Role.SUPERUSER else Profile.Role.CUSTOMER
         profile.phone = phone
         
-        # Store interests - for now store as JSON string in business_name field temporarily
+        # Store favorites/interests as JSON string in business_name field temporarily
         # TODO: Add interests field to Profile model later
         import json
         if interests:
             profile.business_name = json.dumps(interests, ensure_ascii=False)
         
         profile.save(update_fields=["role", "phone", "business_name"])
+        
+        # Generate and send verification code
+        from django.utils import timezone
+        from datetime import timedelta
+        import random
+        
+        verification_code = str(random.randint(100000, 999999))
+        expires_at = timezone.now() + timedelta(minutes=10)  # Code expires in 10 minutes
+        
+        EmailVerificationCode.objects.create(
+            user=user,
+            email=email,
+            code=verification_code,
+            expires_at=expires_at
+        )
+        
+        # Send verification email
+        from django.core.mail import send_mail
+        try:
+            send_mail(
+                subject='Email Verification Code - Bonus',
+                message=f'Your verification code is: {verification_code}\n\nThis code will expire in 10 minutes.',
+                from_email=None,  # Uses DEFAULT_FROM_EMAIL from settings
+                recipient_list=[email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            # Log error but don't fail registration
+            pass
         
         return user
 
