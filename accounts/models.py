@@ -21,6 +21,9 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    # User interests/favorites (stored as JSON)
+    interests = models.JSONField(default=list, blank=True, help_text="List of user interests/favorites")
+    
     # Additional fields for business owners
     business_type = models.CharField(max_length=100, blank=True)
     business_address = models.TextField(blank=True)

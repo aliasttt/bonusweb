@@ -22,7 +22,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = [
             "id", "user", "role", "phone", "business_name", "is_active",
             "last_login_ip", "created_at", "updated_at", "business_type",
-            "business_address", "business_phone", "total_logins", "last_activity"
+            "business_address", "business_phone", "total_logins", "last_activity",
+            "interests"
         ]
         read_only_fields = ["id", "created_at", "updated_at", "last_login_ip", "total_logins", "last_activity"]
 
@@ -109,13 +110,11 @@ class RegisterSerializer(serializers.Serializer):
         profile.role = role if role != Profile.Role.SUPERUSER else Profile.Role.CUSTOMER
         profile.phone = phone
         
-        # Store favorites/interests as JSON string in business_name field temporarily
-        # TODO: Add interests field to Profile model later
-        import json
+        # Store favorites/interests in interests field
         if interests:
-            profile.business_name = json.dumps(interests, ensure_ascii=False)
+            profile.interests = interests
         
-        profile.save(update_fields=["role", "phone", "business_name"])
+        profile.save(update_fields=["role", "phone", "interests"])
         
         # Generate and send verification code
         from django.utils import timezone
