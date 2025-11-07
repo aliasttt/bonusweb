@@ -16,13 +16,14 @@ router.register(r'businesses', BusinessManagementViewSet, basename='business-man
 urlpatterns = [
     # Case-insensitive URL pattern for sendMobile (supports both with and without trailing slash)
     re_path(r'^[sS]end[mM]obile/?$', SendMobileView.as_view(), name="send_mobile"),
-    path("login/", LoginView.as_view(), name="login"),
-    path("register/", RegisterView.as_view(), name="register"),
-    path("verify-email/", VerifyEmailView.as_view(), name="verify_email"),
-    path("me/", MeView.as_view(), name="me"),
+    # Support both with and without trailing slash for login
+    re_path(r'^login/?$', LoginView.as_view(), name="login"),
+    re_path(r'^register/?$', RegisterView.as_view(), name="register"),
+    re_path(r'^verify-email/?$', VerifyEmailView.as_view(), name="verify_email"),
+    re_path(r'^me/?$', MeView.as_view(), name="me"),
     path("users/<int:user_id>/role/", SetRoleView.as_view(), name="set_role"),
     path("dashboard-stats/", DashboardStatsView.as_view(), name="dashboard-stats"),
-    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair_accounts"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh_accounts"),
+    re_path(r'^token/?$', TokenObtainPairView.as_view(), name="token_obtain_pair_accounts"),
+    re_path(r'^token/refresh/?$', TokenRefreshView.as_view(), name="token_refresh_accounts"),
     path("", include(router.urls)),
 ]

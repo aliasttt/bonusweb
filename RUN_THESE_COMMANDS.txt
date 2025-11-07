@@ -1,0 +1,48 @@
+========================================
+دستورات Scalingo CLI
+========================================
+
+مرحله 1: اضافه کردن به PATH (فقط یک بار)
+----------------------------------------
+در PowerShell اجرا کنید:
+
+$env:Path += ";$env:USERPROFILE\AppData\Local\Programs\Scalingo"
+
+یا این فایل را اجرا کنید:
+powershell -ExecutionPolicy Bypass -File setup_path.ps1
+
+
+مرحله 2: لاگین
+----------------------------------------
+scalingo login
+
+بعد از اجرا:
+- Username: aliasttt
+- Password: Aasadi2233#
+
+
+مرحله 3: بررسی لاگین بودن
+----------------------------------------
+scalingo whoami
+
+
+مرحله 4: اجرای Migration
+----------------------------------------
+scalingo --app mywebsite run python manage.py migrate accounts
+
+
+========================================
+دستورات کامل (Copy-Paste):
+========================================
+
+# اضافه کردن به PATH
+$env:Path += ";$env:USERPROFILE\AppData\Local\Programs\Scalingo"
+
+# لاگین
+scalingo login
+
+# اجرای Migration
+scalingo --app mywebsite run python manage.py migrate accounts
+
+========================================
+

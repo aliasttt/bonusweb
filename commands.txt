@@ -1,0 +1,17 @@
+# دستورات Scalingo CLI
+
+# 1. لاگین
+scalingo login
+
+# 2. بررسی لاگین بودن
+scalingo whoami
+
+# 3. بررسی وضعیت Migration ها
+scalingo --app mywebsite run python manage.py showmigrations accounts
+
+# 4. اجرای Migration
+scalingo --app mywebsite run python manage.py migrate accounts
+
+# 5. مشاهده لاگ‌ها
+scalingo --app mywebsite logs
+
