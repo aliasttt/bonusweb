@@ -12,26 +12,29 @@
 
 | فیلد | نوع | Required | توضیحات | محدودیت‌ها |
 |------|-----|----------|---------|-----------|
-| `username` | string | ✅ بله | نام کاربری | max_length=150 |
+| `number` | string | ✅ بله | شماره تلفن | باید unique باشد |
+| `name` | string | ✅ بله | نام کاربر | به first_name و last_name تقسیم می‌شود |
+| `email` | string | ✅ بله | ایمیل | EmailField format، باید unique باشد |
 | `password` | string | ✅ بله | رمز عبور | validated by Django password validators |
-| `password_confirm` | string | ✅ بله | تکرار رمز عبور | باید با password مطابقت داشته باشد |
-| `email` | string | ❌ خیر | ایمیل | EmailField format |
-| `first_name` | string | ❌ خیر | نام | allow_blank=True |
-| `last_name` | string | ❌ خیر | نام خانوادگی | allow_blank=True |
+| `confirmPassword` | string | ✅ بله | تکرار رمز عبور | باید با password مطابقت داشته باشد (با P بزرگ) |
+| `favorit` | array[string] | ❌ خیر | لیست علاقه‌مندی‌ها | به صورت JSON در business_name ذخیره می‌شود |
+| `last_name` | string | ❌ خیر | نام خانوادگی | allow_blank=True (اختیاری) |
 | `role` | string | ❌ خیر | نقش کاربر | choices: "superuser", "admin", "business_owner", "customer" (default: "customer") |
-| `phone` | string | ❌ خیر | شماره تلفن | allow_blank=True, max_length=32 (در Profile) |
 
 #### 🔍 منطق کد (RegisterSerializer.create):
 
 ```python
-# 1. password و password_confirm حذف می‌شوند
-# 2. role حذف می‌شود (default: CUSTOMER)
-# 3. phone حذف می‌شود
-# 4. User ایجاد می‌شود با validated_data باقی‌مانده
-# 5. password با set_password hash می‌شود
-# 6. Profile ایجاد/بازیابی می‌شود
-# 7. profile.role تنظیم می‌شود (superuser نمی‌تواند role باشد)
-# 8. profile.phone تنظیم می‌شود
+# 1. password و confirmPassword بررسی و حذف می‌شوند
+# 2. number (phone) بررسی می‌شود (باید unique باشد)
+# 3. email بررسی می‌شود (باید unique باشد)
+# 4. name به first_name و last_name تقسیم می‌شود
+# 5. username از number ساخته می‌شود: "user_{number}"
+# 6. User ایجاد می‌شود (email موقتاً خالی می‌ماند)
+# 7. password با set_password hash می‌شود
+# 8. Profile ایجاد/بازیابی می‌شود
+# 9. profile.role تنظیم می‌شود (superuser نمی‌تواند role باشد)
+# 10. profile.phone = number تنظیم می‌شود
+# 11. favorit به صورت JSON در profile.business_name ذخیره می‌شود
 ```
 
 #### 📊 فیلدهای Response:

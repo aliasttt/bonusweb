@@ -44,7 +44,10 @@ class RegisterSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=Profile.Role.choices, default=Profile.Role.CUSTOMER, required=False)
 
     def validate_password(self, value: str) -> str:
-        validate_password(value)
+        # Only check minimum length (8 characters), skip CommonPasswordValidator
+        # This allows passwords like "123qwe123" which are acceptable for mobile apps
+        if len(value) < 8:
+            raise serializers.ValidationError("This password is too short. It must contain at least 8 characters.")
         return value
     
     def validate(self, attrs):
