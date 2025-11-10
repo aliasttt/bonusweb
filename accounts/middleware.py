@@ -1,5 +1,6 @@
 from django.utils.deprecation import MiddlewareMixin
 from django.utils import timezone
+from django.db import OperationalError
 from accounts.models import UserActivity, Profile
 
 
@@ -24,19 +25,24 @@ class UserActivityMiddleware(MiddlewareMixin):
         
         # Track login/logout activities
         if request.user.is_authenticated:
-            profile = getattr(request.user, 'profile', None)
-            if profile:
-                # Update last activity
-                profile.update_activity(ip_address=self.get_client_ip(request))
-                
-                # Track specific activities
-                if request.path == '/api/accounts/me/' and request.method == 'GET':
-                    self.log_activity(
-                        request.user,
-                        UserActivity.ActivityType.LOGIN,
-                        "User accessed profile",
-                        request
-                    )
+            try:
+                profile = getattr(request.user, 'profile', None)
+                if profile:
+                    # Update last activity
+                    profile.update_activity(ip_address=self.get_client_ip(request))
+                    
+                    # Track specific activities
+                    if request.path == '/api/accounts/me/' and request.method == 'GET':
+                        self.log_activity(
+                            request.user,
+                            UserActivity.ActivityType.LOGIN,
+                            "User accessed profile",
+                            request
+                        )
+            except OperationalError:
+                # Handle database schema mismatch (e.g., missing migrations)
+                # This allows the request to continue even if migrations haven't been run
+                pass
         
         return None
     
