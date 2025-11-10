@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django import forms
-from .models import Business, Customer, Product, Wallet, Transaction
+from .models import Business, Customer, Product, Wallet, Transaction, Slider
 
 
 class BusinessAdminForm(forms.ModelForm):
@@ -99,5 +99,14 @@ class WalletAdmin(admin.ModelAdmin):
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ("id", "wallet", "amount", "created_at")
+
+
+@admin.register(Slider)
+class SliderAdmin(admin.ModelAdmin):
+    list_display = ("id", "store", "business", "is_active", "order", "created_at")
+    list_filter = ("is_active", "created_at", "business")
+    search_fields = ("store", "address", "description")
+    list_editable = ("is_active", "order")
+    ordering = ("order", "-created_at")
 
 

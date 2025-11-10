@@ -105,6 +105,8 @@ export default api;
 #### Response (201 Created):
 ```json
 {
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
   "user": {
     "id": 5,
     "username": "user_09123456789",
@@ -125,7 +127,7 @@ export default api;
 }
 ```
 
-**⚠️ نکته مهم**: این endpoint توکن برنمی‌گرداند. بعد از ثبت نام باید لاگین کنید تا token دریافت کنید.
+**✅ نکته مهم**: این endpoint توکن‌های JWT را همراه با اطلاعات کاربر برمی‌گرداند. بعد از ثبت نام موفق، نیازی به لاگین جداگانه نیست. می‌توانید مستقیماً از توکن‌ها استفاده کنید.
 
 #### مثال کد:
 ```javascript
@@ -141,17 +143,19 @@ async function register(userData) {
       phone: userData.phone || ''
     });
     
-    // بعد از ثبت نام موفق، باید لاگین کنید
-    const loginResponse = await api.post('/accounts/token/', {
-      username: userData.username,
-      password: userData.password
-    });
+    // ذخیره token‌ها - نیازی به لاگین جداگانه نیست!
+    await AsyncStorage.setItem('access_token', response.data.access);
+    await AsyncStorage.setItem('refresh_token', response.data.refresh);
     
-    // ذخیره token
-    await AsyncStorage.setItem('access_token', loginResponse.data.access);
-    await AsyncStorage.setItem('refresh_token', loginResponse.data.refresh);
+    // کاربر را به صفحه اصلی هدایت کن
+    // توکن‌ها برای احراز هویت در درخواست‌های بعدی استفاده می‌شوند
     
-    return { user: response.data.user, profile: response.data.profile };
+    return { 
+      user: response.data.user, 
+      profile: response.data.profile,
+      access: response.data.access,
+      refresh: response.data.refresh
+    };
   } catch (error) {
     console.error('Registration error:', error.response?.data);
     throw error;

@@ -70,3 +70,22 @@ class Transaction(models.Model):
     note = models.CharField(max_length=200, blank=True)
 
 
+class Slider(models.Model):
+    """Slider model for home page carousel"""
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name="sliders")
+    image = models.ImageField(upload_to="sliders/", blank=True, null=True, help_text="Slider image")
+    store = models.CharField(max_length=200, help_text="Store name")
+    address = models.CharField(max_length=300, blank=True, help_text="Store address")
+    description = models.TextField(blank=True, help_text="Slider description")
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0, help_text="Display order")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+    def __str__(self) -> str:
+        return f"{self.store} - Slider"
+
+

@@ -12,6 +12,8 @@ urlpatterns = [
     path("wallet/", views.MyWalletView.as_view(), name="wallet"),
     path("scan/", views.ScanStampView.as_view(), name="scan"),
     path("redeem/", views.RedeemView.as_view(), name="redeem"),
+    path("slider/", views.SliderListView.as_view(), name="slider_list"),
+    path("menu/", views.MenuListView.as_view(), name="menu_list"),
 ]
 
 
