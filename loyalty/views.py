@@ -81,7 +81,7 @@ class RedeemView(APIView):
 
 class SliderListView(APIView):
     """
-    GET endpoint for slider - returns list of sliders with image, store, address, description
+    GET endpoint for slider - returns list of all active sliders from all businesses
     
     Response format:
     [
@@ -89,14 +89,16 @@ class SliderListView(APIView):
             "image": "https://...",
             "store": "Store Name",
             "address": "Store Address",
-            "description": "Description"
+            "description": "Description",
+            "business_id": 1
         }
     ]
     """
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        sliders = Slider.objects.filter(is_active=True).order_by('order', '-created_at')
+        # Get all active sliders from all businesses
+        sliders = Slider.objects.filter(is_active=True).select_related('business').order_by('order', '-created_at')
         serializer = SliderSerializer(sliders, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -283,6 +285,42 @@ class UnsplashSearchView(APIView):
                     "detail": str(e)
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class BusinessDetailView(APIView):
+    """
+    GET endpoint for business details by business_id
+    Returns business information for mobile app
+    
+    Response format:
+    {
+        "id": 1,
+        "name": "Business Name",
+        "description": "Description",
+        "address": "Address",
+        "phone": "Phone Number",
+        "website": "Website URL"
+    }
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def get(self, request, business_id):
+        try:
+            business = Business.objects.get(id=business_id)
+            data = {
+                "id": business.id,
+                "name": business.name,
+                "description": business.description or "",
+                "address": business.address or "",
+                "phone": business.phone or "",
+                "website": business.website or "",
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        except Business.DoesNotExist:
+            return Response(
+                {"error": "Business not found", "detail": f"Business with ID {business_id} does not exist"},
+                status=status.HTTP_404_NOT_FOUND
             )
 
 

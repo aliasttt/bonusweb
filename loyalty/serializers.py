@@ -45,12 +45,13 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 
 class SliderSerializer(serializers.ModelSerializer):
-    """Serializer for Slider - returns image, store, address, description"""
+    """Serializer for Slider - returns image, store, address, description, business_id"""
     image = serializers.SerializerMethodField()
+    business_id = serializers.IntegerField(source='business.id', read_only=True)
     
     class Meta:
         model = Slider
-        fields = ["image", "store", "address", "description"]
+        fields = ["image", "store", "address", "description", "business_id"]
     
     def get_image(self, obj):
         """Return full URL for image"""

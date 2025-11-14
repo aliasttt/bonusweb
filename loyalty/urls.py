@@ -15,6 +15,7 @@ urlpatterns = [
     path("slider/", views.SliderListView.as_view(), name="slider_list"),
     path("menu/", views.MenuListView.as_view(), name="menu_list"),
     path("unsplash/search/", views.UnsplashSearchView.as_view(), name="unsplash_search"),
+    path("businesses/<int:business_id>/", views.BusinessDetailView.as_view(), name="business_detail"),
 ]
 
 
