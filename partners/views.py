@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib import messages
 from django.db import transaction
-from loyalty.models import Business, Product, Customer, Wallet
+from loyalty.models import Business, Product, Customer, Wallet, Slider
 from payments.models import Order
 from campaigns.models import Campaign
 from reviews.models import Review
@@ -276,15 +276,58 @@ def users_list(request):
 def business_settings(request):
     business = _get_active_business(request)
     if request.method == "POST" and business:
+        # Update business information
         business.name = request.POST.get("name", business.name)
         business.description = request.POST.get("description", business.description)
         business.address = request.POST.get("address", business.address)
-        business.website = request.POST.get("website", business.website)
-        business.free_reward_threshold = int(request.POST.get("free_reward_threshold", business.free_reward_threshold) or business.free_reward_threshold)
         business.save()
-        messages.success(request, "Settings saved")
+        
+        # Handle uploaded slider images (up to 5)
+        slider_images = request.FILES.getlist('slider_images')
+        existing_sliders_count = business.sliders.filter(is_active=True).count()
+        
+        # Limit to 5 total sliders (existing + new)
+        max_new_sliders = max(0, 5 - existing_sliders_count)
+        images_to_process = slider_images[:max_new_sliders]
+        
+        for image in images_to_process:
+            # Create new slider with business info
+            Slider.objects.create(
+                business=business,
+                image=image,
+                store=business.name,
+                address=business.address,
+                description=business.description or f"Image from {business.name}",
+                is_active=True,
+                order=existing_sliders_count
+            )
+            existing_sliders_count += 1
+        
+        messages.success(request, "Settings saved successfully")
         return redirect("business_settings")
-    return render(request, "partners/business_settings.html", {"business": business})
+    
+    # Get existing sliders for display
+    sliders = business.sliders.filter(is_active=True).order_by('order', '-created_at') if business else []
+    return render(request, "partners/business_settings.html", {
+        "business": business,
+        "sliders": sliders
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def delete_slider(request, slider_id):
+    """Delete a slider image"""
+    business = _get_active_business(request)
+    if business:
+        try:
+            slider = Slider.objects.get(id=slider_id, business=business)
+            slider.delete()
+            messages.success(request, "Image deleted successfully")
+            return JsonResponse({"success": True})
+        except Slider.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Slider not found"}, status=404)
+    return JsonResponse({"success": False, "error": "Business not found"}, status=404)
 
 
 @login_required

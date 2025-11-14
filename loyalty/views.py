@@ -80,11 +80,23 @@ class RedeemView(APIView):
 
 
 class SliderListView(APIView):
-    """GET endpoint for slider - returns list of sliders with image, store, address, description"""
+    """
+    GET endpoint for slider - returns list of sliders with image, store, address, description
+    
+    Response format:
+    [
+        {
+            "image": "https://...",
+            "store": "Store Name",
+            "address": "Store Address",
+            "description": "Description"
+        }
+    ]
+    """
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        sliders = Slider.objects.filter(is_active=True)
+        sliders = Slider.objects.filter(is_active=True).order_by('order', '-created_at')
         serializer = SliderSerializer(sliders, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 

@@ -1,55 +1,288 @@
 {% extends 'base.html' %}
 {% block title %}Business Settings{% endblock %}
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-12">
-  <h1 class="text-2xl font-bold">Business Settings</h1>
-  <form method="post" class="mt-6 p-6 rounded-2xl border bg-white">
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Business Settings</h1>
+    <p class="text-gray-600 mt-2">Manage your business information and restaurant images</p>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-8" id="settings-form">
     {% csrf_token %}
-    <label class="block text-sm text-slate-600">Name</label>
-    <input name="name" value="{{ business.name }}" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;" />
+    
+    <!-- Business Information Card -->
+    <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-6 pb-3 border-b border-gray-200">Business Information</h2>
+      
+      <div class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
+          <input 
+            name="name" 
+            value="{{ business.name }}" 
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-gray-900 bg-white" 
+            placeholder="Enter business name"
+          />
+        </div>
 
-    <label class="mt-4 block text-sm text-slate-600">Description</label>
-    <textarea name="description" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;">{{ business.description }}</textarea>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <textarea 
+            name="description" 
+            rows="4"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-gray-900 bg-white resize-none" 
+            placeholder="Describe your business..."
+          >{{ business.description }}</textarea>
+        </div>
 
-    <label class="mt-4 block text-sm text-slate-600">Address</label>
-    <input name="address" value="{{ business.address }}" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;" />
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+          <input 
+            name="address" 
+            value="{{ business.address }}" 
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-gray-900 bg-white" 
+            placeholder="Enter business address"
+          />
+        </div>
+      </div>
+    </div>
 
-    <label class="mt-4 block text-sm text-slate-600">Website</label>
-    <input name="website" value="{{ business.website }}" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;" />
+    <!-- Restaurant Images Card -->
+    <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-2">Restaurant Images</h2>
+      <p class="text-sm text-gray-500 mb-6">Upload up to 5 images of your restaurant ({{ sliders|length|default:0 }}/5 uploaded)</p>
+      
+      <div id="image-upload-container" class="space-y-4">
+        <!-- Uploaded images will be dynamically added here -->
+      </div>
 
-    <label class="mt-4 block text-sm text-slate-600">Number of points required for free menu</label>
-    <input name="free_reward_threshold" value="{{ business.free_reward_threshold }}" class="mt-2 w-full px-3 py-2 border rounded-md" style="color: #000000; background-color: #ffffff;" />
+      <!-- Add New Image Button (only if less than 5) -->
+      {% if sliders|length < 5 %}
+      <div id="add-image-slot" class="mt-4">
+        <button 
+          type="button" 
+          onclick="addImageSlot()"
+          class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-medium"
+        >
+          + Add Image
+        </button>
+      </div>
+      {% endif %}
 
-    <div class="mt-6 flex items-center gap-3">
-      <button class="px-4 py-2 rounded-md bg-primary text-white">Save</button>
-      <a href="/partners/dashboard/" class="px-4 py-2 rounded-md border">Back</a>
+      <!-- Existing Sliders -->
+      {% if sliders %}
+      <div class="mt-8 pt-6 border-t border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Current Images ({{ sliders|length }}/5)</h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {% for slider in sliders %}
+          <div class="relative group">
+            <img src="{{ slider.image.url }}" alt="{{ slider.store }}" class="w-full h-32 object-cover rounded-lg">
+            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded-lg flex items-center justify-center">
+              <button 
+                type="button" 
+                onclick="deleteSlider({{ slider.id }})"
+                class="opacity-0 group-hover:opacity-100 px-3 py-1 bg-red-500 text-white rounded text-sm transition-all"
+              >
+                Delete
+              </button>
+            </div>
+            <p class="text-xs text-gray-600 mt-1 truncate">{{ slider.image.name|default:"image.jpg" }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center justify-between pt-6">
+      <a 
+        href="/partners/dashboard/" 
+        class="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium"
+      >
+        ← Back
+      </a>
+      <button 
+        type="submit" 
+        class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-semibold shadow-lg hover:shadow-xl"
+      >
+        Save Changes
+      </button>
     </div>
   </form>
 </div>
 
 <script>
-// Fix input text color
-document.addEventListener('DOMContentLoaded', function() {
-    const inputs = document.querySelectorAll('input[type="text"], input[type="url"], input[type="number"], textarea');
-    inputs.forEach(input => {
-        input.style.color = '#000000';
-        input.style.backgroundColor = '#ffffff';
-        
-        // Add focus event to ensure text is visible
-        input.addEventListener('focus', function() {
-            this.style.color = '#000000';
-            this.style.backgroundColor = '#ffffff';
-        });
-        
-        // Add input event to ensure text is visible while typing
-        input.addEventListener('input', function() {
-            this.style.color = '#000000';
-            this.style.backgroundColor = '#ffffff';
-        });
+let imageSlotCounter = 0;
+let uploadedImages = {};
+
+function addImageSlot() {
+  const container = document.getElementById('image-upload-container');
+  const currentCount = container.children.length;
+  const existingCount = {{ sliders|length|default:0 }};
+  
+  if (currentCount + existingCount >= 5) {
+    alert('You can only upload up to 5 images total');
+    return;
+  }
+  
+  const slot = imageSlotCounter++;
+  const slotDiv = document.createElement('div');
+  slotDiv.className = 'image-slot border-2 border-dashed border-gray-300 rounded-xl p-4 hover:border-purple-400 transition-all';
+  slotDiv.dataset.slot = slot;
+  
+  slotDiv.innerHTML = `
+    <div class="flex items-center gap-4">
+      <div class="flex-shrink-0">
+        <div class="image-preview w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+          <span class="text-gray-400 text-xs">No image</span>
+        </div>
+      </div>
+      <div class="flex-1">
+        <input 
+          type="file" 
+          name="slider_images" 
+          accept="image/*" 
+          class="hidden image-input" 
+          data-slot="${slot}"
+        />
+        <button 
+          type="button" 
+          class="upload-btn px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-medium text-sm"
+          onclick="document.querySelector(\`.image-input[data-slot='${slot}']\`).click()"
+        >
+          Choose Image
+        </button>
+        <p class="text-xs text-gray-500 mt-1 filename-display"></p>
+      </div>
+      <div class="flex-shrink-0">
+        <button 
+          type="button" 
+          class="remove-image-btn hidden px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all text-sm"
+          onclick="removeImage(${slot})"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  `;
+  
+  container.appendChild(slotDiv);
+  
+  // Attach event listener to the new input
+  const input = slotDiv.querySelector('.image-input');
+  input.addEventListener('change', function(e) {
+    handleImageSelect(slot, this.files[0]);
+  });
+  
+  // Update add button visibility
+  updateAddButtonVisibility();
+}
+
+function handleImageSelect(slot, file) {
+  if (!file) return;
+  
+  const container = document.querySelector(`.image-slot[data-slot="${slot}"]`);
+  const preview = container.querySelector('.image-preview');
+  const removeBtn = container.querySelector('.remove-image-btn');
+  const filenameDisplay = container.querySelector('.filename-display');
+  const uploadBtn = container.querySelector('.upload-btn');
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="w-full h-full object-cover">`;
+    filenameDisplay.textContent = file.name;
+    removeBtn.classList.remove('hidden');
+    uploadBtn.classList.add('hidden');
+    uploadedImages[slot] = file;
+    updateAddButtonVisibility();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(slot) {
+  const container = document.querySelector(`.image-slot[data-slot="${slot}"]`);
+  if (!container) return;
+  
+  const input = container.querySelector('.image-input');
+  const preview = container.querySelector('.image-preview');
+  const removeBtn = container.querySelector('.remove-image-btn');
+  const filenameDisplay = container.querySelector('.filename-display');
+  const uploadBtn = container.querySelector('.upload-btn');
+  
+  input.value = '';
+  preview.innerHTML = '<span class="text-gray-400 text-xs">No image</span>';
+  filenameDisplay.textContent = '';
+  removeBtn.classList.add('hidden');
+  uploadBtn.classList.remove('hidden');
+  delete uploadedImages[slot];
+  
+  // Remove the slot from DOM
+  container.remove();
+  updateAddButtonVisibility();
+}
+
+function updateAddButtonVisibility() {
+  const container = document.getElementById('image-upload-container');
+  const addButton = document.getElementById('add-image-slot');
+  const currentCount = container.children.length;
+  const existingCount = {{ sliders|length|default:0 }};
+  
+  if (addButton) {
+    if (currentCount + existingCount >= 5) {
+      addButton.style.display = 'none';
+    } else {
+      addButton.style.display = 'block';
+    }
+  }
+}
+
+function deleteSlider(sliderId) {
+  if (confirm('Are you sure you want to delete this image?')) {
+    fetch(`/partners/settings/delete-slider/${sliderId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      },
+    })
+    .then(response => {
+      if (response.ok) {
+        location.reload();
+      } else {
+        alert('Error deleting image');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error deleting image');
     });
+  }
+}
+
+// Form submission validation
+document.getElementById('settings-form').addEventListener('submit', function(e) {
+  const container = document.getElementById('image-upload-container');
+  const inputs = container.querySelectorAll('.image-input');
+  let imageCount = 0;
+  inputs.forEach(input => {
+    if (input.files.length > 0) {
+      imageCount++;
+    }
+  });
+  
+  const existingCount = {{ sliders|length|default:0 }};
+  const totalCount = existingCount + imageCount;
+  
+  if (totalCount > 5) {
+    e.preventDefault();
+    alert(`You can only have up to 5 images total. You currently have ${existingCount} images and are trying to add ${imageCount} more.`);
+    return false;
+  }
+});
+
+// Initialize: show add button if needed
+document.addEventListener('DOMContentLoaded', function() {
+  updateAddButtonVisibility();
 });
 </script>
 {% endblock %}
-
-
-
