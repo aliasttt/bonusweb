@@ -216,7 +216,9 @@ STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 FIREBASE_CREDENTIALS_FILE = os.environ.get("FIREBASE_CREDENTIALS_FILE", "")
 
 # Unsplash API
-UNSPLASH_ACCESS_KEY = os.environ.get("UNSPLASH_ACCESS_KEY", "")
+# Use UNSPLASH_ACCESS_TOKEN for OAuth (recommended) or UNSPLASH_ACCESS_KEY for public API
+UNSPLASH_ACCESS_TOKEN = os.environ.get("UNSPLASH_ACCESS_TOKEN", "")
+UNSPLASH_ACCESS_KEY = os.environ.get("UNSPLASH_ACCESS_KEY", "")  # Fallback for public API
 UNSPLASH_SECRET_KEY = os.environ.get("UNSPLASH_SECRET_KEY", "")
 
 

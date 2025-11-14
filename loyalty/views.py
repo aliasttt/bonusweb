@@ -136,11 +136,13 @@ class UnsplashSearchView(APIView):
     
     def get(self, request):
         try:
-            # Get Unsplash credentials
+            # Get Unsplash credentials - try Access Token first, then fallback to Access Key
+            access_token = getattr(settings, 'UNSPLASH_ACCESS_TOKEN', '')
             access_key = getattr(settings, 'UNSPLASH_ACCESS_KEY', '')
-            if not access_key:
+            
+            if not access_token and not access_key:
                 return Response(
-                    {"error": "Unsplash API not configured", "detail": "UNSPLASH_ACCESS_KEY is not set"},
+                    {"error": "Unsplash API not configured", "detail": "UNSPLASH_ACCESS_TOKEN or UNSPLASH_ACCESS_KEY is not set"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
             
@@ -165,10 +167,17 @@ class UnsplashSearchView(APIView):
             
             # Prepare Unsplash API request
             url = "https://api.unsplash.com/search/photos"
-            headers = {
-                "Authorization": f"Client-ID {access_key}",
-                "Accept-Version": "v1"
-            }
+            # Use Bearer token if available, otherwise use Client-ID
+            if access_token:
+                headers = {
+                    "Authorization": f"Bearer {access_token}",
+                    "Accept-Version": "v1"
+                }
+            else:
+                headers = {
+                    "Authorization": f"Client-ID {access_key}",
+                    "Accept-Version": "v1"
+                }
             params = {
                 "query": search_query,
                 "per_page": per_page,
