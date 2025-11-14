@@ -44,17 +44,91 @@ class MyWalletView(APIView):
 
 
 class ScanStampView(APIView):
+    """
+    POST endpoint for scanning QR code and processing points
+    
+    Request body:
+    - business_id: ID of the business
+    - product_id: (optional) ID of the product being scanned
+    - amount: (optional, default: 1) Amount of points/stamps
+    
+    If product_id is provided:
+    - If product is a reward item (is_reward=True): Deducts points from user's wallet
+    - If product is a menu item (is_reward=False): Adds points to user's wallet
+    
+    If product_id is not provided:
+    - Adds points as before (legacy behavior)
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     @transaction.atomic
     def post(self, request):
         business_id = request.data.get("business_id")
+        product_id = request.data.get("product_id")
         amount = int(request.data.get("amount", 1))
+        
         business = get_object_or_404(Business, id=business_id)
         customer, _ = Customer.objects.get_or_create(user=request.user)
         wallet, _ = Wallet.objects.select_for_update().get_or_create(
             customer=customer, business=business
         )
+        
+        # If product_id is provided, check if it's a reward or menu item
+        if product_id:
+            try:
+                product = Product.objects.get(id=product_id, business=business, active=True)
+                
+                if product.is_reward:
+                    # Reward item: User wants to redeem, so deduct points
+                    required_points = product.points_reward
+                    if wallet.stamp_count < required_points:
+                        return Response(
+                            {
+                                "error": "Insufficient points",
+                                "detail": f"User points ({wallet.stamp_count}) are less than required ({required_points})",
+                                "user_points": wallet.stamp_count,
+                                "required_points": required_points
+                            },
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                    # Deduct points
+                    wallet.stamp_count -= required_points
+                    wallet.save(update_fields=["stamp_count", "updated_at"])
+                    Transaction.objects.create(
+                        wallet=wallet, 
+                        amount=-required_points, 
+                        note=f"Redeemed: {product.title}"
+                    )
+                    return Response({
+                        "stamp_count": wallet.stamp_count,
+                        "message": f"Successfully redeemed {product.title}",
+                        "points_deducted": required_points
+                    })
+                else:
+                    # Menu item: User purchased, so add points
+                    points_to_add = product.points_reward
+                    wallet.stamp_count += points_to_add
+                    wallet.save(update_fields=["stamp_count", "updated_at"])
+                    Transaction.objects.create(
+                        wallet=wallet, 
+                        amount=points_to_add, 
+                        note=f"Purchased: {product.title}"
+                    )
+                    achieved = wallet.stamp_count >= wallet.target
+                    return Response({
+                        "stamp_count": wallet.stamp_count,
+                        "achieved": achieved,
+                        "points_added": points_to_add,
+                        "message": f"Points added for {product.title}"
+                    })
+            except Product.DoesNotExist:
+                return Response(
+                    {"error": "Product not found", "detail": f"Product with ID {product_id} does not exist or is inactive"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        
+        # Legacy behavior: just add points
         wallet.stamp_count += amount
         wallet.save(update_fields=["stamp_count", "updated_at"])
         Transaction.objects.create(wallet=wallet, amount=amount, note="scan")

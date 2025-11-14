@@ -125,8 +125,17 @@ def partner_logout(request):
 @login_required
 def products_list(request):
     business = _get_active_business(request)
-    products = Product.objects.filter(business=business).order_by("-id") if business else []
-    return render(request, "partners/products_list.html", {"business": business, "products": products})
+    if business:
+        menu_items = Product.objects.filter(business=business, is_reward=False, active=True).order_by("-id")
+        reward_items = Product.objects.filter(business=business, is_reward=True, active=True).order_by("-id")
+    else:
+        menu_items = []
+        reward_items = []
+    return render(request, "partners/products_list.html", {
+        "business": business, 
+        "menu_items": menu_items,
+        "reward_items": reward_items
+    })
 
 
 @login_required
@@ -137,8 +146,16 @@ def product_create(request):
         title = request.POST.get("title", "").strip()
         price_cents = int(request.POST.get("price_cents", "0") or 0)
         points_reward = int(request.POST.get("points_reward", "0") or 0)
+        is_reward = request.POST.get("is_reward") == "1"
         image = request.FILES.get("image")
-        Product.objects.create(business=business, title=title, price_cents=price_cents, points_reward=points_reward, image=image)
+        Product.objects.create(
+            business=business, 
+            title=title, 
+            price_cents=price_cents, 
+            points_reward=points_reward, 
+            is_reward=is_reward,
+            image=image
+        )
         messages.success(request, "Item added successfully")
         return redirect("products_list")
     return render(request, "partners/product_form.html", {"business": business})
@@ -156,6 +173,7 @@ def product_edit(request, pk: int):
         product.title = request.POST.get("title", product.title)
         product.price_cents = int(request.POST.get("price_cents", product.price_cents) or 0)
         product.points_reward = int(request.POST.get("points_reward", product.points_reward) or 0)
+        product.is_reward = request.POST.get("is_reward") == "1"
         if request.FILES.get("image"):
             product.image = request.FILES.get("image")
         product.save()

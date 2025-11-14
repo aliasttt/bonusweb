@@ -47,6 +47,7 @@ class Product(models.Model):
     active = models.BooleanField(default=True)
     points_reward = models.PositiveIntegerField(default=0)
     image = models.ImageField(upload_to="products/", blank=True, null=True)
+    is_reward = models.BooleanField(default=False, help_text="If True, this is a reward item that costs points. If False, this is a menu item that gives points.")
 
     def __str__(self) -> str:  # pragma: no cover
         return f"{self.title} @ {self.business.name}"
