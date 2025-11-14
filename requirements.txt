@@ -16,3 +16,10 @@ dj-database-url==2.1.0
 gunicorn==21.2.0
 whitenoise==6.6.0
 
+# Media storage (for production - prevents file loss on Scalingo)
+django-storages==1.14.2
+cloudinary==1.41.0
+
+# External APIs
+requests==2.31.0
+

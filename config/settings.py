@@ -41,6 +41,14 @@ INSTALLED_APPS = [
     "notifications",
 ]
 
+# Add Cloudinary apps conditionally (will be enabled if credentials are provided)
+# This prevents import errors if cloudinary is not installed
+try:
+    import cloudinary
+    INSTALLED_APPS += ["cloudinary", "cloudinary_storage"]
+except ImportError:
+    pass
+
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -135,8 +143,34 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Media (uploads)
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# Use Cloudinary in production (Scalingo) to prevent file loss
+# In development, use local file storage
+USE_CLOUDINARY = os.environ.get("USE_CLOUDINARY", "0") == "1"
+CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "")
+CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY", "")
+CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "")
+
+if USE_CLOUDINARY and CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+    # Production: Use Cloudinary for media storage
+    try:
+        import cloudinary
+        import cloudinary.uploader
+        import cloudinary.api
+        cloudinary.config(
+            cloud_name=CLOUDINARY_CLOUD_NAME,
+            api_key=CLOUDINARY_API_KEY,
+            api_secret=CLOUDINARY_API_SECRET,
+        )
+        DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+        MEDIA_URL = "/media/"  # URLs will be served by Cloudinary
+    except ImportError:
+        # Fallback to local storage if cloudinary is not installed
+        MEDIA_URL = "/media/"
+        MEDIA_ROOT = BASE_DIR / "media"
+else:
+    # Development: Use local file storage
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -180,6 +214,10 @@ SPECTACULAR_SETTINGS = {
 # External services
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 FIREBASE_CREDENTIALS_FILE = os.environ.get("FIREBASE_CREDENTIALS_FILE", "")
+
+# Unsplash API
+UNSPLASH_ACCESS_KEY = os.environ.get("UNSPLASH_ACCESS_KEY", "")
+UNSPLASH_SECRET_KEY = os.environ.get("UNSPLASH_SECRET_KEY", "")
 
 
 # Audit logging toggle (enabled by default)
