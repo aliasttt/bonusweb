@@ -1,45 +1,72 @@
 {% extends 'base.html' %}
 {% block title %}QR Code Generator{% endblock %}
 {% block content %}
-<div class="max-w-5xl mx-auto px-4 py-16">
+<div class="max-w-6xl mx-auto px-4 py-8">
   <div class="mb-6">
-    <a href="/partners/dashboard/" class="inline-flex items-center px-4 py-2 rounded-md border hover:bg-slate-100 hover:text-slate-900 transition text-slate-300 mb-4">← Back to Dashboard</a>
-    <h1 class="text-3xl font-extrabold text-white">QR Code Generator</h1>
-    <p class="mt-2 text-slate-400">Show this code to customers to scan.</p>
+    <a 
+      href="/partners/dashboard/" 
+      class="inline-flex items-center px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium mb-4"
+    >
+      ← Back to Dashboard
+    </a>
+    <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">QR Code Generator</h1>
+    <p class="mt-2 text-gray-600">Show this code to customers to scan.</p>
   </div>
   
   <div id="main-content" class="mt-8">
-
     <!-- Phone and Verification Section - Visible initially -->
     <div id="auth-section" class="flex justify-center">
-      <div class="w-full max-w-md p-4 rounded-xl bg-slate-800 border border-slate-700">
+      <div class="w-full max-w-md p-6 rounded-2xl bg-white shadow-lg border border-gray-200">
         <!-- Phone Number Input - Step 1 -->
         <div id="phone-section">
-          <label class="block text-sm font-semibold text-slate-300 mb-2">Phone Number</label>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
           <div class="flex gap-2">
-            <input type="tel" id="phone" placeholder="09123456789" class="flex-1 px-4 py-3 border border-slate-600 rounded-lg bg-slate-900 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500" />
-            <button onclick="sendVerificationCode()" id="send-code-btn" class="px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl">
+            <input 
+              type="tel" 
+              id="phone" 
+              placeholder="09123456789" 
+              class="flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+            />
+            <button 
+              onclick="sendVerificationCode()" 
+              id="send-code-btn" 
+              class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl"
+            >
               Send Code
             </button>
           </div>
-          <p id="phone-error" class="text-xs text-red-400 mt-1 hidden"></p>
+          <p id="phone-error" class="text-xs text-red-500 mt-1 hidden"></p>
         </div>
 
         <!-- Verification Code Input - Step 2 -->
         <div id="verification-section" class="hidden mt-4">
-          <label class="block text-sm font-semibold text-slate-300 mb-2">Verification Code</label>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Verification Code</label>
           <div class="flex gap-2">
-            <input type="text" id="verification-code" placeholder="Enter 6-digit code" maxlength="6" class="flex-1 px-4 py-3 border border-slate-600 rounded-lg bg-slate-900 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 text-center text-lg tracking-widest" />
-            <button onclick="verifyAndGenerate()" id="verify-btn" class="px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl">
+            <input 
+              type="text" 
+              id="verification-code" 
+              placeholder="Enter 6-digit code" 
+              maxlength="6" 
+              class="flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-lg tracking-widest" 
+            />
+            <button 
+              onclick="verifyAndGenerate()" 
+              id="verify-btn" 
+              class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl"
+            >
               Verify
             </button>
           </div>
           <div class="flex items-center justify-between mt-2">
             <div class="flex-1">
-              <p id="code-error" class="text-xs text-red-400 hidden"></p>
-              <p id="code-info" class="text-xs text-slate-400"></p>
+              <p id="code-error" class="text-xs text-red-500 hidden"></p>
+              <p id="code-info" class="text-xs text-gray-500"></p>
             </div>
-            <button onclick="resendVerificationCode()" id="resend-btn" class="text-xs text-purple-400 hover:text-purple-300 underline">
+            <button 
+              onclick="resendVerificationCode()" 
+              id="resend-btn" 
+              class="text-xs text-purple-600 hover:text-purple-700 underline"
+            >
               Resend Code
             </button>
           </div>
@@ -49,71 +76,122 @@
     
     <!-- Products and QR Code Grid - Hidden initially -->
     <div id="main-grid" class="hidden">
-      <div class="grid md:grid-cols-2 gap-8 items-start">
-      <!-- Products Section -->
-      <div id="products-section">
-        <div class="text-sm font-semibold text-slate-300 mb-3">Products (select one or more)</div>
-        <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-auto">
-        {% if products %}
-          {% for p in products %}
-            <div class="product-card cursor-pointer p-3 rounded-xl border-2 border-slate-700 bg-slate-800 hover:border-slate-600 transition-all" 
-                 data-product-id="{{ p.id }}" 
-                 data-points="{{ p.points_reward }}"
-                 data-selected="false">
-              <input type="checkbox" class="prod hidden" value="{{ p.id }}" data-points="{{ p.points_reward }}" />
-              <div class="w-full h-32 rounded-lg bg-slate-700 flex items-center justify-center overflow-hidden mb-2">
-                {% if p.image %}
-                  <img src="{{ p.image.url }}" class="max-w-full max-h-full object-contain rounded-lg" alt="{{ p.title }}" />
-                {% else %}
-                  <div class="text-slate-500 text-xs">No Image</div>
-                {% endif %}
-              </div>
-              <div class="text-center">
-                <div class="font-semibold text-white text-sm truncate">{{ p.title }}</div>
-                <div class="text-xs text-slate-400 mt-1">{{ p.points_reward }} pts</div>
-              </div>
+      <div class="grid lg:grid-cols-3 gap-8 items-start">
+        <!-- Products Section (2 columns) -->
+        <div id="products-section" class="lg:col-span-2 space-y-6">
+          <!-- Menu Items Section -->
+          <div>
+            <div class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-green-500"></span>
+              Menu Items (Gives Points)
             </div>
-          {% endfor %}
-        {% else %}
-            <div class="col-span-2 text-slate-500 text-sm text-center py-8">No products yet.</div>
-        {% endif %}
-        </div>
-      </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-96 overflow-auto p-2">
+              {% if menu_items %}
+                {% for p in menu_items %}
+                  <div class="menu-product-card cursor-pointer p-3 rounded-xl border-2 border-gray-300 bg-white hover:border-gray-400 transition-all" 
+                       data-product-id="{{ p.id }}" 
+                       data-points="{{ p.points_reward }}"
+                       data-is-reward="false"
+                       data-selected="false">
+                    <input type="checkbox" class="prod hidden" value="{{ p.id }}" data-points="{{ p.points_reward }}" data-is-reward="false" />
+                    <div class="w-full h-32 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden mb-2">
+                      {% if p.image %}
+                        <img src="{{ p.image.url }}" class="max-w-full max-h-full object-contain rounded-lg" alt="{{ p.title }}" />
+                      {% else %}
+                        <div class="text-gray-400 text-xs">No Image</div>
+                      {% endif %}
+                    </div>
+                    <div class="text-center">
+                      <div class="font-semibold text-gray-800 text-sm truncate">{{ p.title }}</div>
+                      <div class="text-xs text-green-600 font-medium mt-1">+{{ p.points_reward }} pts</div>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="col-span-3 text-gray-500 text-sm text-center py-8 bg-gray-50 rounded-lg">No menu items yet.</div>
+              {% endif %}
+            </div>
+          </div>
 
-      <!-- QR Code Section -->
-      <div id="qr-section">
-        <div class="p-6 rounded-2xl bg-slate-800 border border-slate-700">
-          <div class="text-center">
-            <div class="w-full max-w-xs mx-auto p-4 bg-white rounded-xl">
-              <img id="qr" class="w-full h-auto mx-auto" style="display: none;" />
-              <div id="qr-placeholder" class="py-16 text-slate-400 text-sm">
-                QR Code will appear here
-              </div>
+          <!-- Reward Items Section -->
+          <div>
+            <div class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-red-500"></span>
+              Reward Items (Costs Points)
             </div>
-            <p class="mt-4 text-center text-xs text-slate-400 font-mono break-all" id="payload"></p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-96 overflow-auto p-2">
+              {% if reward_items %}
+                {% for p in reward_items %}
+                  <div class="reward-product-card cursor-pointer p-3 rounded-xl border-2 border-gray-300 bg-white hover:border-gray-400 transition-all" 
+                       data-product-id="{{ p.id }}" 
+                       data-points="{{ p.points_reward }}"
+                       data-is-reward="true"
+                       data-selected="false">
+                    <input type="checkbox" class="prod hidden" value="{{ p.id }}" data-points="{{ p.points_reward }}" data-is-reward="true" />
+                    <div class="w-full h-32 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden mb-2">
+                      {% if p.image %}
+                        <img src="{{ p.image.url }}" class="max-w-full max-h-full object-contain rounded-lg" alt="{{ p.title }}" />
+                      {% else %}
+                        <div class="text-gray-400 text-xs">No Image</div>
+                      {% endif %}
+                    </div>
+                    <div class="text-center">
+                      <div class="font-semibold text-gray-800 text-sm truncate">{{ p.title }}</div>
+                      <div class="text-xs text-red-600 font-medium mt-1">-{{ p.points_reward }} pts</div>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="col-span-3 text-gray-500 text-sm text-center py-8 bg-gray-50 rounded-lg">No reward items yet.</div>
+              {% endif %}
+            </div>
           </div>
         </div>
 
-        <!-- Total Points Section -->
-        <div id="total-points-section" class="mt-6 p-4 rounded-xl bg-slate-800 border border-slate-700">
-          <label class="block text-sm font-semibold text-slate-300 mb-2">Total points</label>
-          <input id="amt" class="w-full px-4 py-3 border border-slate-600 rounded-lg bg-slate-900 text-white text-lg font-semibold text-center" value="0" readonly />
+        <!-- QR Code Section (1 column) -->
+        <div id="qr-section" class="lg:col-span-1">
+          <div class="p-6 rounded-2xl bg-white shadow-lg border border-gray-200 sticky top-4">
+            <div class="text-center">
+              <div class="w-full max-w-xs mx-auto p-4 bg-white rounded-xl border-2 border-dashed border-gray-300">
+                <img id="qr" class="w-full h-auto mx-auto" style="display: none;" />
+                <div id="qr-placeholder" class="py-16 text-gray-400 text-sm">
+                  QR Code will appear here
+                </div>
+              </div>
+              <p class="mt-4 text-center text-xs text-gray-500 font-mono break-all" id="payload"></p>
+            </div>
+          </div>
 
-          <!-- Generate QR Code Button -->
-          <button onclick="generateQRCode()" id="generate-btn" class="mt-4 w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl">
-            Generate QR Code
-          </button>
-          
-          <p class="text-xs text-slate-400 mt-3 text-center">
-            Business: {% if business %}#{{ business.id }} - {{ business.name }}{% else %}Not found{% endif %}
-          </p>
-      <input type="hidden" id="biz" value="{% if business %}{{ business.id }}{% endif %}" />
-    </div>
-      </div>
+          <!-- Total Points Section -->
+          <div id="total-points-section" class="mt-6 p-6 rounded-2xl bg-white shadow-lg border border-gray-200">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Total Points</label>
+            <input 
+              id="amt" 
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-lg font-semibold text-center transition-all" 
+              value="0" 
+              readonly 
+            />
+
+            <!-- Generate QR Code Button -->
+            <button 
+              onclick="generateQRCode()" 
+              id="generate-btn" 
+              class="mt-4 w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl"
+            >
+              Generate QR Code
+            </button>
+            
+            <p class="text-xs text-gray-500 mt-3 text-center">
+              Business: {% if business %}#{{ business.id }} - {{ business.name }}{% else %}Not found{% endif %}
+            </p>
+            <input type="hidden" id="biz" value="{% if business %}{{ business.id }}{% endif %}" />
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
 <script>
   let currentPhone = '';
   let verificationCodeSent = false;
@@ -121,8 +199,33 @@
   function recalc(){
     const checks = Array.from(document.querySelectorAll('.prod'));
     const selected = checks.filter(c => c.checked);
-    const total = selected.reduce((s, c) => s + parseInt(c.dataset.points || '0'), 0);
-    document.getElementById('amt').value = total;
+    
+    let total = 0;
+    selected.forEach(c => {
+      const points = parseInt(c.dataset.points || '0');
+      const isReward = c.dataset.isReward === 'true';
+      if (isReward) {
+        total -= points; // Negative for rewards
+      } else {
+        total += points; // Positive for menu items
+      }
+    });
+    
+    const amtInput = document.getElementById('amt');
+    amtInput.value = total;
+    
+    // Update color based on total
+    if (total > 0) {
+      amtInput.classList.remove('text-red-600', 'border-red-300');
+      amtInput.classList.add('text-green-600', 'border-green-300');
+    } else if (total < 0) {
+      amtInput.classList.remove('text-green-600', 'border-green-300');
+      amtInput.classList.add('text-red-600', 'border-red-300');
+    } else {
+      amtInput.classList.remove('text-red-600', 'text-green-600', 'border-red-300', 'border-green-300');
+      amtInput.classList.add('text-gray-900', 'border-gray-300');
+    }
+    
     return selected.map(c => parseInt(c.value));
   }
 
@@ -148,7 +251,6 @@
       return;
     }
 
-    // Basic phone validation
     if (phone.length < 10) {
       showError('phone-error', 'Please enter a valid phone number');
       return;
@@ -182,7 +284,6 @@
         currentPhone = phone;
         verificationCodeSent = true;
         
-        // Hide phone section and show verification section
         if (document.getElementById('phone-section')) {
           document.getElementById('phone-section').classList.add('hidden');
         }
@@ -190,7 +291,6 @@
         document.getElementById('verification-code').value = '';
         document.getElementById('verification-code').focus();
         
-        // Show code in development (remove in production)
         if (data.code) {
           document.getElementById('code-info').textContent = `Code sent! (Dev: ${data.code})`;
         } else {
@@ -231,7 +331,6 @@
 
   async function resendVerificationCode() {
     if (!currentPhone) {
-      // If no current phone, show phone section again
       document.getElementById('phone-section').classList.remove('hidden');
       document.getElementById('verification-section').classList.add('hidden');
       return;
@@ -245,7 +344,6 @@
     const biz = parseInt(document.getElementById('biz').value || '0');
     const verifyBtn = document.getElementById('verify-btn');
     
-    // Validation - only check phone and code, NOT products
     if (!phone) {
       showError('phone-error', 'Please enter phone number');
       return;
@@ -270,7 +368,6 @@
     }
 
     try {
-      // First verify the code without products
       const response = await fetch('/partners/qr/verify-code/', {
         method: 'POST',
         headers: {
@@ -280,7 +377,7 @@
         body: JSON.stringify({
           phone: phone,
           code: code,
-          product_ids: [], // Empty array for verification only
+          product_ids: [],
           business_id: biz
         })
       });
@@ -288,13 +385,9 @@
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Hide auth section (phone and verification)
         document.getElementById('auth-section').classList.add('hidden');
-        
-        // Show main grid with products, QR code, and total points sections
         document.getElementById('main-grid').classList.remove('hidden');
         
-        // Store verified customer data (without products yet)
         window.verifiedCustomerData = {
           phone: phone,
           customer_id: data.customer_id,
@@ -307,7 +400,6 @@
         }
       } else {
         showError('code-error', data.error || 'Invalid verification code');
-        // Show verification section again if code is wrong
         document.getElementById('verification-section').classList.remove('hidden');
         if (verifyBtn) {
           verifyBtn.disabled = false;
@@ -316,7 +408,6 @@
       }
     } catch (error) {
       showError('code-error', 'Network error. Please try again.');
-      // Show verification section again on error
       document.getElementById('verification-section').classList.remove('hidden');
       if (verifyBtn) {
         verifyBtn.disabled = false;
@@ -350,7 +441,6 @@
       return;
     }
     
-    // Use verified customer data
     const phone = window.verifiedCustomerData?.phone || currentPhone || '';
     const customerId = window.verifiedCustomerData?.customer_id || null;
     
@@ -359,7 +449,6 @@
       return;
     }
     
-    // Generate QR code payload with selected products
     const payload = JSON.stringify({
       business_id: biz,
       customer_id: customerId,
@@ -377,20 +466,38 @@
 
   // Initialize product card click handlers
   document.addEventListener('DOMContentLoaded', function() {
-    // Handle product card clicks
-    document.querySelectorAll('.product-card').forEach(card => {
+    // Handle menu product card clicks
+    document.querySelectorAll('.menu-product-card').forEach(card => {
       card.addEventListener('click', function() {
         const checkbox = this.querySelector('.prod');
         const isSelected = this.dataset.selected === 'true';
         
         if (isSelected) {
-          // Deselect: change border to black/dark
-          this.style.borderColor = '#1e293b'; // slate-800
+          this.style.borderColor = '#d1d5db'; // gray-300
           this.dataset.selected = 'false';
           checkbox.checked = false;
         } else {
-          // Select: change border to green
           this.style.borderColor = '#22c55e'; // green-500
+          this.dataset.selected = 'true';
+          checkbox.checked = true;
+        }
+        
+        recalc();
+      });
+    });
+
+    // Handle reward product card clicks
+    document.querySelectorAll('.reward-product-card').forEach(card => {
+      card.addEventListener('click', function() {
+        const checkbox = this.querySelector('.prod');
+        const isSelected = this.dataset.selected === 'true';
+        
+        if (isSelected) {
+          this.style.borderColor = '#d1d5db'; // gray-300
+          this.dataset.selected = 'false';
+          checkbox.checked = false;
+        } else {
+          this.style.borderColor = '#ef4444'; // red-500
           this.dataset.selected = 'true';
           checkbox.checked = true;
         }
@@ -411,20 +518,12 @@
       }
     });
 
-    // Allow Enter key to submit
+    // Allow Enter key to submit phone
     document.getElementById('phone').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
         sendVerificationCode();
       }
     });
-
-    document.getElementById('verification-code').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        verifyAndGenerate();
-      }
-    });
   });
 </script>
 {% endblock %}
-
-

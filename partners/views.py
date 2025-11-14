@@ -108,10 +108,17 @@ def dashboard(request):
 @login_required
 def qr_generator(request):
     business = _get_active_business(request)
-    products = []
     if business:
-        products = Product.objects.filter(business=business).order_by("-id")
-    return render(request, "partners/qr_generator.html", {"business": business, "products": products})
+        menu_items = Product.objects.filter(business=business, is_reward=False, active=True).order_by("-id")
+        reward_items = Product.objects.filter(business=business, is_reward=True, active=True).order_by("-id")
+    else:
+        menu_items = []
+        reward_items = []
+    return render(request, "partners/qr_generator.html", {
+        "business": business, 
+        "menu_items": menu_items,
+        "reward_items": reward_items
+    })
 
 
 @login_required
