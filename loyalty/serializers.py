@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
+from django.db.models import Avg
 from rest_framework import serializers
 
+from reviews.models import Review
 from .models import Business, Product, Customer, Wallet, Transaction, Slider
 
 
@@ -11,9 +13,36 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class BusinessSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+    slug = serializers.CharField(read_only=True)
+
     class Meta:
         model = Business
-        fields = ["id", "name", "description", "address", "website"]
+        fields = [
+            "id",
+            "slug",
+            "name",
+            "description",
+            "address",
+            "website",
+            "phone",
+            "average_rating",
+            "review_count",
+        ]
+
+    def get_average_rating(self, obj):
+        avg = getattr(obj, "average_rating_value", None) or getattr(obj, "average_rating", None)
+        if avg is not None:
+            return round(float(avg), 2)
+        result = obj.reviews.filter(status=Review.Status.APPROVED).aggregate(avg=Avg("rating")).get("avg")
+        return round(float(result), 2) if result is not None else None
+
+    def get_review_count(self, obj):
+        count = getattr(obj, "review_count_value", None)
+        if count is not None:
+            return count
+        return obj.reviews.filter(status=Review.Status.APPROVED).count()
 
 
 class ProductSerializer(serializers.ModelSerializer):

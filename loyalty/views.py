@@ -6,12 +6,14 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
+from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Business, Product, Customer, Wallet, Transaction, Slider
+from reviews.models import Review
 from .serializers import (
     BusinessSerializer,
     ProductSerializer,
@@ -22,9 +24,20 @@ from .serializers import (
 
 
 class BusinessListView(generics.ListAPIView):
-    queryset = Business.objects.all()
     serializer_class = BusinessSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        return Business.objects.annotate(
+            average_rating_value=Avg(
+                "reviews__rating",
+                filter=Q(reviews__status=Review.Status.APPROVED),
+            ),
+            review_count_value=Count(
+                "reviews",
+                filter=Q(reviews__status=Review.Status.APPROVED),
+            ),
+        )
 
 
 class ProductListView(generics.ListAPIView):

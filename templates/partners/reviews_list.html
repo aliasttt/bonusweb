@@ -5,13 +5,32 @@
   <h1 class="text-2xl font-bold">نظرات</h1>
   <div class="mt-6 grid md:grid-cols-2 gap-6">
     {% for r in reviews %}
-      <div class="p-6 rounded-2xl border">
+      <div class="p-6 rounded-2xl border space-y-4 bg-white">
         <div class="flex items-center justify-between">
-          <div class="font-semibold">{{ r.customer.user.username }}</div>
-          <div class="text-amber-500">⭐ {{ r.rating }}</div>
+          <div>
+            <div class="font-semibold text-slate-900">{{ r.customer.user.username }}</div>
+            <p class="text-xs text-slate-500">{% if r.service %}{{ r.service.name }}{% else %}امتیاز کلی{% endif %}</p>
+          </div>
+          <div class="text-right">
+            <div class="text-amber-500 text-xl font-bold">⭐ {{ r.rating }}</div>
+            <span class="text-xs px-2 py-1 rounded-full {% if r.status == 'approved' %}bg-emerald-100 text-emerald-700{% elif r.status == 'pending' %}bg-amber-100 text-amber-700{% else %}bg-rose-100 text-rose-700{% endif %}">
+              {{ r.get_status_display }}
+            </span>
+          </div>
         </div>
-        <div class="mt-2 text-slate-700">{{ r.comment }}</div>
-        <div class="mt-2 text-xs text-slate-500">{{ r.created_at|date:'Y-m-d H:i' }}</div>
+        <div class="text-slate-700 leading-relaxed">{{ r.comment|default:"بدون متن" }}</div>
+        <div class="text-xs text-slate-500">{{ r.created_at|date:'Y-m-d H:i' }}</div>
+        {% if r.responses.all %}
+          <div class="pt-4 border-t border-slate-100 space-y-2 text-sm">
+            {% for response in r.responses.all %}
+              <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                <div class="text-slate-900 font-semibold text-xs">{{ response.responder.get_full_name|default:response.responder.username }}</div>
+                <p class="text-slate-600 mt-1">{{ response.message }}</p>
+                <p class="text-[11px] text-slate-400 mt-1">{{ response.created_at|date:'Y-m-d H:i' }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
     {% empty %}
       <div class="col-span-2 text-center text-slate-500">نظری ثبت نشده است.</div>

@@ -7,4 +7,5 @@ urlpatterns = [
     path('stats/', views.admin_stats, name='admin_stats'),
     path('access-denied/', views.access_denied, name='access_denied'),
     path('users/', views.admin_users_list, name='admin_users_list'),
+    path('reviews/', views.admin_reviews, name='admin_reviews'),
 ]

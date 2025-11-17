@@ -81,6 +81,21 @@
                     </div>
                 </div>
             </div>
+            <div class="bg-dark-light/50 backdrop-blur-sm rounded-xl p-6 border border-primary/20 hover:border-primary/40 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Reviews Queue</p>
+                        <p class="text-xl font-semibold text-white">مدیریت نظرات</p>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-500/20 rounded-lg flex items-center justify-center">
+                        <i data-lucide="message-square" class="w-6 h-6 text-amber-400"></i>
+                    </div>
+                </div>
+                <a href="{% url 'admin_reviews' %}" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-semibold">
+                    ورود به نظرات
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                </a>
+            </div>
         </div>
 
         <!-- Main Content -->

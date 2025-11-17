@@ -3,11 +3,14 @@ from __future__ import annotations
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
+from django.utils.text import slugify
+from django.db.models import Avg
 
 
 class Business(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=220, unique=True, blank=True, null=True)
     description = models.TextField(blank=True)
     address = models.CharField(max_length=300, blank=True)
     website = models.URLField(blank=True)
@@ -18,6 +21,27 @@ class Business(models.Model):
 
     def __str__(self) -> str:  # pragma: no cover - readable admin
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name)[:200] or "business"
+            slug = base_slug
+            counter = 1
+            while Business.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    @property
+    def average_rating(self):
+        from reviews.models import Review
+
+        return (
+            self.reviews.filter(status=Review.Status.APPROVED)
+            .aggregate(avg=Avg("rating"))
+            .get("avg")
+        )
     
     def set_password(self, raw_password):
         """Set password with hashing"""

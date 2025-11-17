@@ -206,7 +206,11 @@ def campaigns_list(request):
 @login_required
 def reviews_list(request):
     business = _get_active_business(request)
-    reviews = Review.objects.filter(business=business).select_related("customer", "customer__user").order_by("-created_at") if business else []
+    reviews = Review.objects.filter(business=business).select_related(
+        "customer",
+        "customer__user",
+        "service",
+    ).prefetch_related("responses__responder").order_by("-created_at") if business else []
     return render(request, "partners/reviews_list.html", {"business": business, "reviews": reviews})
 
 
@@ -236,10 +240,23 @@ def users_list(request):
         user = customer.user
         
         # دریافت Order های مربوط به این کاربر و Business
-        orders = Order.objects.filter(
+        orders_queryset = Order.objects.filter(
             business=business,
             user=user
         ).order_by('-created_at')
+        
+        # تبدیل orders به لیست با amount در یورو
+        orders = []
+        for order in orders_queryset:
+            order_dict = {
+                'id': order.id,
+                'amount_cents': order.amount_cents / 100.0,  # تبدیل به یورو
+                'currency': 'EUR',
+                'status': order.status,
+                'created_at': order.created_at,
+                'get_status_display': order.get_status_display(),
+            }
+            orders.append(order_dict)
         
         # دریافت PointsTransaction های مربوط به این Wallet
         points_transactions = PointsTransaction.objects.filter(
@@ -255,10 +272,11 @@ def users_list(request):
             total=Sum('points')
         )['total'] or 0)
         
-        # مجموع مبلغ خریدها
-        total_spent = orders.filter(status=Order.Status.PAID).aggregate(
+        # مجموع مبلغ خریدها (تبدیل از cents به یورو)
+        total_spent_cents = orders_queryset.filter(status=Order.Status.PAID).aggregate(
             total=Sum('amount_cents')
         )['total'] or 0
+        total_spent = total_spent_cents / 100.0  # تبدیل به یورو
         
         customers_data.append({
             'customer': customer,
@@ -266,13 +284,13 @@ def users_list(request):
             'wallet': wallet,
             'business': business,
             'orders': orders[:10],  # آخرین 10 خرید
-            'total_orders': orders.count(),
+            'total_orders': orders_queryset.count(),  # تعداد کل orders از queryset
             'points_transactions': points_transactions[:10],  # آخرین 10 تراکنش امتیاز
             'total_points_earned': total_points_earned,
             'total_points_redeemed': total_points_redeemed,
             'current_balance': wallet.stamp_count,
             'total_spent': total_spent,
-            'last_order_date': orders.first().created_at if orders.exists() else None,
+            'last_order_date': orders_queryset.first().created_at if orders_queryset.exists() else None,
             'last_transaction_date': points_transactions.first().created_at if points_transactions.exists() else None,
         })
     
@@ -285,7 +303,7 @@ def users_list(request):
     # محاسبه آمار کلی
     total_orders_all = sum(c['total_orders'] for c in customers_data)
     total_points_earned_all = sum(c['total_points_earned'] for c in customers_data)
-    total_spent_all = sum(c['total_spent'] for c in customers_data)
+    total_spent_all = sum(c['total_spent'] for c in customers_data)  # در حال حاضر به یورو است
     
     return render(request, 'partners/users_list.html', {
         'business': business,

@@ -31,7 +31,7 @@
     </div>
     <div class="p-6 rounded-2xl border bg-white/10 backdrop-blur-sm border-white/20">
       <h3 class="text-lg font-semibold text-white">Total Revenue</h3>
-      <p class="text-3xl font-bold text-yellow-400">{{ total_spent_all|floatformat:0|default:0 }} Rials</p>
+      <p class="text-3xl font-bold text-yellow-400">€{{ total_spent_all|floatformat:2|default:0 }}</p>
     </div>
   </div>
 
@@ -80,8 +80,8 @@
           <p class="text-2xl font-bold text-yellow-400">{{ customer_data.total_points_redeemed }}</p>
         </div>
         <div class="bg-white/5 rounded-lg p-4">
-          <p class="text-gray-300 text-sm mb-2">Total Spent (Rials)</p>
-          <p class="text-2xl font-bold text-blue-400">{{ customer_data.total_spent|floatformat:0 }}</p>
+          <p class="text-gray-300 text-sm mb-2">Total Spent</p>
+          <p class="text-2xl font-bold text-blue-400">€{{ customer_data.total_spent|floatformat:2 }}</p>
         </div>
       </div>
 
@@ -101,7 +101,7 @@
               <div class="bg-white/5 rounded-lg p-4 border border-white/10">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="text-white font-medium">{{ order.amount_cents|floatformat:0 }} {{ order.currency }}</p>
+                    <p class="text-white font-medium">€{{ order.amount_cents|floatformat:2 }}</p>
                     <p class="text-gray-400 text-xs mt-1">{{ order.created_at|date:"Y/m/d H:i" }}</p>
                   </div>
                   <span class="px-3 py-1 rounded-full text-xs font-medium

@@ -1,8 +1,9 @@
-from django.urls import path
+from rest_framework.routers import DefaultRouter
 
-from .views import ReviewsListCreateView
+from .views import ReviewViewSet, ServiceViewSet
 
+router = DefaultRouter()
+router.register(r"services", ServiceViewSet, basename="service")
+router.register(r"", ReviewViewSet, basename="review")
 
-urlpatterns = [
-    path("", ReviewsListCreateView.as_view(), name="reviews"),
-]
+urlpatterns = router.urls

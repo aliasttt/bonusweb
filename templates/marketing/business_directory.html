@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Business Directory{% endblock %}
+{% block content %}
+<section class="py-20 min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark-lighter">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="text-center mb-12">
+      <p class="text-primary font-semibold mb-3">Verified Partners</p>
+      <h1 class="text-4xl font-black mb-4">All Active Restaurants & Cafés on Bonus</h1>
+      <p class="text-gray-400 max-w-2xl mx-auto">Browse every approved business. Click a card to view full details, services, and customer reviews.</p>
+    </div>
+    <div class="grid gap-6 md:grid-cols-2">
+      {% for business in businesses %}
+        <a href="{% url 'business_detail_page' business.slug %}" class="block rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300 p-6 card-hover">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-2xl font-bold">{{ business.name }}</h2>
+              <p class="text-sm text-gray-400">{{ business.description|default:"" }}</p>
+            </div>
+            <div class="text-right">
+              {% if business.average_rating_value %}
+                <p class="text-3xl font-bold text-amber-400">{{ business.average_rating_value|floatformat:1 }}</p>
+                <p class="text-xs text-gray-500">Average Rating</p>
+              {% else %}
+                <p class="text-lg font-semibold text-gray-500">—</p>
+                <p class="text-xs text-gray-500">No Rating Yet</p>
+              {% endif %}
+            </div>
+          </div>
+          <div class="space-y-2 text-sm text-gray-300">
+            <p class="flex items-center gap-2">
+              <i data-lucide="map-pin" class="w-4 h-4"></i>
+              {{ business.address|default:"Address unavailable" }}
+            </p>
+            <p class="flex items-center gap-2">
+              <i data-lucide="phone" class="w-4 h-4"></i>
+              {{ business.phone|default:"Phone unavailable" }}
+            </p>
+            <p class="flex items-center gap-2">
+              <i data-lucide="message-square" class="w-4 h-4"></i>
+              {{ business.review_count_value|default:0 }} published reviews
+            </p>
+          </div>
+          <div class="mt-4 inline-flex items-center text-primary font-semibold gap-2">
+            View details
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </div>
+        </a>
+      {% empty %}
+        <div class="col-span-2 text-center text-gray-400 py-16">
+          No businesses have been onboarded yet.
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<script>lucide.createIcons();</script>
+{% endblock %}
+

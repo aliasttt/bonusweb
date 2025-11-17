@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from loyalty.models import Business, Customer, Wallet
 from payments.models import Order
 from rewards.models import PointsTransaction
+from reviews.models import Review, ReviewResponse
 
 
 def admin_login(request):
@@ -250,4 +251,89 @@ def admin_users_list(request):
         'total_orders_all': total_orders_all,
         'total_points_earned_all': total_points_earned_all,
         'total_spent_all': total_spent_all,
+    })
+
+
+@login_required
+def admin_reviews(request):
+    """
+    Dedicated moderation and reply panel for business and service reviews.
+    """
+    profile = getattr(request.user, "profile", None)
+    if not profile or profile.role not in [Profile.Role.SUPERUSER, Profile.Role.ADMIN]:
+        return render(request, 'admin/access_denied.html', {
+            'message': 'Access denied. Admin privileges required.'
+        })
+
+    reviews_qs = Review.objects.select_related(
+        "business",
+        "service",
+        "customer__user",
+        "moderated_by",
+    ).prefetch_related("responses__responder").order_by("-created_at")
+
+    if profile.role not in [Profile.Role.SUPERUSER, Profile.Role.ADMIN]:
+        reviews_qs = reviews_qs.filter(business__owner=request.user)
+
+    status_filter = request.GET.get('status')
+    target_filter = request.GET.get('target_type')
+    business_filter = request.GET.get('business_id')
+
+    if status_filter in dict(Review.Status.choices):
+        reviews_qs = reviews_qs.filter(status=status_filter)
+    if target_filter in dict(Review.TargetType.choices):
+        reviews_qs = reviews_qs.filter(target_type=target_filter)
+    if business_filter and business_filter.isdigit():
+        reviews_qs = reviews_qs.filter(business_id=business_filter)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        review_id = request.POST.get("review_id")
+        review = reviews_qs.filter(id=review_id).first()
+
+        if not review:
+            messages.error(request, "نظر انتخاب شده در دسترس نیست.")
+            return redirect("admin_reviews")
+
+        if action == "moderate":
+            if profile.role != Profile.Role.SUPERUSER:
+                messages.error(request, "فقط سوپر یوزر می‌تواند وضعیت نظرات را تغییر دهد.")
+                return redirect("admin_reviews")
+            new_status = request.POST.get("new_status")
+            if new_status not in dict(Review.Status.choices):
+                messages.error(request, "وضعیت انتخاب شده معتبر نیست.")
+                return redirect("admin_reviews")
+            review.status = new_status
+            review.admin_note = request.POST.get("admin_note", "")
+            review.moderated_by = request.user
+            review.save(update_fields=["status", "admin_note", "moderated_by", "updated_at"])
+            messages.success(request, "وضعیت نظر با موفقیت به‌روزرسانی شد.")
+            return redirect("admin_reviews")
+
+        if action == "reply":
+            reply_message = request.POST.get("reply_message", "").strip()
+            if not reply_message:
+                messages.error(request, "متن پاسخ نمی‌تواند خالی باشد.")
+                return redirect("admin_reviews")
+            ReviewResponse.objects.create(
+                review=review,
+                responder=request.user,
+                message=reply_message,
+                is_public=request.POST.get("is_public", "on") == "on",
+            )
+            messages.success(request, "پاسخ شما ثبت شد و به کاربر نمایش داده می‌شود.")
+            return redirect("admin_reviews")
+
+    businesses_qs = Business.objects.all().order_by("name")
+    if profile.role not in [Profile.Role.SUPERUSER, Profile.Role.ADMIN]:
+        businesses_qs = businesses_qs.filter(owner=request.user)
+
+    return render(request, "admin/reviews.html", {
+        "reviews": reviews_qs,
+        "profile": profile,
+        "status_filter": status_filter,
+        "target_filter": target_filter,
+        "business_filter": business_filter,
+        "businesses": businesses_qs,
+        "is_superuser": profile.role == Profile.Role.SUPERUSER,
     })
