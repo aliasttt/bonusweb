@@ -105,3 +105,13 @@ class ReviewResponse(models.Model):
 
     def __str__(self) -> str:  # pragma: no cover
         return f"Response by {self.responder} on {self.review_id}"
+
+    @property
+    def responder_display_name(self) -> str:
+        profile = getattr(self.responder, "profile", None)
+        if profile and getattr(profile, "business_name", ""):
+            return profile.business_name
+        full_name = self.responder.get_full_name()
+        if full_name:
+            return full_name
+        return self.responder.get_username()

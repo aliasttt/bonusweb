@@ -73,6 +73,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated(), IsAdminRole()]
         if self.action in ("moderate",):
             return [permissions.IsAuthenticated(), IsAdminRole()]
+        if self.action in ("update", "partial_update", "destroy"):
+            return [permissions.IsAuthenticated()]
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
@@ -123,6 +125,17 @@ class ReviewViewSet(viewsets.ModelViewSet):
         source = self.request.data.get("source") or Review.Source.APP
         serializer.save(customer=customer, source=source)
 
+    def perform_update(self, serializer):
+        review = self.get_object()
+        if not self._user_can_modify_review(self.request.user, review):
+            raise PermissionDenied("You cannot edit this review.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if not self._user_can_modify_review(self.request.user, instance):
+            raise PermissionDenied("You cannot delete this review.")
+        instance.delete()
+
     @action(detail=True, methods=["post"])
     def reply(self, request, pk=None):
         review = self.get_object()
@@ -168,5 +181,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
         if profile.role == Profile.Role.ADMIN:
             return True
         if profile.role == Profile.Role.BUSINESS_OWNER and review.business.owner == user:
+            return True
+        return False
+
+    def _user_can_modify_review(self, user, review: Review):
+        profile = getattr(user, "profile", None)
+        if not profile:
+            return False
+        if profile.role == Profile.Role.SUPERUSER:
+            return True
+        if review.customer.user == user:
             return True
         return False

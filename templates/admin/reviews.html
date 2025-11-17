@@ -63,7 +63,7 @@
               {% for response in review.responses.all %}
                 <div class="bg-primary/5 border border-primary/20 rounded-xl p-4">
                   <div class="flex items-center justify-between">
-                    <p class="text-sm font-semibold text-primary">{{ response.responder.get_full_name|default:response.responder.username }}</p>
+                    <p class="text-sm font-semibold text-primary">{{ response.responder_display_name }}</p>
                     <p class="text-xs text-gray-400">{{ response.created_at|date:"Y/m/d H:i" }}</p>
                   </div>
                   <p class="text-gray-100 mt-2">{{ response.message }}</p>

@@ -38,7 +38,7 @@ def blog(request):
 
 
 def business_directory(request):
-    businesses = (
+    businesses = list(
         Business.objects.annotate(
             average_rating_value=Avg(
                 "reviews__rating",
@@ -49,9 +49,15 @@ def business_directory(request):
                 filter=Q(reviews__status=Review.Status.APPROVED),
             ),
         )
-        .prefetch_related("services")
+        .prefetch_related("services", "sliders")
         .order_by("-average_rating_value", "-review_count_value", "name")
     )
+
+    for biz in businesses:
+        biz.cover_slider = (
+            biz.sliders.filter(is_active=True).order_by("order", "-created_at").first()
+        )
+
     return render(
         request,
         "marketing/business_directory.html",
@@ -61,6 +67,11 @@ def business_directory(request):
 
 def business_detail(request, slug):
     business = get_object_or_404(Business, slug=slug)
+    cover_sliders = list(
+        business.sliders.filter(is_active=True, image__isnull=False)
+        .exclude(image="")
+        .order_by("order", "-created_at")[:5]
+    )
     approved_reviews = (
         business.reviews.filter(status=Review.Status.APPROVED)
         .select_related("customer__user", "service")
@@ -80,6 +91,7 @@ def business_detail(request, slug):
             "reviews": approved_reviews,
             "average_rating": round(float(average_rating or 0), 2) if review_count else None,
             "review_count": review_count,
+            "cover_sliders": cover_sliders,
         },
     )
 

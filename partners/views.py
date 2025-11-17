@@ -12,7 +12,7 @@ from django.db import transaction
 from loyalty.models import Business, Product, Customer, Wallet, Slider
 from payments.models import Order
 from campaigns.models import Campaign
-from reviews.models import Review
+from reviews.models import Review, ReviewResponse
 from accounts.models import Profile
 from rewards.models import PointsTransaction
 from django.db.models import Sum, Count
@@ -211,6 +211,58 @@ def reviews_list(request):
         "customer__user",
         "service",
     ).prefetch_related("responses__responder").order_by("-created_at") if business else []
+
+    if request.method == "POST" and business:
+        action = request.POST.get("action", "reply")
+        if action == "reply":
+            review_id = request.POST.get("review_id")
+            reply_message = (request.POST.get("reply_message") or "").strip()
+            is_public = request.POST.get("is_public", "on") == "on"
+
+            review = Review.objects.filter(id=review_id, business=business).first()
+            if not review:
+                messages.error(request, "Selected review was not found.")
+                return redirect("reviews_list")
+            if not reply_message:
+                messages.error(request, "Reply message cannot be empty.")
+                return redirect("reviews_list")
+
+            ReviewResponse.objects.create(
+                review=review,
+                responder=request.user,
+                message=reply_message,
+                is_public=is_public,
+            )
+            messages.success(request, "Your response has been posted.")
+        elif action == "update_response":
+            response_id = request.POST.get("response_id")
+            reply_message = (request.POST.get("reply_message") or "").strip()
+            is_public = request.POST.get("is_public", "on") == "on"
+            response = ReviewResponse.objects.filter(
+                id=response_id, review__business=business, responder=request.user
+            ).first()
+            if not response:
+                messages.error(request, "Response not found or you do not have permission to edit it.")
+                return redirect("reviews_list")
+            if not reply_message:
+                messages.error(request, "Reply message cannot be empty.")
+                return redirect("reviews_list")
+            response.message = reply_message
+            response.is_public = is_public
+            response.save(update_fields=["message", "is_public"])
+            messages.success(request, "Response updated successfully.")
+        elif action == "delete_response":
+            response_id = request.POST.get("response_id")
+            response = ReviewResponse.objects.filter(
+                id=response_id, review__business=business, responder=request.user
+            ).first()
+            if not response:
+                messages.error(request, "Response not found or you do not have permission to delete it.")
+                return redirect("reviews_list")
+            response.delete()
+            messages.success(request, "Response deleted.")
+        return redirect("reviews_list")
+
     return render(request, "partners/reviews_list.html", {"business": business, "reviews": reviews})
 
 

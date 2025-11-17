@@ -37,7 +37,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 
 
 class ReviewResponseSerializer(serializers.ModelSerializer):
-    responder_name = serializers.CharField(source="responder.get_full_name", read_only=True)
+    responder_name = serializers.CharField(source="responder_display_name", read_only=True)
 
     class Meta:
         model = ReviewResponse
