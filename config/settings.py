@@ -80,6 +80,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "config.context_processors.firebase_settings",
             ],
         },
     },
@@ -214,6 +215,19 @@ SPECTACULAR_SETTINGS = {
 # External services
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 FIREBASE_CREDENTIALS_FILE = os.environ.get("FIREBASE_CREDENTIALS_FILE", "")
+FIREBASE_CREDENTIALS_JSON = os.environ.get("FIREBASE_CREDENTIALS_JSON", "")
+FIREBASE_CREDENTIALS_BASE64 = os.environ.get("FIREBASE_CREDENTIALS_BASE64", "")
+VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "")
+
+FIREBASE_CONFIG = {
+    "apiKey": os.environ.get("FIREBASE_WEB_API_KEY", "AIzaSyBuZrl2zjPrpOFD_2pZKJTDe1AiRUArviA"),
+    "authDomain": os.environ.get("FIREBASE_WEB_AUTH_DOMAIN", "bonusapp-1146e.firebaseapp.com"),
+    "projectId": os.environ.get("FIREBASE_WEB_PROJECT_ID", "bonusapp-1146e"),
+    "storageBucket": os.environ.get("FIREBASE_WEB_STORAGE_BUCKET", "bonusapp-1146e.firebasestorage.app"),
+    "messagingSenderId": os.environ.get("FIREBASE_WEB_SENDER_ID", "127439540218"),
+    "appId": os.environ.get("FIREBASE_WEB_APP_ID", "1:127439540218:web:c504c60bc6db03c2181e43"),
+    "measurementId": os.environ.get("FIREBASE_WEB_MEASUREMENT_ID", "G-3BF4XCB9VZ"),
+}
 
 # Unsplash API
 # Use UNSPLASH_ACCESS_TOKEN for OAuth (recommended) or UNSPLASH_ACCESS_KEY for public API

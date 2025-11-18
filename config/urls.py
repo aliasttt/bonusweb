@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
@@ -9,6 +10,14 @@ urlpatterns = [
     path("", include("marketing.urls")),
     path("partners/", include("partners.urls")),
     path("super-admin/", include("admin.urls")),
+    path(
+        "firebase-messaging-sw.js",
+        TemplateView.as_view(
+            template_name="firebase-messaging-sw.js",
+            content_type="application/javascript",
+        ),
+        name="firebase_sw",
+    ),
     
     # API v1 - Versioned API routes (recommended)
     path("api/v1/", include("loyalty.urls")),

@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
   <head>
@@ -8,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {{ FIREBASE_PUBLIC_CONFIG|json_script:"firebase-config" }}
     
     <!-- Firebase SDK -->
     <script type="module">
@@ -16,15 +18,8 @@
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
       
       // Your web app's Firebase configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyBuZrl2zjPrpOFD_2pZKJTDe1AiRUArviA",
-        authDomain: "bonusapp-1146e.firebaseapp.com",
-        projectId: "bonusapp-1146e",
-        storageBucket: "bonusapp-1146e.firebasestorage.app",
-        messagingSenderId: "127439540218",
-        appId: "1:127439540218:web:c504c60bc6db03c2181e43",
-        measurementId: "G-3BF4XCB9VZ"
-      };
+      const firebaseConfigEl = document.getElementById("firebase-config");
+      const firebaseConfig = firebaseConfigEl ? JSON.parse(firebaseConfigEl.textContent) : {};
       
       // Initialize Firebase
       const app = initializeApp(firebaseConfig);
@@ -280,6 +275,99 @@
         });
       });
     </script>
+    {% if request.user.is_authenticated %}
+    <script type="module">
+      import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-messaging.js";
+
+      const VAPID_PUBLIC_KEY = "{{ VAPID_PUBLIC_KEY|default:'' }}";
+      const SERVICE_WORKER_PATH = "/firebase-messaging-sw.js";
+
+      const getCsrfToken = () => {
+        const name = "csrftoken=";
+        const decodedCookie = decodeURIComponent(document.cookie);
+        const ca = decodedCookie.split(";");
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i].trim();
+          if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+      };
+
+      const showInAppNotification = (title, body) => {
+        const toast = document.createElement("div");
+        toast.className = "fixed bottom-6 right-6 bg-dark-lighter text-white px-5 py-4 rounded-2xl shadow-2xl border border-white/10 max-w-sm z-50";
+        toast.innerHTML = `
+          <div class="font-semibold text-primary mb-1">${title}</div>
+          <div class="text-sm text-gray-200">${body}</div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+          toast.classList.add("opacity-0", "translate-y-2");
+          setTimeout(() => toast.remove(), 400);
+        }, 4000);
+      };
+
+      async function registerWebPush() {
+        if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+          console.warn("Web push not supported in this browser.");
+          return;
+        }
+
+        if (!(await isSupported())) {
+          console.warn("Firebase Messaging not supported in this browser.");
+          return;
+        }
+
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          console.info("Notification permission was not granted.");
+          return;
+        }
+
+        const registration = await navigator.serviceWorker.register(SERVICE_WORKER_PATH);
+        const messaging = getMessaging(window.firebaseApp);
+
+        try {
+          const token = await getToken(messaging, {
+            vapidKey: VAPID_PUBLIC_KEY,
+            serviceWorkerRegistration: registration,
+          });
+
+          if (!token) {
+            console.warn("Unable to obtain FCM token.");
+            return;
+          }
+
+          await fetch("/api/notifications/register-device/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCsrfToken(),
+            },
+            body: JSON.stringify({
+              token,
+              platform: "web",
+            }),
+          });
+
+          onMessage(messaging, (payload) => {
+            const notification = payload.notification;
+            if (notification) {
+              showInAppNotification(notification.title || "Bonus", notification.body || "You have a new message.");
+            }
+          });
+        } catch (error) {
+          console.error("Error initializing web push:", error);
+        }
+      }
+
+      window.addEventListener("load", () => {
+        registerWebPush();
+      });
+    </script>
+    {% endif %}
   </body>
   </html>
 

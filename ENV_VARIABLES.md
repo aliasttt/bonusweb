@@ -57,7 +57,13 @@ CLOUDINARY_API_SECRET=your-api-secret
 ## Optional Variables
 
 - `STRIPE_SECRET_KEY`: For payment processing
-- `FIREBASE_CREDENTIALS_FILE`: For Firebase integration
+- `FIREBASE_CREDENTIALS_FILE`: Path to Firebase service-account JSON (alternative to the env vars below)
+- `FIREBASE_CREDENTIALS_JSON`: Raw JSON string (not recommended in production)
+- `FIREBASE_CREDENTIALS_BASE64`: **Recommended**; base64-encoded service-account JSON used by Firebase Admin SDK
+- `VAPID_PUBLIC_KEY`: Web Push VAPID public key for the browser
+- `FIREBASE_WEB_API_KEY`, `FIREBASE_WEB_AUTH_DOMAIN`, `FIREBASE_WEB_PROJECT_ID`,
+  `FIREBASE_WEB_STORAGE_BUCKET`, `FIREBASE_WEB_SENDER_ID`,
+  `FIREBASE_WEB_APP_ID`, `FIREBASE_WEB_MEASUREMENT_ID`: Override defaults for the Firebase Web config.
 - `AUDIT_LOGGING_ENABLED`: Set to `1` to enable audit logging (default: `1`)
 
 ## Checking Media Files
