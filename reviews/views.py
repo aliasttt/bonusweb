@@ -2,12 +2,16 @@ from __future__ import annotations
 
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, NotFound, ValidationError
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from datetime import timedelta
 
 from accounts.models import Profile
 from accounts.permissions import IsAdminRole, IsBusinessOwnerRole, IsCustomerRole
-from loyalty.models import Business, Customer
+from loyalty.models import Business, Customer, Product
 from .models import Review, ReviewResponse, Service
 from .serializers import ReviewResponseSerializer, ReviewSerializer, ServiceSerializer
 
@@ -193,3 +197,342 @@ class ReviewViewSet(viewsets.ModelViewSet):
         if review.customer.user == user:
             return True
         return False
+
+
+# New API Views for Mobile App
+class ProductReviewListView(APIView):
+    """
+    GET /api/v1/reviews/product/{product_id}/
+    Returns reviews for a specific product in the format requested by mobile app
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, product_id):
+        try:
+            product = Product.objects.get(id=product_id, active=True)
+        except Product.DoesNotExist:
+            return Response(
+                {"error": "Product not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Get approved reviews for this product
+        reviews = Review.objects.filter(
+            product=product,
+            status=Review.Status.APPROVED,
+            target_type=Review.TargetType.PRODUCT
+        ).select_related('customer__user', 'business').order_by('-created_at')
+        
+        # Format response as requested
+        rates = []
+        for review in reviews:
+            rates.append({
+                "title": f"Review by {review.customer.user.username}",
+                "description": review.comment or "",
+                "value": str(review.rating)  # star rating as string
+            })
+        
+        # Calculate expiration time (e.g., 30 days from now)
+        exp_time = (timezone.now() + timedelta(days=30)).isoformat()
+        
+        response_data = {
+            "rating": {
+                "productID": str(product.id),
+                "businessID": str(product.business.id),
+                "expTime": exp_time,
+                "rates": rates
+            }
+        }
+        
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+class CreateProductReviewView(APIView):
+    """
+    POST /api/v1/reviews/create/
+    Creates a new review for a product
+    Expected body:
+    {
+        "userId": "user_id or phone",
+        "productId": "product_id",
+        "rateNumber": "rating number",
+        "star-value": "star rating (1-5)",
+        "time": "timestamp (optional)"
+    }
+    """
+    permission_classes = [permissions.AllowAny]  # Allow anonymous for phone-based auth
+
+    def post(self, request):
+        user_id_or_phone = request.data.get("userId") or request.data.get("phone")
+        product_id = request.data.get("productId")
+        rate_number = request.data.get("rateNumber")
+        star_value = request.data.get("star-value") or request.data.get("star_value")
+        review_time = request.data.get("time")
+        
+        if not user_id_or_phone:
+            return Response(
+                {"error": "userId or phone is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not product_id:
+            return Response(
+                {"error": "productId is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get star rating (prefer star-value, fallback to rateNumber)
+        rating = star_value or rate_number
+        if not rating:
+            return Response(
+                {"error": "star-value or rateNumber is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            rating = int(rating)
+            if rating < 1 or rating > 5:
+                return Response(
+                    {"error": "Rating must be between 1 and 5"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except (ValueError, TypeError):
+            return Response(
+                {"error": "Invalid rating value"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get product
+        try:
+            product = Product.objects.get(id=product_id, active=True)
+        except Product.DoesNotExist:
+            return Response(
+                {"error": "Product not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Get or create customer
+        # Try to find user by ID first, then by phone
+        from django.contrib.auth.models import User
+        user = None
+        
+        try:
+            # Try as user ID
+            user_id = int(user_id_or_phone)
+            user = User.objects.filter(id=user_id).first()
+        except (ValueError, TypeError):
+            pass
+        
+        # If not found, try as phone number
+        if not user:
+            # Try to find business by phone and get owner, or find customer by phone
+            business = Business.objects.filter(phone=user_id_or_phone).first()
+            if business:
+                user = business.owner
+            else:
+                # Try to find customer by phone (if phone is stored in user profile)
+                # For now, we'll create a customer with a temporary user
+                # In production, you might want to link phone to user differently
+                pass
+        
+        # If still no user, create a temporary one or use anonymous
+        if not user and request.user.is_authenticated:
+            user = request.user
+        elif not user:
+            # Create anonymous review (you might want to handle this differently)
+            return Response(
+                {"error": "User authentication required"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        customer, _ = Customer.objects.get_or_create(user=user)
+        
+        # Check if review already exists
+        existing_review = Review.objects.filter(
+            product=product,
+            customer=customer
+        ).first()
+        
+        if existing_review:
+            # Update existing review
+            existing_review.rating = rating
+            existing_review.comment = request.data.get("description", existing_review.comment)
+            existing_review.status = Review.Status.PENDING  # Reset to pending for moderation
+            if review_time:
+                try:
+                    from django.utils.dateparse import parse_datetime
+                    parsed_time = parse_datetime(review_time)
+                    if parsed_time:
+                        existing_review.created_at = parsed_time
+                except:
+                    pass
+            existing_review.save()
+            return Response(
+                {"message": "Review updated successfully", "review_id": existing_review.id},
+                status=status.HTTP_200_OK
+            )
+        
+        # Create new review
+        review = Review.objects.create(
+            business=product.business,
+            product=product,
+            customer=customer,
+            rating=rating,
+            comment=request.data.get("description", ""),
+            target_type=Review.TargetType.PRODUCT,
+            status=Review.Status.PENDING,  # Require moderation
+            source=Review.Source.APP
+        )
+        
+        if review_time:
+            try:
+                from django.utils.dateparse import parse_datetime
+                parsed_time = parse_datetime(review_time)
+                if parsed_time:
+                    review.created_at = parsed_time
+                    review.save(update_fields=['created_at'])
+            except:
+                pass
+        
+        return Response(
+            {"message": "Review created successfully", "review_id": review.id},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class DeleteProductReviewView(APIView):
+    """
+    DELETE /api/v1/reviews/delete/
+    Deletes a review for a product
+    Expected body:
+    {
+        "userId": "user_id or phone",
+        "productId": "product_id"
+    }
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def delete(self, request):
+        user_id_or_phone = request.data.get("userId") or request.data.get("phone")
+        product_id = request.data.get("productId")
+        
+        if not user_id_or_phone:
+            return Response(
+                {"error": "userId or phone is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not product_id:
+            return Response(
+                {"error": "productId is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get product
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response(
+                {"error": "Product not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Find user/customer
+        from django.contrib.auth.models import User
+        user = None
+        
+        try:
+            user_id = int(user_id_or_phone)
+            user = User.objects.filter(id=user_id).first()
+        except (ValueError, TypeError):
+            pass
+        
+        if not user:
+            business = Business.objects.filter(phone=user_id_or_phone).first()
+            if business:
+                user = business.owner
+        
+        if not user and request.user.is_authenticated:
+            user = request.user
+        
+        if not user:
+            return Response(
+                {"error": "User not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        customer = Customer.objects.filter(user=user).first()
+        if not customer:
+            return Response(
+                {"error": "Customer not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Find and delete review
+        review = Review.objects.filter(
+            product=product,
+            customer=customer
+        ).first()
+        
+        if not review:
+            return Response(
+                {"error": "Review not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        review.delete()
+        return Response(
+            {"message": "Review deleted successfully"},
+            status=status.HTTP_200_OK
+        )
+
+
+class BusinessProductReviewsView(APIView):
+    """
+    GET /api/v1/reviews/business/{business_id}/products/
+    Returns all product reviews for all products in a business/store
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, business_id):
+        try:
+            business = Business.objects.get(id=business_id)
+        except Business.DoesNotExist:
+            return Response(
+                {"error": "Business not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Get all active products for this business
+        products = Product.objects.filter(business=business, active=True)
+        
+        # Get all approved reviews for products in this business
+        reviews = Review.objects.filter(
+            business=business,
+            product__in=products,
+            status=Review.Status.APPROVED,
+            target_type=Review.TargetType.PRODUCT
+        ).select_related('product', 'customer__user').order_by('-created_at')
+        
+        # Group reviews by product
+        product_reviews = {}
+        for review in reviews:
+            product_id = str(review.product.id)
+            if product_id not in product_reviews:
+                product_reviews[product_id] = {
+                    "productID": product_id,
+                    "businessID": str(business.id),
+                    "productName": review.product.title,
+                    "rates": []
+                }
+            
+            product_reviews[product_id]["rates"].append({
+                "title": f"Review by {review.customer.user.username}",
+                "description": review.comment or "",
+                "value": str(review.rating)
+            })
+        
+        # Convert to list
+        result = list(product_reviews.values())
+        
+        return Response(result, status=status.HTTP_200_OK)

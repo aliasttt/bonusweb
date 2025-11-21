@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from loyalty.models import Business, Customer
+from loyalty.models import Business, Customer, Product
 
 
 class Service(models.Model):
@@ -35,6 +35,7 @@ class Review(models.Model):
     class TargetType(models.TextChoices):
         BUSINESS = "business", "Business"
         SERVICE = "service", "Service"
+        PRODUCT = "product", "Product"
 
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
@@ -49,6 +50,13 @@ class Review(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name="reviews")
     service = models.ForeignKey(
         Service,
+        on_delete=models.SET_NULL,
+        related_name="reviews",
+        blank=True,
+        null=True,
+    )
+    product = models.ForeignKey(
+        Product,
         on_delete=models.SET_NULL,
         related_name="reviews",
         blank=True,
@@ -78,6 +86,7 @@ class Review(models.Model):
         indexes = [
             models.Index(fields=("status",)),
             models.Index(fields=("target_type",)),
+            models.Index(fields=("product",)),
         ]
 
     def __str__(self) -> str:  # pragma: no cover
@@ -86,7 +95,11 @@ class Review(models.Model):
     def save(self, *args, **kwargs):
         if self.service and self.service.business_id != self.business_id:
             raise ValueError("Service business mismatch")
-        if self.service:
+        if self.product and self.product.business_id != self.business_id:
+            raise ValueError("Product business mismatch")
+        if self.product:
+            self.target_type = self.TargetType.PRODUCT
+        elif self.service:
             self.target_type = self.TargetType.SERVICE
         else:
             self.target_type = self.TargetType.BUSINESS
