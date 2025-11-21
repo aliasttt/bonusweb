@@ -17,6 +17,7 @@ from accounts.models import Profile
 from rewards.models import PointsTransaction
 from django.db.models import Sum, Count
 from django.utils import timezone
+from django.conf import settings
 
 
 @require_http_methods(["GET", "POST"])
@@ -89,12 +90,22 @@ def dashboard(request):
             except Exception:
                 campaigns_count = 0
         
+        # Check if Cloudinary is active
+        cloudinary_active = False
+        try:
+            storage_class = getattr(settings, 'DEFAULT_FILE_STORAGE', '')
+            if 'cloudinary' in str(storage_class).lower():
+                cloudinary_active = True
+        except Exception:
+            pass
+        
         context = {
             "business": business,
             "orders_count": orders_count,
             "products_count": products_count,
             "reviews_count": reviews_count,
             "campaigns_count": campaigns_count,
+            "cloudinary_active": cloudinary_active,
         }
         
         return render(request, "partners/dashboard.html", context)
@@ -364,6 +375,46 @@ def users_list(request):
         'total_points_earned_all': total_points_earned_all,
         'total_spent_all': total_spent_all,
     })
+
+
+@login_required
+def notifications_center(request):
+    """Notifications UI for business owners and super admins."""
+    profile = getattr(request.user, "profile", None)
+    is_superuser = bool(profile and profile.role == Profile.Role.SUPERUSER)
+
+    if is_superuser:
+        businesses = Business.objects.order_by("name")
+    else:
+        businesses = Business.objects.filter(owner=request.user).order_by("name")
+
+    active_business = _get_active_business(request)
+
+    business_customers = {}
+    for biz in businesses:
+        customers = (
+            Customer.objects.filter(wallets__business=biz)
+            .select_related("user")
+            .distinct()
+        )
+        business_customers[biz.id] = [
+            {
+                "user_id": customer.user_id,
+                "customer_id": customer.id,
+                "name": customer.user.get_full_name() or customer.user.username,
+                "email": customer.user.email or "",
+                "phone": customer.phone or "",
+            }
+            for customer in customers
+        ]
+
+    context = {
+        "businesses": businesses,
+        "default_business_id": active_business.id if active_business else None,
+        "can_broadcast": is_superuser,
+        "business_customers_json": json.dumps(business_customers, ensure_ascii=False),
+    }
+    return render(request, "partners/notifications_center.html", context)
 
 
 @login_required
