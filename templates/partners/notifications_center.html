@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+{{ business_customers_json|json_script:"business-customers" }}
+<div class="max-w-6xl mx-auto px-4 py-12">
+  <div class="mb-8">
+    <a href="/partners/dashboard/" class="inline-flex items-center px-4 py-2 rounded-md border border-white/20 bg-white/5 hover:bg-white/10 transition text-slate-200 mb-4">← Back to Dashboard</a>
+    <h1 class="text-4xl font-bold text-white">Send Push Notification</h1>
+    <p class="mt-2 text-slate-400 max-w-3xl">
+      Craft a message and deliver it instantly to your customers. Notifications go through Firebase and appear inside the Bonus mobile app and partner web panel.
+    </p>
+  </div>
+
+  {% if not businesses %}
+    <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-red-200">
+      <h2 class="text-xl font-semibold mb-2">No business found</h2>
+      <p class="text-sm text-red-100">You need to register at least one business before sending notifications.</p>
+    </div>
+  {% else %}
+  <div class="grid lg:grid-cols-3 gap-6 mb-10">
+    <div class="bg-white/5 rounded-2xl border border-white/10 p-5">
+      <p class="text-sm text-slate-400">Audience</p>
+      <p class="text-2xl font-semibold text-white mt-1" id="audienceLabel">Business Customers</p>
+      <p class="text-xs text-slate-400 mt-1">Choose between your own customers or (if allowed) everyone.</p>
+    </div>
+    <div class="bg-white/5 rounded-2xl border border-white/10 p-5">
+      <p class="text-sm text-slate-400">Default Business</p>
+      <p class="text-2xl font-semibold text-white mt-1">
+        {% if default_business_id %}
+          {% for biz in businesses %}
+            {% if biz.id == default_business_id %}
+              {{ biz.name }}
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          Not Selected
+        {% endif %}
+      </p>
+      <p class="text-xs text-slate-400 mt-1">You can switch any time from the selector below.</p>
+    </div>
+    <div class="bg-white/5 rounded-2xl border border-white/10 p-5">
+      <p class="text-sm text-slate-400">Delivery</p>
+      <p class="text-2xl font-semibold text-white mt-1">Instant</p>
+      <p class="text-xs text-slate-400 mt-1">Sent immediately after you hit send.</p>
+    </div>
+  </div>
+
+  <div class="bg-white/10 border border-white/20 rounded-3xl p-8 shadow-2xl backdrop-blur">
+    <form id="notificationForm" class="space-y-6">
+      {% csrf_token %}
+      <div>
+        <label class="block text-sm font-semibold text-slate-200 mb-2">Notification title</label>
+        <input type="text" name="title" maxlength="80" required class="w-full px-4 py-3 rounded-xl bg-white text-slate-900 border-2 border-transparent focus:border-primary outline-none transition" placeholder="Doner special discount">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-200 mb-2">Message body</label>
+        <textarea name="body" rows="4" required class="w-full px-4 py-3 rounded-xl bg-white text-slate-900 border-2 border-transparent focus:border-primary outline-none transition" placeholder="Only today! Grab 20% off on all doners when you show this message."></textarea>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-semibold text-slate-200 mb-2">Audience</label>
+          <select name="audience" id="audienceSelect" class="w-full px-4 py-3 rounded-xl bg-white text-slate-900 border-2 border-transparent focus:border-primary outline-none transition">
+            <option value="business_customers" selected>Customers of selected business</option>
+            {% if can_broadcast %}
+              <option value="all_customers">All customers (global broadcast)</option>
+            {% endif %}
+          </select>
+          <p class="text-xs text-slate-400 mt-2">
+            {% if can_broadcast %}
+              Choose <strong>All customers</strong> to broadcast platform wide. Use responsibly.
+            {% else %}
+              Only your business customers are available. Contact a super admin for global broadcasts.
+            {% endif %}
+          </p>
+        </div>
+        <div id="businessPicker">
+          <label class="block text-sm font-semibold text-slate-200 mb-2">Select business</label>
+          <select name="business_id" id="businessSelect" class="w-full px-4 py-3 rounded-xl bg-white text-slate-900 border-2 border-transparent focus:border-primary outline-none transition">
+            {% for biz in businesses %}
+              <option value="{{ biz.id }}" {% if biz.id == default_business_id %}selected{% endif %}>{{ biz.name }}</option>
+            {% endfor %}
+          </select>
+          <p class="text-xs text-slate-400 mt-2">Notification will be sent to customers who have wallets with this business.</p>
+        </div>
+      </div>
+
+      <div id="recipientSection" class="rounded-2xl border border-white/15 bg-white/5 p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-lg font-semibold text-white">Recipients</h3>
+            <p class="text-xs text-slate-400">Select individual customers or leave empty to notify all customers of this business.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="button" id="selectAllBtn" class="px-3 py-1 rounded-lg border border-white/20 text-xs text-white hover:bg-white/10 transition">Select all</button>
+            <button type="button" id="clearAllBtn" class="px-3 py-1 rounded-lg border border-white/20 text-xs text-white hover:bg-white/10 transition">Clear</button>
+          </div>
+        </div>
+        <input type="search" id="customerSearch" placeholder="Search by name, email, or phone" class="w-full px-4 py-2 rounded-xl bg-dark-lighter text-white border border-white/10 focus:border-primary outline-none transition mb-4">
+        <div id="customerList" class="max-h-64 overflow-y-auto grid md:grid-cols-2 gap-3 text-sm"></div>
+        <p class="text-xs text-slate-400 mt-3" id="selectionSummary">No specific recipients selected. All customers of this business will receive this notification.</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-slate-200 mb-2">Optional custom data (JSON)</label>
+        <textarea name="data_json" rows="3" class="w-full px-4 py-3 rounded-xl bg-white text-slate-900 border-2 border-transparent focus:border-primary outline-none transition" placeholder='{"deep_link": "/offers", "discount": "20"}'></textarea>
+        <p class="text-xs text-slate-400 mt-2">This data will be delivered to the app and can be used for deep links or custom actions.</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <button type="submit" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow-lg shadow-primary/30 hover:shadow-xl transition">
+          Send notification
+        </button>
+        <button type="button" id="previewButton" class="px-6 py-3 rounded-2xl border border-white/30 text-white hover:bg-white/10 transition">
+          Preview message
+        </button>
+      </div>
+    </form>
+
+    <div id="statusCard" class="mt-8 hidden rounded-2xl border border-white/10 p-5"></div>
+  </div>
+
+  <div class="mt-10 bg-white/5 border border-white/10 rounded-3xl p-8">
+    <h2 class="text-2xl font-semibold text-white mb-3">Best practices</h2>
+    <ul class="list-disc list-inside text-slate-300 space-y-2 text-sm">
+      <li>Send no more than 2 promotions per day per business to avoid user fatigue.</li>
+      <li>Keep the title short (under 60 characters) and the body actionable.</li>
+      <li>Use the optional JSON data to deep-link users directly to menus, offers, or campaigns.</li>
+    </ul>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  const form = document.getElementById("notificationForm");
+  const statusCard = document.getElementById("statusCard");
+  const audienceSelect = document.getElementById("audienceSelect");
+  const businessPicker = document.getElementById("businessPicker");
+  const businessSelect = document.getElementById("businessSelect");
+  const customerDataEl = document.getElementById("business-customers");
+  const customerSearch = document.getElementById("customerSearch");
+  const customerList = document.getElementById("customerList");
+  const selectionSummary = document.getElementById("selectionSummary");
+  const selectAllBtn = document.getElementById("selectAllBtn");
+  const clearAllBtn = document.getElementById("clearAllBtn");
+  const recipientSection = document.getElementById("recipientSection");
+  const previewButton = document.getElementById("previewButton");
+  const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]")?.value;
+  const audienceLabel = document.getElementById("audienceLabel");
+  const customersByBusiness = customerDataEl ? JSON.parse(customerDataEl.textContent || "{}") : {};
+  let selectedUserIds = new Set();
+  let currentBusinessId = businessSelect ? parseInt(businessSelect.value, 10) : (Object.keys(customersByBusiness)[0] || null);
+
+  function getFilteredCustomers() {
+    const list = customersByBusiness[currentBusinessId] || [];
+    const searchTerm = (customerSearch?.value || "").trim().toLowerCase();
+    if (!searchTerm) {
+      return list;
+    }
+    return list.filter((item) => {
+      return (
+        item.name?.toLowerCase().includes(searchTerm) ||
+        item.email?.toLowerCase().includes(searchTerm) ||
+        item.phone?.toLowerCase().includes(searchTerm)
+      );
+    });
+  }
+
+  function updateSelectionSummary() {
+    if (!selectionSummary) return;
+    if (!selectedUserIds.size) {
+      selectionSummary.textContent = "No specific recipients selected. All customers of this business will receive this notification.";
+    } else {
+      selectionSummary.textContent = `${selectedUserIds.size} recipient(s) selected.`;
+    }
+  }
+
+  function renderCustomerList() {
+    if (!customerList) return;
+    customerList.innerHTML = "";
+    const items = getFilteredCustomers();
+    if (!items.length) {
+      customerList.innerHTML = `<div class="text-slate-400 text-sm col-span-2">No customers found for this filter.</div>`;
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    items.forEach((item) => {
+      const wrapper = document.createElement("label");
+      wrapper.className = "flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/10 hover:border-primary/40 transition cursor-pointer";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = item.user_id;
+      input.checked = selectedUserIds.has(item.user_id);
+      input.className = "w-4 h-4 text-primary focus:ring-primary";
+      input.addEventListener("change", () => {
+        if (input.checked) {
+          selectedUserIds.add(item.user_id);
+        } else {
+          selectedUserIds.delete(item.user_id);
+        }
+        updateSelectionSummary();
+      });
+      const info = document.createElement("div");
+      info.className = "flex-1 min-w-0";
+      info.innerHTML = `
+        <div class="font-semibold text-white truncate">${item.name || "Unknown user"}</div>
+        <div class="text-xs text-slate-400 truncate">${item.email || "No email"}${item.phone ? " • " + item.phone : ""}</div>
+      `;
+      wrapper.appendChild(input);
+      wrapper.appendChild(info);
+      fragment.appendChild(wrapper);
+    });
+    customerList.appendChild(fragment);
+    updateSelectionSummary();
+  }
+
+  function resetRecipientsForBusiness(bizId) {
+    currentBusinessId = parseInt(bizId, 10);
+    selectedUserIds.clear();
+    if (customerSearch) {
+      customerSearch.value = "";
+    }
+    renderCustomerList();
+  }
+
+  if (businessSelect) {
+    businessSelect.addEventListener("change", () => {
+      resetRecipientsForBusiness(businessSelect.value);
+    });
+    resetRecipientsForBusiness(businessSelect.value);
+  } else if (currentBusinessId) {
+    renderCustomerList();
+  }
+
+  if (customerSearch) {
+    customerSearch.addEventListener("input", () => {
+      renderCustomerList();
+    });
+  }
+
+  if (selectAllBtn) {
+    selectAllBtn.addEventListener("click", () => {
+      (customersByBusiness[currentBusinessId] || []).forEach((item) => selectedUserIds.add(item.user_id));
+      renderCustomerList();
+    });
+  }
+
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener("click", () => {
+      selectedUserIds.clear();
+      renderCustomerList();
+    });
+  }
+
+  if (audienceSelect && businessPicker) {
+    audienceSelect.addEventListener("change", () => {
+      const value = audienceSelect.value;
+      audienceLabel.textContent = value === "all_customers" ? "All Customers" : "Business Customers";
+      if (value === "all_customers") {
+        businessPicker.classList.add("opacity-50");
+        const selectEl = businessPicker.querySelector("select");
+        if (selectEl) {
+          selectEl.setAttribute("disabled", "disabled");
+        }
+        if (recipientSection) {
+          recipientSection.classList.add("opacity-50");
+        }
+        selectedUserIds.clear();
+        if (customerList) {
+          customerList.innerHTML = `<div class="text-slate-400 text-sm col-span-2">All customers will receive this notification.</div>`;
+        }
+        updateSelectionSummary();
+      } else {
+        businessPicker.classList.remove("opacity-50");
+        const selectEl = businessPicker.querySelector("select");
+        if (selectEl) {
+          selectEl.removeAttribute("disabled");
+        }
+        if (recipientSection) {
+          recipientSection.classList.remove("opacity-50");
+        }
+        if (businessSelect) {
+          resetRecipientsForBusiness(businessSelect.value);
+        } else {
+          renderCustomerList();
+        }
+      }
+    });
+  }
+
+  function showStatus(message, type = "success") {
+    if (!statusCard) return;
+    statusCard.classList.remove("hidden");
+    statusCard.classList.remove("bg-red-500/20", "border-red-500/40", "text-red-100", "bg-green-500/20", "border-green-500/40", "text-green-100");
+    if (type === "error") {
+      statusCard.classList.add("bg-red-500/20", "border-red-500/40", "text-red-100");
+    } else {
+      statusCard.classList.add("bg-green-500/20", "border-green-500/40", "text-green-100");
+    }
+    statusCard.innerHTML = message;
+  }
+
+  function buildPayload(formData) {
+    const payload = {
+      title: formData.get("title")?.trim(),
+      body: formData.get("body")?.trim(),
+      audience: formData.get("audience") || "business_customers",
+    };
+
+    if (!payload.title || !payload.body) {
+      throw new Error("Title and body are required.");
+    }
+
+    const businessId = formData.get("business_id");
+    if (payload.audience !== "all_customers") {
+      if (!businessId) {
+        throw new Error("Please select a business.");
+      }
+      payload.business_id = parseInt(businessId, 10);
+      if (selectedUserIds.size) {
+        payload.user_ids = Array.from(selectedUserIds);
+      }
+    } else if (selectedUserIds.size) {
+      payload.user_ids = Array.from(selectedUserIds);
+    }
+
+    const dataJson = formData.get("data_json")?.trim();
+    if (dataJson) {
+      try {
+        payload.data = JSON.parse(dataJson);
+      } catch (err) {
+        throw new Error("Optional custom data must be valid JSON.");
+      }
+    }
+
+    return payload;
+  }
+
+  if (previewButton && form) {
+    previewButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      try {
+        const data = buildPayload(new FormData(form));
+        showStatus(`
+          <div class="font-semibold text-lg mb-2">Preview</div>
+          <div class="text-white text-base mb-1">${data.title}</div>
+          <div class="text-slate-100 text-sm mb-2">${data.body}</div>
+          <pre class="text-xs bg-black/30 p-3 rounded-xl border border-white/10">${JSON.stringify(data, null, 2)}</pre>
+        `, "success");
+      } catch (err) {
+        showStatus(`<div class="font-semibold text-lg mb-2">Validation error</div><p>${err.message}</p>`, "error");
+      }
+    });
+  }
+
+  if (form) {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const submitButton = form.querySelector("button[type='submit']");
+      try {
+        const payload = buildPayload(new FormData(form));
+        submitButton.disabled = true;
+        submitButton.textContent = "Sending...";
+        showStatus("Sending notification...", "success");
+
+        const response = await fetch("/api/notifications/send/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken || "",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || data.error || "Failed to send notification.");
+        }
+
+        showStatus(`
+          <div class="font-semibold text-lg mb-1">Notification sent 🎉</div>
+          <p class="text-sm text-slate-100 mb-1">Audience: <strong>${data.audience}</strong></p>
+          <p class="text-sm text-slate-100">Delivered to <strong>${data.sent}</strong> registered devices.</p>
+        `, "success");
+      } catch (err) {
+        showStatus(`
+          <div class="font-semibold text-lg mb-1">Failed to send</div>
+          <p>${err.message}</p>
+        `, "error");
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Send notification";
+      }
+    });
+  }
+</script>
+{% endblock %}
+

@@ -49,3 +49,34 @@ FIREBASE_WEB_API_KEY=...
 4. Service worker `firebase-messaging-sw.js` should be registered (check DevTools → Application → Service Workers)
 5. Click "Send Test Notification" (if implemented) or call `POST /api/notifications/send-test/`
 
+### 4. Sending notifications via API
+
+- Register device (web/mobile):
+  ```
+  POST /api/notifications/register-device/
+  {
+    "token": "<firebase device token>",
+    "platform": "web" | "ios" | "android"
+  }
+  ```
+- Send to current user’s devices (for quick test):
+  ```
+  POST /api/notifications/send-test/
+  {
+    "title": "Test",
+    "body": "Hello from Bonus"
+  }
+  ```
+- Send to business customers or broadcast (new):
+  ```
+  POST /api/notifications/send/
+  {
+    "title": "Doner Discount!",
+    "body": "20% off today only",
+    "audience": "business_customers",
+    "business_id": 12
+  }
+  ```
+  - `audience` = `business_customers` (default) sends to wallets/customers of the selected business (business owner must own it).
+  - `audience` = `all_customers` allowed **only** for superusers (broadcast to every registered customer device).
+
