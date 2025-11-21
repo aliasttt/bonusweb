@@ -17,7 +17,6 @@ from accounts.models import Profile
 from rewards.models import PointsTransaction
 from django.db.models import Sum, Count
 from django.utils import timezone
-from django.conf import settings
 
 
 @require_http_methods(["GET", "POST"])
@@ -90,22 +89,12 @@ def dashboard(request):
             except Exception:
                 campaigns_count = 0
         
-        # Check if Cloudinary is active
-        cloudinary_active = False
-        try:
-            storage_class = getattr(settings, 'DEFAULT_FILE_STORAGE', '')
-            if 'cloudinary' in str(storage_class).lower():
-                cloudinary_active = True
-        except Exception:
-            pass
-        
         context = {
             "business": business,
             "orders_count": orders_count,
             "products_count": products_count,
             "reviews_count": reviews_count,
             "campaigns_count": campaigns_count,
-            "cloudinary_active": cloudinary_active,
         }
         
         return render(request, "partners/dashboard.html", context)
