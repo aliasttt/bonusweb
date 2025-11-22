@@ -9,6 +9,7 @@ from .views import (
     DeleteProductReviewView,
     BusinessProductReviewsView,
     CreateBusinessReviewView,
+    CreateServiceReviewView,
 )
 
 router = DefaultRouter()
@@ -22,4 +23,5 @@ urlpatterns = [
     path("delete/", DeleteProductReviewView.as_view(), name="delete_product_review"),
     path("business/<int:business_id>/products/", BusinessProductReviewsView.as_view(), name="business_product_reviews"),
     path("business/create/", CreateBusinessReviewView.as_view(), name="create_business_review"),
+    path("service/create/", CreateServiceReviewView.as_view(), name="create_service_review"),
 ] + router.urls

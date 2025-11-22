@@ -621,3 +621,109 @@ class CreateBusinessReviewView(APIView):
             {"message": "Business review saved", "review_id": review.id},
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
         )
+
+
+class CreateServiceReviewView(APIView):
+    """
+    POST /api/v1/reviews/service/create/
+    Creates or updates a review targeted at a service under a business
+    Body:
+    {
+        "userId" or "phone": string,
+        "businessId": number,
+        "serviceId": number (optional),
+        "serviceName": string (optional, used if serviceId not provided),
+        "serviceCategory": "food|cafe|beauty|fitness|other" (optional),
+        "star-value" or "rateNumber": number 1-5,
+        "description": string (optional),
+        "time": ISO timestamp (optional)
+    }
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        user_id_or_phone = request.data.get("userId") or request.data.get("phone")
+        business_id = request.data.get("businessId")
+        service_id = request.data.get("serviceId")
+        service_name = (request.data.get("serviceName") or "").strip()
+        service_category = request.data.get("serviceCategory")
+        star_value = request.data.get("star-value") or request.data.get("star_value") or request.data.get("rateNumber")
+        comment = request.data.get("description", "")
+        review_time = request.data.get("time")
+
+        if not user_id_or_phone:
+            return Response({"error": "userId or phone is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not business_id:
+            return Response({"error": "businessId is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not (service_id or service_name):
+            return Response({"error": "serviceId or serviceName is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not star_value:
+            return Response({"error": "star-value or rateNumber is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            rating = int(star_value)
+            if rating < 1 or rating > 5:
+                return Response({"error": "Rating must be between 1 and 5"}, status=status.HTTP_400_BAD_REQUEST)
+        except (ValueError, TypeError):
+            return Response({"error": "Invalid rating value"}, status=status.HTTP_400_BAD_REQUEST)
+
+        business = Business.objects.filter(id=business_id).first()
+        if not business:
+            return Response({"error": "Business not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Resolve user
+        from django.contrib.auth.models import User
+        user = None
+        try:
+            user_id = int(user_id_or_phone)
+            user = User.objects.filter(id=user_id).first()
+        except (ValueError, TypeError):
+            pass
+        if not user and request.user.is_authenticated:
+            user = request.user
+        if not user:
+            return Response({"error": "User authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        customer, _ = Customer.objects.get_or_create(user=user)
+
+        # Resolve or create service
+        service = None
+        if service_id:
+            service = Service.objects.filter(id=service_id, business=business).first()
+            if not service:
+                return Response({"error": "Service not found for this business"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            # Create by name if not exists
+            defaults = {"category": service_category or Service.Category.OTHER}
+            service, _ = Service.objects.get_or_create(
+                business=business,
+                name=service_name,
+                defaults=defaults,
+            )
+
+        # Upsert service review
+        review, created = Review.objects.get_or_create(
+            business=business,
+            service=service,
+            customer=customer,
+            product=None,
+            defaults={"rating": rating, "comment": comment, "status": Review.Status.PENDING, "source": Review.Source.APP},
+        )
+        if not created:
+            review.rating = rating
+            review.comment = comment or review.comment
+            review.status = Review.Status.PENDING
+        if review_time:
+            try:
+                from django.utils.dateparse import parse_datetime
+                parsed_time = parse_datetime(review_time)
+                if parsed_time:
+                    review.created_at = parsed_time
+            except Exception:
+                pass
+        review.save()
+
+        return Response(
+            {"message": "Service review saved", "review_id": review.id, "service_id": service.id},
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
