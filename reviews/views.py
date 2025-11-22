@@ -536,3 +536,88 @@ class BusinessProductReviewsView(APIView):
         result = list(product_reviews.values())
         
         return Response(result, status=status.HTTP_200_OK)
+
+
+class CreateBusinessReviewView(APIView):
+    """
+    POST /api/v1/reviews/business/create/
+    Creates or updates a review targeted at a business (for overall rating shown in slider)
+    Body:
+    {
+        "userId" or "phone": string,
+        "businessId": number,
+        "star-value" or "rateNumber": number 1-5,
+        "description": string (optional),
+        "time": ISO timestamp (optional)
+    }
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        user_id_or_phone = request.data.get("userId") or request.data.get("phone")
+        business_id = request.data.get("businessId")
+        star_value = request.data.get("star-value") or request.data.get("star_value") or request.data.get("rateNumber")
+        comment = request.data.get("description", "")
+        review_time = request.data.get("time")
+
+        if not user_id_or_phone:
+            return Response({"error": "userId or phone is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not business_id:
+            return Response({"error": "businessId is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not star_value:
+            return Response({"error": "star-value or rateNumber is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            rating = int(star_value)
+            if rating < 1 or rating > 5:
+                return Response({"error": "Rating must be between 1 and 5"}, status=status.HTTP_400_BAD_REQUEST)
+        except (ValueError, TypeError):
+            return Response({"error": "Invalid rating value"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Load business
+        business = Business.objects.filter(id=business_id).first()
+        if not business:
+            return Response({"error": "Business not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Resolve user
+        from django.contrib.auth.models import User
+        user = None
+        try:
+            user_id = int(user_id_or_phone)
+            user = User.objects.filter(id=user_id).first()
+        except (ValueError, TypeError):
+            pass
+        if not user and request.user.is_authenticated:
+            user = request.user
+        if not user:
+            # As a simple fallback, deny anonymous rating to avoid spam
+            return Response({"error": "User authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        customer, _ = Customer.objects.get_or_create(user=user)
+
+        # Upsert business review (no product/service)
+        review, created = Review.objects.get_or_create(
+            business=business,
+            customer=customer,
+            product=None,
+            service=None,
+            defaults={"rating": rating, "comment": comment, "status": Review.Status.PENDING, "source": Review.Source.APP},
+        )
+        if not created:
+            review.rating = rating
+            review.comment = comment or review.comment
+            review.status = Review.Status.PENDING
+        if review_time:
+            try:
+                from django.utils.dateparse import parse_datetime
+                parsed_time = parse_datetime(review_time)
+                if parsed_time:
+                    review.created_at = parsed_time
+            except Exception:
+                pass
+        review.save()
+
+        return Response(
+            {"message": "Business review saved", "review_id": review.id},
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )

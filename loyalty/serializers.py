@@ -74,13 +74,15 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 
 class SliderSerializer(serializers.ModelSerializer):
-    """Serializer for Slider - returns image, store, address, description, business_id"""
+    """Serializer for Slider - returns image, store, address, description, business_id, stars"""
     image = serializers.SerializerMethodField()
     business_id = serializers.IntegerField(source='business.id', read_only=True)
+    stars = serializers.SerializerMethodField()
+    reviews_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Slider
-        fields = ["image", "store", "address", "description", "business_id"]
+        fields = ["image", "store", "address", "description", "business_id", "stars", "reviews_count"]
     
     def get_image(self, obj):
         """Return full URL for image"""
@@ -91,17 +93,33 @@ class SliderSerializer(serializers.ModelSerializer):
             return obj.image.url
         return None
 
+    def get_stars(self, obj):
+        """Average star rating (0-5) for the slider's business based on approved reviews"""
+        try:
+            avg = obj.business.reviews.filter(status=Review.Status.APPROVED).aggregate(avg=Avg("rating")).get("avg")
+            return round(float(avg), 2) if avg is not None else 0.0
+        except Exception:
+            return 0.0
+
+    def get_reviews_count(self, obj):
+        try:
+            return obj.business.reviews.filter(status=Review.Status.APPROVED).count()
+        except Exception:
+            return 0
+
 
 class MenuProductSerializer(serializers.ModelSerializer):
-    """Serializer for Menu Products - returns id, image, reward, point"""
+    """Serializer for Menu Products - returns id, image, reward, point, stars"""
     id = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
     reward = serializers.SerializerMethodField()
     point = serializers.SerializerMethodField()
+    stars = serializers.SerializerMethodField()
+    reviews_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Product
-        fields = ["id", "image", "reward", "point"]
+        fields = ["id", "image", "reward", "point", "stars", "reviews_count"]
     
     def get_id(self, obj):
         """Return id as string"""
@@ -126,5 +144,22 @@ class MenuProductSerializer(serializers.ModelSerializer):
         except Exception:
             pass
         return None
+
+    def get_stars(self, obj):
+        """Average star rating (0-5) for this product based on approved reviews"""
+        try:
+            avg = Review.objects.filter(
+                product=obj,
+                status=Review.Status.APPROVED
+            ).aggregate(avg=Avg("rating")).get("avg")
+            return round(float(avg), 2) if avg is not None else 0.0
+        except Exception:
+            return 0.0
+
+    def get_reviews_count(self, obj):
+        try:
+            return Review.objects.filter(product=obj, status=Review.Status.APPROVED).count()
+        except Exception:
+            return 0
 
 
