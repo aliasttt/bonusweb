@@ -170,8 +170,8 @@ if USE_CLOUDINARY and CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINAR
         MEDIA_ROOT = BASE_DIR / "media"
 else:
     # Development: Use local file storage
-    MEDIA_URL = "/media/"
-    MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

@@ -89,29 +89,29 @@
               {% if menu_items %}
                 {% for p in menu_items %}
                   <div class="menu-product-card cursor-pointer p-3 rounded-xl border-2 border-gray-300 bg-white hover:border-gray-400 transition-all" 
-                       data-product-id="{{ p.id }}" 
-                       data-points="{{ p.points_reward }}"
+                 data-product-id="{{ p.id }}" 
+                 data-points="{{ p.points_reward }}"
                        data-is-reward="false"
-                       data-selected="false">
+                 data-selected="false">
                     <input type="checkbox" class="prod hidden" value="{{ p.id }}" data-points="{{ p.points_reward }}" data-is-reward="false" />
                     <div class="w-full h-32 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden mb-2">
-                      {% if p.image %}
-                        <img src="{{ p.image.url }}" class="max-w-full max-h-full object-contain rounded-lg" alt="{{ p.title }}" />
-                      {% else %}
+                {% if p.image %}
+                  <img src="{{ p.image.url }}" class="max-w-full max-h-full object-contain rounded-lg" alt="{{ p.title }}" />
+                {% else %}
                         <div class="text-gray-400 text-xs">No Image</div>
-                      {% endif %}
-                    </div>
-                    <div class="text-center">
+                {% endif %}
+              </div>
+              <div class="text-center">
                       <div class="font-semibold text-gray-800 text-sm truncate">{{ p.title }}</div>
                       <div class="text-xs text-green-600 font-medium mt-1">+{{ p.points_reward }} pts</div>
-                    </div>
-                  </div>
-                {% endfor %}
-              {% else %}
-                <div class="col-span-3 text-gray-500 text-sm text-center py-8 bg-gray-50 rounded-lg">No menu items yet.</div>
-              {% endif %}
+              </div>
             </div>
-          </div>
+          {% endfor %}
+        {% else %}
+                <div class="col-span-3 text-gray-500 text-sm text-center py-8 bg-gray-50 rounded-lg">No menu items yet.</div>
+        {% endif %}
+        </div>
+      </div>
 
           <!-- Reward Items Section -->
           <div>
@@ -135,11 +135,11 @@
                         <div class="text-gray-400 text-xs">No Image</div>
                       {% endif %}
                     </div>
-                    <div class="text-center">
+          <div class="text-center">
                       <div class="font-semibold text-gray-800 text-sm truncate">{{ p.title }}</div>
                       <div class="text-xs text-red-600 font-medium mt-1">-{{ p.points_reward }} pts</div>
                     </div>
-                  </div>
+              </div>
                 {% endfor %}
               {% else %}
                 <div class="col-span-3 text-gray-500 text-sm text-center py-8 bg-gray-50 rounded-lg">No reward items yet.</div>
@@ -159,10 +159,10 @@
                 </div>
               </div>
               <p class="mt-4 text-center text-xs text-gray-500 font-mono break-all" id="payload"></p>
-            </div>
           </div>
+        </div>
 
-          <!-- Total Points Section -->
+        <!-- Total Points Section -->
           <div id="total-points-section" class="mt-6 p-6 rounded-2xl bg-white shadow-lg border border-gray-200">
             <label class="block text-sm font-semibold text-gray-700 mb-2">Total Points</label>
             <input 
@@ -172,21 +172,21 @@
               readonly 
             />
 
-            <!-- Generate QR Code Button -->
+          <!-- Generate QR Code Button -->
             <button 
               onclick="generateQRCode()" 
               id="generate-btn" 
               class="mt-4 w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl"
             >
-              Generate QR Code
-            </button>
-            
+            Generate QR Code
+          </button>
+          
             <p class="text-xs text-gray-500 mt-3 text-center">
-              Business: {% if business %}#{{ business.id }} - {{ business.name }}{% else %}Not found{% endif %}
-            </p>
-            <input type="hidden" id="biz" value="{% if business %}{{ business.id }}{% endif %}" />
-          </div>
-        </div>
+            Business: {% if business %}#{{ business.id }} - {{ business.name }}{% else %}Not found{% endif %}
+          </p>
+      <input type="hidden" id="biz" value="{% if business %}{{ business.id }}{% endif %}" />
+    </div>
+      </div>
       </div>
     </div>
   </div>
