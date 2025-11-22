@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
+from notifications.views import SaveFcmTokenView
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
@@ -33,6 +34,9 @@ urlpatterns = [
     
     # Legacy API routes (backward compatibility - without versioning)
     path("api/", include("loyalty.urls")),
+    # Direct compatibility endpoint for mobile app token registration
+    path("api/users/fcm-token", SaveFcmTokenView.as_view(), name="save_fcm_token_legacy"),
+    path("api/v1/users/fcm-token", SaveFcmTokenView.as_view(), name="save_fcm_token_v1"),
     path("api/accounts/", include("accounts.urls")),
     path("api/campaigns/", include("campaigns.urls")),
     path("api/qr/", include("qr.urls")),

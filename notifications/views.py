@@ -38,6 +38,34 @@ class RegisterDeviceView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class SaveFcmTokenView(APIView):
+    """
+    POST /api/users/fcm-token
+    Headers: Authorization: Bearer <token>
+    Body: { "fcmToken": "xxx", "platform": "android|ios|web" }
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        # accept both 'fcmToken' and 'token' keys
+        token = (request.data.get("fcmToken") or request.data.get("token") or "").strip()
+        platform = (request.data.get("platform") or "").strip()
+        if not token:
+            return Response({"detail": "fcmToken required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            device, created = Device.objects.get_or_create(token=token, defaults={"user": request.user, "platform": platform})
+            if not created:
+                # re-associate token with current user and update platform
+                if device.user_id != request.user.id or device.platform != platform:
+                    device.user = request.user
+                    device.platform = platform
+                    device.save(update_fields=["user", "platform"])
+            return Response({"ok": True, "token": device.token, "user_id": request.user.id, "platform": device.platform}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class SendTestNotificationView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
