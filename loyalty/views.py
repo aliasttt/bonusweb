@@ -417,7 +417,7 @@ class SearchView(APIView):
     Searches across business names, descriptions, addresses, product titles, and service names/descriptions
     
     Query Parameters:
-    - q or query: Search query string (required)
+    - query: Search query string (required)
     
     Response format:
     {
@@ -434,11 +434,11 @@ class SearchView(APIView):
     
     def get(self, request):
         # Get search query from query parameters
-        query = request.query_params.get('q') or request.query_params.get('query', '').strip()
+        query = request.query_params.get('query', '').strip()
         
         if not query:
             return Response(
-                {"error": "Query parameter required", "detail": "Please provide 'q' or 'query' parameter"},
+                {"error": "Query parameter required", "detail": "Please provide 'query' parameter"},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
