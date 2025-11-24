@@ -475,13 +475,22 @@ class SearchView(APIView):
         product_serializer = ProductSerializer(products, many=True)
         
         # Create service serializer data manually
+        # Map category values to English display names
+        category_map = {
+            "food": "Food",
+            "cafe": "Cafe",
+            "beauty": "Beauty",
+            "fitness": "Fitness",
+            "other": "Other"
+        }
+        
         service_data = []
         for service in services:
             service_data.append({
                 "id": service.id,
                 "name": service.name,
                 "category": service.category,
-                "category_display": service.get_category_display(),
+                "category_display": category_map.get(service.category, "Other"),
                 "description": service.description,
                 "business": {
                     "id": service.business.id,

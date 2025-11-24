@@ -1,0 +1,275 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-25 00:11+0300\n"
+"PO-Revision-Date: 2025-11-25 00:11+0300\n"
+"Last-Translator: \n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\templates\base.html:134
+msgid "Use Cases"
+msgstr "Anwendungsfälle"
+
+#: .\templates\base.html:138
+msgid "Features"
+msgstr "Funktionen"
+
+#: .\templates\base.html:142
+msgid "Businesses"
+msgstr "Unternehmen"
+
+#: .\templates\base.html:146
+msgid "How It Works"
+msgstr "Wie es funktioniert"
+
+#: .\templates\base.html:150
+msgid "Integrations"
+msgstr "Integrationen"
+
+#: .\templates\base.html:154
+msgid "Pricing"
+msgstr "Preise"
+
+#: .\templates\base.html:158
+msgid "FAQ"
+msgstr "FAQ"
+
+#: .\templates\base.html:162
+msgid "Blog"
+msgstr "Blog"
+
+#: .\templates\base.html:182
+msgid "Admin Login"
+msgstr "Admin-Anmeldung"
+
+#: .\templates\base.html:202
+msgid ""
+"Modern customer loyalty platform for restaurants, cafes, and retail stores"
+msgstr ""
+"Moderne Kundenbindungsplattform für Restaurants, Cafés und Einzelhandelsgeschäfte"
+
+#: .\templates\base.html:217
+msgid "Products"
+msgstr "Produkte"
+
+#: .\templates\base.html:219 .\templates\marketing\home.html:36
+msgid "Customer Loyalty"
+msgstr "Kundenbindung"
+
+#: .\templates\base.html:220
+msgid "Points System"
+msgstr "Punktesystem"
+
+#: .\templates\base.html:221
+msgid "Marketing Campaigns"
+msgstr "Marketingkampagnen"
+
+#: .\templates\base.html:222 .\templates\marketing\home.html:194
+msgid "Advanced Analytics"
+msgstr "Erweiterte Analysen"
+
+#: .\templates\base.html:226
+msgid "Support"
+msgstr "Support"
+
+#: .\templates\base.html:228
+msgid "Help Center"
+msgstr "Hilfezentrum"
+
+#: .\templates\base.html:229 .\templates\marketing\home.html:245
+msgid "Contact Us"
+msgstr "Kontaktieren Sie uns"
+
+#: .\templates\base.html:230
+msgid "Service Status"
+msgstr "Service-Status"
+
+#: .\templates\base.html:231
+msgid "Bug Report"
+msgstr "Fehlerbericht"
+
+#: .\templates\base.html:235
+msgid "Company"
+msgstr "Unternehmen"
+
+#: .\templates\base.html:237
+msgid "About Us"
+msgstr "Über uns"
+
+#: .\templates\base.html:238
+msgid "Careers"
+msgstr "Karriere"
+
+#: .\templates\base.html:239
+msgid "Privacy Policy"
+msgstr "Datenschutzrichtlinie"
+
+#: .\templates\base.html:240
+msgid "Terms of Service"
+msgstr "Nutzungsbedingungen"
+
+#: .\templates\base.html:245
+msgid "All rights reserved"
+msgstr "Alle Rechte vorbehalten"
+
+#: .\templates\marketing\home.html:33
+msgid "#1 Platform in Germany"
+msgstr "#1 Plattform in Deutschland"
+
+#: .\templates\marketing\home.html:37
+msgid "Made Modern & Smart"
+msgstr "Modern & Intelligent gemacht"
+
+#: .\templates\marketing\home.html:40
+msgid ""
+"Quick setup, fully customizable, and completely digital. Just scan QR codes "
+"to award points, build loyal customers, and boost your sales."
+msgstr ""
+"Schnelle Einrichtung, vollständig anpassbar und komplett digital. Scannen Sie einfach QR-Codes, um Punkte zu vergeben, treue Kunden aufzubauen und Ihren Umsatz zu steigern."
+
+#: .\templates\marketing\home.html:47 .\templates\marketing\home.html:241
+msgid "Start Free"
+msgstr "Kostenlos starten"
+
+#: .\templates\marketing\home.html:51
+msgid "View Pricing"
+msgstr "Preise anzeigen"
+
+#: .\templates\marketing\home.html:59
+msgid "Active Businesses"
+msgstr "Aktive Unternehmen"
+
+#: .\templates\marketing\home.html:63
+msgid "Happy Customers"
+msgstr "Zufriedene Kunden"
+
+#: .\templates\marketing\home.html:67
+msgid "Uptime"
+msgstr "Betriebszeit"
+
+#: .\templates\marketing\home.html:101
+msgid "Your Loyalty App"
+msgstr "Ihre Treue-App"
+
+#: .\templates\marketing\home.html:107
+msgid "Your Points"
+msgstr "Ihre Punkte"
+
+#: .\templates\marketing\home.html:111
+msgid "Next reward: 250 points"
+msgstr "Nächste Belohnung: 250 Punkte"
+
+#: .\templates\marketing\home.html:119
+msgid "Scan to Earn"
+msgstr "Scannen zum Verdienen"
+
+#: .\templates\marketing\home.html:120
+msgid "Get points instantly"
+msgstr "Punkte sofort erhalten"
+
+#: .\templates\marketing\home.html:127
+msgid "Rewards"
+msgstr "Belohnungen"
+
+#: .\templates\marketing\home.html:131
+msgid "History"
+msgstr "Verlauf"
+
+#: .\templates\marketing\home.html:135
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: .\templates\marketing\home.html:152
+msgid "Why Choose"
+msgstr "Warum wählen"
+
+#: .\templates\marketing\home.html:155
+msgid ""
+"Comprehensive customer loyalty management platform with advanced features "
+"and modern UI"
+msgstr ""
+"Umfassende Kundenbindungsmanagement-Plattform mit erweiterten Funktionen und moderner Benutzeroberfläche"
+
+#: .\templates\marketing\home.html:164
+msgid "QR-Based"
+msgstr "QR-basiert"
+
+#: .\templates\marketing\home.html:166
+msgid ""
+"Admin generates codes; customers scan and earn points. Simple, fast, and no "
+"physical cards needed."
+msgstr ""
+"Admin generiert Codes; Kunden scannen und verdienen Punkte. Einfach, schnell und keine physischen Karten erforderlich."
+
+#: .\templates\marketing\home.html:174
+msgid "Boost Sales"
+msgstr "Umsatz steigern"
+
+#: .\templates\marketing\home.html:176
+msgid ""
+"With clear goals like 10 points = free menu item, get repeat purchases and "
+"increase your revenue."
+msgstr ""
+"Mit klaren Zielen wie 10 Punkte = kostenloses Menüelement erhalten Sie wiederholte Käufe und steigern Ihren Umsatz."
+
+#: .\templates\marketing\home.html:184
+msgid "Quick Setup"
+msgstr "Schnelle Einrichtung"
+
+#: .\templates\marketing\home.html:186
+msgid ""
+"Get started in minutes; web and mobile app with full API. No complex "
+"technical knowledge required."
+msgstr ""
+"In Minuten loslegen; Web- und Mobile-App mit vollständiger API. Kein komplexes technisches Wissen erforderlich."
+
+#: .\templates\marketing\home.html:196
+msgid ""
+"Comprehensive reports on customer behavior, sales, and campaign performance "
+"for better decision making."
+msgstr ""
+"Umfassende Berichte über Kundenverhalten, Verkäufe und Kampagnenleistung für bessere Entscheidungsfindung."
+
+#: .\templates\marketing\home.html:204
+msgid "Mobile App"
+msgstr "Mobile App"
+
+#: .\templates\marketing\home.html:206
+msgid ""
+"Dedicated app for customers with beautiful UI and complete points management "
+"features."
+msgstr ""
+"Dedizierte App für Kunden mit schöner Benutzeroberfläche und vollständigen Punkteverwaltungsfunktionen."
+
+#: .\templates\marketing\home.html:214
+msgid "High Security"
+msgstr "Hohe Sicherheit"
+
+#: .\templates\marketing\home.html:216
+msgid ""
+"Advanced encryption and complete security to protect customer and business "
+"information."
+msgstr ""
+"Erweiterte Verschlüsselung und vollständige Sicherheit zum Schutz von Kunden- und Unternehmensinformationen."
+
+#: .\templates\marketing\home.html:233
+msgid "Ready to Get Started?"
+msgstr "Bereit loszulegen?"
+
+#: .\templates\marketing\home.html:236
+msgid ""
+"Start free now and set up your customer loyalty program in less than 5 "
+"minutes."
+msgstr ""
+"Starten Sie jetzt kostenlos und richten Sie Ihr Kundenbindungsprogramm in weniger als 5 Minuten ein."

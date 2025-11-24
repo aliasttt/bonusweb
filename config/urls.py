@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
+from django.views.i18n import set_language
 from notifications.views import SaveFcmTokenView
 from django.conf import settings
 from django.conf.urls.static import static
@@ -8,6 +9,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("i18n/setlang/", set_language, name="set_language"),
     path("", include("marketing.urls")),
     path("partners/", include("partners.urls")),
     path("super-admin/", include("admin.urls")),
