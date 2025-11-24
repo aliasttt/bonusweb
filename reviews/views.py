@@ -734,6 +734,7 @@ class GetReviewQuestionsView(APIView):
     """
     GET /api/v1/reviews/questions/{business_id}/
     Returns the 5 review questions configured by admin for a business
+    Each question includes its average rating
     """
     permission_classes = [permissions.AllowAny]
 
@@ -747,22 +748,55 @@ class GetReviewQuestionsView(APIView):
             )
         
         # Get or create review questions for this business
-        from .models import ReviewQuestion
+        from .models import ReviewQuestion, QuestionRating
+        from django.db.models import Avg, Count
+        
         review_questions, created = ReviewQuestion.objects.get_or_create(business=business)
         
-        # Return questions as a list
-        questions = review_questions.get_questions_list()
+        # Get questions list
+        questions_list = review_questions.get_questions_list()
         
-        # If no questions configured, return empty list
-        if not questions:
+        # Initialize ratings list with 5 zeros (one for each possible question)
+        ratings_list = [0.0, 0.0, 0.0, 0.0, 0.0]  # [ستاره سوال 1, ستاره سوال 2, ستاره سوال 3, ستاره سوال 4, ستاره سوال 5]
+        questions_with_ratings = []
+        
+        # If no questions configured, return empty questions but ratings list with zeros
+        if not questions_list:
             return Response({
                 "business_id": business_id,
-                "questions": []
+                "questions": [],
+                "ratings": ratings_list
             }, status=status.HTTP_200_OK)
+        
+        # Calculate average rating for each question and add to response
+        for q in questions_list:
+            question_num = q["id"]
+            
+            # Get average rating for this question
+            stats = QuestionRating.objects.filter(
+                business=business,
+                question_number=question_num
+            ).aggregate(
+                average=Avg("rating"),
+                count=Count("id")
+            )
+            
+            avg_rating = round(stats["average"], 2) if stats["average"] else 0.0
+            
+            questions_with_ratings.append({
+                "id": question_num,
+                "text": q["text"],
+                "average_rating": avg_rating,
+                "total_votes": stats["count"] or 0
+            })
+            
+            # Update ratings list (index 0 = question 1, index 1 = question 2, etc.)
+            ratings_list[question_num - 1] = avg_rating
         
         return Response({
             "business_id": business_id,
-            "questions": questions
+            "questions": questions_with_ratings,
+            "ratings": ratings_list  # لیست ستاره‌ها: [ستاره سوال 1, ستاره سوال 2, ستاره سوال 3, ستاره سوال 4, ستاره سوال 5]
         }, status=status.HTTP_200_OK)
 
 
