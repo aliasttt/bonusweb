@@ -96,3 +96,5 @@ scalingo --app mywebsite run python manage.py migrate
 scalingo --app mywebsite run python manage.py createsuperuser
 ```
 
+
+

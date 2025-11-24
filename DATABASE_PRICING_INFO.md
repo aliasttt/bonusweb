@@ -72,3 +72,5 @@ scalingo --app mywebsite addons-remove mywebsite_2040
   - یا پرداخت هزینه Scalingo PostgreSQL
   - یا برگشت به SQLite (با از دست دادن داده‌ها)
 
+
+

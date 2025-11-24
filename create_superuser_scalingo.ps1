@@ -52,3 +52,5 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "scalingo --app $AppName run python manage.py createsuperuser" -ForegroundColor White
 }
 
+
+

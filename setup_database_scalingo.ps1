@@ -57,3 +57,5 @@ Write-Host "2. User registrations will persist across deployments" -ForegroundCo
 Write-Host "3. All your data (users, products, reviews, etc.) is now safe!" -ForegroundColor White
 Write-Host "`n⚠️  IMPORTANT: You need to re-register your business and users since the old SQLite database was lost." -ForegroundColor Red
 
+
+
