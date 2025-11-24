@@ -14,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from loyalty.models import Business, Customer, Wallet
 from payments.models import Order
 from rewards.models import PointsTransaction
-from reviews.models import Review, ReviewResponse
+from reviews.models import Review, ReviewResponse, ReviewQuestion, QuestionRating
 
 
 def admin_login(request):
@@ -288,6 +288,41 @@ def admin_reviews(request):
 
     if request.method == "POST":
         action = request.POST.get("action")
+        
+        # Handle question configuration
+        if action == "save_questions":
+            business_id = request.POST.get("business_id")
+            if not business_id:
+                messages.error(request, "شناسه کسب‌وکار الزامی است.")
+                return redirect("admin_reviews")
+            
+            try:
+                business = Business.objects.get(id=business_id)
+                # Check permission
+                if profile.role not in [Profile.Role.SUPERUSER, Profile.Role.ADMIN]:
+                    if business.owner != request.user:
+                        messages.error(request, "شما دسترسی به این کسب‌وکار ندارید.")
+                        return redirect("admin_reviews")
+                
+                # Get or create review questions
+                review_questions, created = ReviewQuestion.objects.get_or_create(business=business)
+                
+                # Update questions
+                review_questions.question_1 = request.POST.get("question_1", "").strip()
+                review_questions.question_2 = request.POST.get("question_2", "").strip()
+                review_questions.question_3 = request.POST.get("question_3", "").strip()
+                review_questions.question_4 = request.POST.get("question_4", "").strip()
+                review_questions.question_5 = request.POST.get("question_5", "").strip()
+                review_questions.save()
+                
+                messages.success(request, "سوالات با موفقیت ذخیره شدند.")
+            except Business.DoesNotExist:
+                messages.error(request, "کسب‌وکار یافت نشد.")
+            except Exception as e:
+                messages.error(request, f"خطا در ذخیره سوالات: {str(e)}")
+            
+            return redirect("admin_reviews")
+        
         review_id = request.POST.get("review_id")
         review = reviews_qs.filter(id=review_id).first()
 
@@ -328,6 +363,64 @@ def admin_reviews(request):
     if profile.role not in [Profile.Role.SUPERUSER, Profile.Role.ADMIN]:
         businesses_qs = businesses_qs.filter(owner=request.user)
 
+    # Get selected business for question configuration
+    selected_business = None
+    review_questions = None
+    question_ratings_data = None
+    question_averages = None
+    
+    selected_business_id = request.GET.get("business_id") or business_filter
+    if selected_business_id and selected_business_id.isdigit():
+        try:
+            selected_business = Business.objects.get(id=selected_business_id)
+            # Check permission
+            if profile.role in [Profile.Role.SUPERUSER, Profile.Role.ADMIN] or selected_business.owner == request.user:
+                review_questions, _ = ReviewQuestion.objects.get_or_create(business=selected_business)
+                
+                # Get all question ratings for this business
+                ratings = QuestionRating.objects.filter(
+                    business=selected_business
+                ).select_related("customer__user").order_by("-created_at")
+                
+                # Group ratings by customer
+                ratings_by_customer = {}
+                for rating in ratings:
+                    customer_id = rating.customer.id
+                    if customer_id not in ratings_by_customer:
+                        ratings_by_customer[customer_id] = {
+                            "customer": rating.customer,
+                            "ratings": {},
+                            "ratings_list": [None, None, None, None, None],  # Index 0-4 for questions 1-5
+                            "created_at": rating.created_at
+                        }
+                    ratings_by_customer[customer_id]["ratings"][str(rating.question_number)] = rating.rating
+                    ratings_by_customer[customer_id]["ratings_list"][rating.question_number - 1] = rating.rating
+                
+                question_ratings_data = list(ratings_by_customer.values())
+                
+                # Calculate averages
+                from django.db.models import Avg, Count
+                averages = []
+                for i in range(1, 6):
+                    stats = QuestionRating.objects.filter(
+                        business=selected_business,
+                        question_number=i
+                    ).aggregate(
+                        average=Avg("rating"),
+                        count=Count("id")
+                    )
+                    question_text = getattr(review_questions, f"question_{i}", "")
+                    if question_text:
+                        averages.append({
+                            "question_number": i,
+                            "question_text": question_text,
+                            "average_rating": round(stats["average"], 2) if stats["average"] else 0,
+                            "total_votes": stats["count"] or 0
+                        })
+                question_averages = averages
+        except Business.DoesNotExist:
+            pass
+
     return render(request, "admin/reviews.html", {
         "reviews": reviews_qs,
         "profile": profile,
@@ -336,4 +429,8 @@ def admin_reviews(request):
         "business_filter": business_filter,
         "businesses": businesses_qs,
         "is_superuser": profile.role == Profile.Role.SUPERUSER,
+        "selected_business": selected_business,
+        "review_questions": review_questions,
+        "question_ratings_data": question_ratings_data,
+        "question_averages": question_averages,
     })

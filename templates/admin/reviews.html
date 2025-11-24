@@ -27,7 +27,7 @@
           <option value="{{ key }}" {% if target_filter == key %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
-      <select name="business_id" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none">
+      <select name="business_id" id="business_select" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none">
         <option value="">همه کسب‌وکارها</option>
         {% for biz in businesses %}
           <option value="{{ biz.id }}" {% if business_filter == biz.id|stringformat:"s" %}selected{% endif %}>{{ biz.name }}</option>
@@ -35,6 +35,157 @@
       </select>
       <button type="submit" class="px-4 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold">اعمال فیلتر</button>
     </form>
+
+    <!-- Question-Based Review System Section -->
+    {% if selected_business %}
+    <div class="mb-8 border border-white/10 rounded-2xl bg-white/5 p-6">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+        <i data-lucide="message-square-question" class="w-6 h-6"></i>
+        سیستم نظرسنجی سوال‌محور - {{ selected_business.name }}
+      </h2>
+
+      <!-- Question Configuration Form -->
+      <div class="mb-8 border-b border-white/10 pb-6">
+        <h3 class="text-xl font-semibold text-white mb-4">تنظیمات سوالات</h3>
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="save_questions">
+          <input type="hidden" name="business_id" value="{{ selected_business.id }}">
+          
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">سوال 1:</label>
+            <input 
+              type="text" 
+              name="question_1" 
+              value="{% if review_questions %}{{ review_questions.question_1|default:'' }}{% endif %}"
+              placeholder="متن سوال 1 را وارد کنید..."
+              class="w-full bg-dark border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary"
+            >
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">سوال 2:</label>
+            <input 
+              type="text" 
+              name="question_2" 
+              value="{% if review_questions %}{{ review_questions.question_2|default:'' }}{% endif %}"
+              placeholder="متن سوال 2 را وارد کنید..."
+              class="w-full bg-dark border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary"
+            >
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">سوال 3:</label>
+            <input 
+              type="text" 
+              name="question_3" 
+              value="{% if review_questions %}{{ review_questions.question_3|default:'' }}{% endif %}"
+              placeholder="متن سوال 3 را وارد کنید..."
+              class="w-full bg-dark border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary"
+            >
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">سوال 4:</label>
+            <input 
+              type="text" 
+              name="question_4" 
+              value="{% if review_questions %}{{ review_questions.question_4|default:'' }}{% endif %}"
+              placeholder="متن سوال 4 را وارد کنید..."
+              class="w-full bg-dark border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary"
+            >
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">سوال 5:</label>
+            <input 
+              type="text" 
+              name="question_5" 
+              value="{% if review_questions %}{{ review_questions.question_5|default:'' }}{% endif %}"
+              placeholder="متن سوال 5 را وارد کنید..."
+              class="w-full bg-dark border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary"
+            >
+          </div>
+          
+          <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg transition">
+            <i data-lucide="save" class="w-4 h-4 inline-block ml-2"></i>
+            ذخیره سوالات
+          </button>
+        </form>
+      </div>
+
+      <!-- Average Ratings Display -->
+      {% if question_averages %}
+      <div class="mb-8 border-b border-white/10 pb-6">
+        <h3 class="text-xl font-semibold text-white mb-4">میانگین رای‌ها</h3>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {% for avg in question_averages %}
+            <div class="bg-dark border border-white/10 rounded-xl p-4">
+              <p class="text-sm text-gray-400 mb-2">{{ avg.question_text }}</p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl font-bold text-amber-400">{{ avg.average_rating }}</span>
+                  <span class="text-gray-400 text-sm">/ 5</span>
+                </div>
+                <div class="text-gray-400 text-sm">
+                  {{ avg.total_votes }} رای
+                </div>
+              </div>
+              <div class="mt-2 flex gap-1">
+                {% for star in "12345"|make_list %}
+                  <i data-lucide="star" class="w-4 h-4 {% if forloop.counter <= avg.average_rating|floatformat:0 %}text-amber-400 fill-amber-400{% else %}text-gray-600{% endif %}"></i>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- All Voters List -->
+      {% if question_ratings_data %}
+      <div>
+        <h3 class="text-xl font-semibold text-white mb-4">لیست رای‌دهندگان ({{ question_ratings_data|length }} نفر)</h3>
+        <div class="space-y-4 max-h-96 overflow-y-auto">
+          {% for voter_data in question_ratings_data %}
+            <div class="bg-dark border border-white/10 rounded-xl p-4">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold">
+                    {{ voter_data.customer.user.username|first|upper }}
+                  </div>
+                  <div>
+                    <p class="text-white font-semibold">{{ voter_data.customer.user.username }}</p>
+                    <p class="text-gray-400 text-xs">{{ voter_data.created_at|date:"Y/m/d H:i" }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="grid md:grid-cols-5 gap-3">
+                {% for rating in voter_data.ratings_list %}
+                  <div class="bg-white/5 rounded-lg p-2 text-center {% if not rating %}opacity-50{% endif %}">
+                    <p class="text-xs text-gray-400 mb-1">سوال {{ forloop.counter }}</p>
+                    {% if rating %}
+                      <div class="flex items-center justify-center gap-1">
+                        <span class="text-lg font-bold text-amber-400">{{ rating }}</span>
+                        <i data-lucide="star" class="w-4 h-4 text-amber-400 fill-amber-400"></i>
+                      </div>
+                    {% else %}
+                      <span class="text-gray-500 text-sm">-</span>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+        <div class="text-center text-gray-400 py-8 rounded-xl border border-dashed border-white/10">
+          هنوز رای‌ای ثبت نشده است.
+        </div>
+      {% endif %}
+    </div>
+    {% else %}
+      <div class="mb-8 border border-white/10 rounded-2xl bg-white/5 p-6 text-center text-gray-400">
+        لطفاً یک کسب‌وکار را از فیلتر بالا انتخاب کنید تا سیستم نظرسنجی سوال‌محور را مشاهده کنید.
+      </div>
+    {% endif %}
 
     <div class="space-y-6">
       {% for review in reviews %}

@@ -727,3 +727,215 @@ class CreateServiceReviewView(APIView):
             {"message": "Service review saved", "review_id": review.id, "service_id": service.id},
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
         )
+
+
+# New Question-Based Review System APIs
+class GetReviewQuestionsView(APIView):
+    """
+    GET /api/v1/reviews/questions/{business_id}/
+    Returns the 5 review questions configured by admin for a business
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, business_id):
+        try:
+            business = Business.objects.get(id=business_id)
+        except Business.DoesNotExist:
+            return Response(
+                {"error": "Business not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Get or create review questions for this business
+        from .models import ReviewQuestion
+        review_questions, created = ReviewQuestion.objects.get_or_create(business=business)
+        
+        # Return questions as a list
+        questions = review_questions.get_questions_list()
+        
+        # If no questions configured, return empty list
+        if not questions:
+            return Response({
+                "business_id": business_id,
+                "questions": []
+            }, status=status.HTTP_200_OK)
+        
+        return Response({
+            "business_id": business_id,
+            "questions": questions
+        }, status=status.HTTP_200_OK)
+
+
+class SubmitQuestionRatingsView(APIView):
+    """
+    POST /api/v1/reviews/questions/rate/
+    Submits ratings from users for review questions
+    Expected body:
+    {
+        "userId": "user_id or phone",
+        "businessId": "business_id",
+        "ratings": [
+            {"question_number": 1, "rating": 5},
+            {"question_number": 2, "rating": 4},
+            ...
+        ]
+    }
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        user_id_or_phone = request.data.get("userId") or request.data.get("phone")
+        business_id = request.data.get("businessId")
+        ratings_data = request.data.get("ratings", [])
+        
+        if not user_id_or_phone:
+            return Response(
+                {"error": "userId or phone is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not business_id:
+            return Response(
+                {"error": "businessId is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not ratings_data or not isinstance(ratings_data, list):
+            return Response(
+                {"error": "ratings array is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get business
+        try:
+            business = Business.objects.get(id=business_id)
+        except Business.DoesNotExist:
+            return Response(
+                {"error": "Business not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Resolve user
+        from django.contrib.auth.models import User
+        user = None
+        try:
+            user_id = int(user_id_or_phone)
+            user = User.objects.filter(id=user_id).first()
+        except (ValueError, TypeError):
+            pass
+        
+        if not user:
+            business_by_phone = Business.objects.filter(phone=user_id_or_phone).first()
+            if business_by_phone:
+                user = business_by_phone.owner
+        
+        if not user and request.user.is_authenticated:
+            user = request.user
+        
+        if not user:
+            return Response(
+                {"error": "User authentication required"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        customer, _ = Customer.objects.get_or_create(user=user)
+        
+        # Process ratings
+        from .models import QuestionRating
+        created_ratings = []
+        updated_ratings = []
+        
+        for rating_item in ratings_data:
+            question_number = rating_item.get("question_number")
+            rating_value = rating_item.get("rating")
+            
+            if not question_number or not rating_value:
+                continue
+            
+            try:
+                question_number = int(question_number)
+                rating_value = int(rating_value)
+                
+                if question_number < 1 or question_number > 5:
+                    continue
+                if rating_value < 1 or rating_value > 5:
+                    continue
+            except (ValueError, TypeError):
+                continue
+            
+            # Create or update rating
+            question_rating, created = QuestionRating.objects.update_or_create(
+                business=business,
+                customer=customer,
+                question_number=question_number,
+                defaults={"rating": rating_value}
+            )
+            
+            if created:
+                created_ratings.append({
+                    "question_number": question_number,
+                    "rating": rating_value
+                })
+            else:
+                updated_ratings.append({
+                    "question_number": question_number,
+                    "rating": rating_value
+                })
+        
+        return Response({
+            "message": "Ratings submitted successfully",
+            "created": created_ratings,
+            "updated": updated_ratings,
+            "total": len(created_ratings) + len(updated_ratings)
+        }, status=status.HTTP_200_OK)
+
+
+class GetQuestionAveragesView(APIView):
+    """
+    GET /api/v1/reviews/questions/averages/{business_id}/
+    Returns average ratings for each question
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, business_id):
+        try:
+            business = Business.objects.get(id=business_id)
+        except Business.DoesNotExist:
+            return Response(
+                {"error": "Business not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        from .models import QuestionRating, ReviewQuestion
+        from django.db.models import Avg, Count
+        
+        # Get review questions to know which questions exist
+        review_questions, _ = ReviewQuestion.objects.get_or_create(business=business)
+        questions_list = review_questions.get_questions_list()
+        
+        # Calculate averages for each question
+        averages = []
+        for q in questions_list:
+            question_num = q["id"]
+            question_text = q["text"]
+            
+            # Get average rating for this question
+            stats = QuestionRating.objects.filter(
+                business=business,
+                question_number=question_num
+            ).aggregate(
+                average=Avg("rating"),
+                count=Count("id")
+            )
+            
+            averages.append({
+                "question_number": question_num,
+                "question_text": question_text,
+                "average_rating": round(stats["average"], 2) if stats["average"] else 0,
+                "total_votes": stats["count"] or 0
+            })
+        
+        return Response({
+            "business_id": business_id,
+            "averages": averages
+        }, status=status.HTTP_200_OK)

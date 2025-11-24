@@ -10,6 +10,9 @@ from .views import (
     BusinessProductReviewsView,
     CreateBusinessReviewView,
     CreateServiceReviewView,
+    GetReviewQuestionsView,
+    SubmitQuestionRatingsView,
+    GetQuestionAveragesView,
 )
 
 router = DefaultRouter()
@@ -24,4 +27,8 @@ urlpatterns = [
     path("business/<int:business_id>/products/", BusinessProductReviewsView.as_view(), name="business_product_reviews"),
     path("business/create/", CreateBusinessReviewView.as_view(), name="create_business_review"),
     path("service/create/", CreateServiceReviewView.as_view(), name="create_service_review"),
+    # Question-based review system APIs
+    path("questions/<int:business_id>/", GetReviewQuestionsView.as_view(), name="get_review_questions"),
+    path("questions/rate/", SubmitQuestionRatingsView.as_view(), name="submit_question_ratings"),
+    path("questions/averages/<int:business_id>/", GetQuestionAveragesView.as_view(), name="get_question_averages"),
 ] + router.urls

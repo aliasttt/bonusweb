@@ -128,3 +128,61 @@ class ReviewResponse(models.Model):
         if full_name:
             return full_name
         return self.responder.get_username()
+
+
+class ReviewQuestion(models.Model):
+    """
+    Stores the 5 review questions configured by admin for each business
+    """
+    business = models.OneToOneField(Business, on_delete=models.CASCADE, related_name="review_questions")
+    question_1 = models.CharField(max_length=500, blank=True, help_text="سوال اول")
+    question_2 = models.CharField(max_length=500, blank=True, help_text="سوال دوم")
+    question_3 = models.CharField(max_length=500, blank=True, help_text="سوال سوم")
+    question_4 = models.CharField(max_length=500, blank=True, help_text="سوال چهارم")
+    question_5 = models.CharField(max_length=500, blank=True, help_text="سوال پنجم")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-updated_at",)
+
+    def __str__(self) -> str:
+        return f"Review Questions for {self.business.name}"
+
+    def get_questions_list(self):
+        """Returns a list of non-empty questions"""
+        questions = []
+        for i in range(1, 6):
+            q = getattr(self, f"question_{i}", "")
+            if q and q.strip():
+                questions.append({"id": i, "text": q.strip()})
+        return questions
+
+
+class QuestionRating(models.Model):
+    """
+    Stores individual user ratings for each review question
+    """
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name="question_ratings")
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="question_ratings")
+    question_number = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="شماره سوال (1 تا 5)"
+    )
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="امتیاز ستاره (1 تا 5)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("business", "customer", "question_number")
+        ordering = ("-created_at",)
+        indexes = [
+            models.Index(fields=("business", "question_number")),
+            models.Index(fields=("customer",)),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.business.name} - Q{self.question_number} - {self.customer.user.username} - {self.rating}⭐"
