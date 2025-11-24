@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Business, Product, Customer, Wallet, Transaction, Slider
-from reviews.models import Review
+from reviews.models import Review, Service
 from .serializers import (
     BusinessSerializer,
     ProductSerializer,
@@ -409,5 +409,105 @@ class BusinessDetailView(APIView):
                 {"error": "Business not found", "detail": f"Business with ID {business_id} does not exist"},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+class SearchView(APIView):
+    """
+    GET endpoint for searching businesses, products, and services
+    Searches across business names, descriptions, addresses, product titles, and service names/descriptions
+    
+    Query Parameters:
+    - q or query: Search query string (required)
+    
+    Response format:
+    {
+        "query": "search term",
+        "results": {
+            "businesses": [...],
+            "products": [...],
+            "services": [...]
+        },
+        "total": 10
+    }
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def get(self, request):
+        # Get search query from query parameters
+        query = request.query_params.get('q') or request.query_params.get('query', '').strip()
+        
+        if not query:
+            return Response(
+                {"error": "Query parameter required", "detail": "Please provide 'q' or 'query' parameter"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Build search filter using Q objects for case-insensitive search
+        search_filter = Q(name__icontains=query) | Q(description__icontains=query) | Q(address__icontains=query)
+        
+        # Search businesses
+        businesses = Business.objects.filter(search_filter).annotate(
+            average_rating_value=Avg(
+                "reviews__rating",
+                filter=Q(reviews__status=Review.Status.APPROVED),
+            ),
+            review_count_value=Count(
+                "reviews",
+                filter=Q(reviews__status=Review.Status.APPROVED),
+            ),
+        ).distinct()
+        
+        # Search products (active only)
+        products = Product.objects.filter(
+            active=True,
+            title__icontains=query
+        ).select_related('business').distinct()
+        
+        # Search services (active only)
+        services = Service.objects.filter(
+            is_active=True
+        ).filter(
+            Q(name__icontains=query) | Q(description__icontains=query)
+        ).select_related('business').distinct()
+        
+        # Serialize results
+        business_serializer = BusinessSerializer(businesses, many=True, context={'request': request})
+        product_serializer = ProductSerializer(products, many=True)
+        
+        # Create service serializer data manually
+        service_data = []
+        for service in services:
+            service_data.append({
+                "id": service.id,
+                "name": service.name,
+                "category": service.category,
+                "category_display": service.get_category_display(),
+                "description": service.description,
+                "business": {
+                    "id": service.business.id,
+                    "name": service.business.name,
+                    "address": service.business.address,
+                    "phone": service.business.phone,
+                },
+                "is_active": service.is_active,
+            })
+        
+        # Calculate total results
+        total = businesses.count() + products.count() + services.count()
+        
+        return Response({
+            "query": query,
+            "results": {
+                "businesses": business_serializer.data,
+                "products": product_serializer.data,
+                "services": service_data,
+            },
+            "total": total,
+            "counts": {
+                "businesses": businesses.count(),
+                "products": products.count(),
+                "services": services.count(),
+            }
+        }, status=status.HTTP_200_OK)
 
 
