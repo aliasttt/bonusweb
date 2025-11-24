@@ -224,7 +224,18 @@ def reviews_list(request):
 
     if request.method == "POST" and business:
         action = request.POST.get("action", "reply")
-        if action == "reply":
+        if action == "save_questions":
+            from reviews.models import ReviewQuestion
+            review_questions, created = ReviewQuestion.objects.get_or_create(business=business)
+            review_questions.question_1 = request.POST.get("question_1", "").strip()
+            review_questions.question_2 = request.POST.get("question_2", "").strip()
+            review_questions.question_3 = request.POST.get("question_3", "").strip()
+            review_questions.question_4 = request.POST.get("question_4", "").strip()
+            review_questions.question_5 = request.POST.get("question_5", "").strip()
+            review_questions.save()
+            messages.success(request, "Questions saved successfully.")
+            return redirect("reviews_list")
+        elif action == "reply":
             review_id = request.POST.get("review_id")
             reply_message = (request.POST.get("reply_message") or "").strip()
             is_public = request.POST.get("is_public", "on") == "on"
@@ -273,7 +284,65 @@ def reviews_list(request):
             messages.success(request, "Response deleted.")
         return redirect("reviews_list")
 
-    return render(request, "partners/reviews_list.html", {"business": business, "reviews": reviews})
+    # Get review questions and ratings data
+    review_questions = None
+    question_ratings_data = None
+    question_averages = None
+    
+    if business:
+        from reviews.models import ReviewQuestion, QuestionRating
+        from django.db.models import Avg, Count
+        
+        review_questions, _ = ReviewQuestion.objects.get_or_create(business=business)
+        
+        # Get all question ratings for this business
+        ratings = QuestionRating.objects.filter(
+            business=business
+        ).select_related("customer__user").order_by("-created_at")
+        
+        # Group ratings by customer
+        ratings_by_customer = {}
+        for rating in ratings:
+            customer_id = rating.customer.id
+            if customer_id not in ratings_by_customer:
+                ratings_by_customer[customer_id] = {
+                    "customer": rating.customer,
+                    "ratings": {},
+                    "ratings_list": [None, None, None, None, None],
+                    "created_at": rating.created_at
+                }
+            ratings_by_customer[customer_id]["ratings"][str(rating.question_number)] = rating.rating
+            ratings_by_customer[customer_id]["ratings_list"][rating.question_number - 1] = rating.rating
+        
+        question_ratings_data = list(ratings_by_customer.values())
+        
+        # Calculate averages
+        averages = []
+        for i in range(1, 6):
+            stats = QuestionRating.objects.filter(
+                business=business,
+                question_number=i
+            ).aggregate(
+                average=Avg("rating"),
+                count=Count("id")
+            )
+            question_text = getattr(review_questions, f"question_{i}", "")
+            if question_text:
+                averages.append({
+                    "question_number": i,
+                    "question_text": question_text,
+                    "average_rating": round(stats["average"], 2) if stats["average"] else 0,
+                    "total_votes": stats["count"] or 0
+                })
+        question_averages = averages
+
+    return render(request, "partners/reviews_list.html", {
+        "business": business, 
+        "reviews": reviews,
+        "review_questions": review_questions,
+        "question_ratings_data": question_ratings_data,
+        "question_averages": question_averages,
+    })
 
 
 @login_required
