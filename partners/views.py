@@ -29,13 +29,23 @@ def partner_login(request):
             # Try to find business by phone
             try:
                 business = Business.objects.get(phone=phone)
-                if business.check_password(password):
+                password_valid = False
+
+                # 1) Prefer the dedicated business password if it exists
+                if business.has_password():
+                    password_valid = business.check_password(password)
+
+                # 2) Fall back to the owner's Django account password so admins can sign in
+                if not password_valid and business.owner.check_password(password):
+                    password_valid = True
+
+                if password_valid:
                     # Login as business owner and remember which business was chosen
                     login(request, business.owner)
                     request.session["active_business_id"] = business.id
                     return redirect("dashboard")
-                else:
-                    messages.error(request, "Invalid phone number or password")
+
+                messages.error(request, "Invalid phone number or password")
             except Business.DoesNotExist:
                 messages.error(request, "Invalid phone number or password")
         else:
