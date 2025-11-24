@@ -227,7 +227,6 @@ def reviews_list(request):
         if action == "save_questions":
             try:
                 from reviews.models import ReviewQuestion
-                from django.core.exceptions import OperationalError
                 
                 review_questions, created = ReviewQuestion.objects.get_or_create(business=business)
                 review_questions.question_1 = request.POST.get("question_1", "").strip()
@@ -237,10 +236,12 @@ def reviews_list(request):
                 review_questions.question_5 = request.POST.get("question_5", "").strip()
                 review_questions.save()
                 messages.success(request, "Questions saved successfully.")
-            except OperationalError as e:
-                messages.error(request, "Database tables not ready. Please run migrations: python manage.py migrate reviews")
             except Exception as e:
-                messages.error(request, f"Error saving questions: {str(e)}")
+                error_str = str(e).lower()
+                if 'does not exist' in error_str or 'relation' in error_str or 'table' in error_str:
+                    messages.error(request, "Database tables not ready. Please run migrations: python manage.py migrate reviews")
+                else:
+                    messages.error(request, f"Error saving questions: {str(e)}")
             return redirect("reviews_list")
         elif action == "reply":
             review_id = request.POST.get("review_id")
@@ -300,9 +301,8 @@ def reviews_list(request):
         try:
             from reviews.models import ReviewQuestion, QuestionRating
             from django.db.models import Avg, Count
-            from django.core.exceptions import OperationalError
             
-            # Try to access the model - if table doesn't exist, it will raise OperationalError
+            # Try to access the model - if table doesn't exist, it will raise an exception
             review_questions, _ = ReviewQuestion.objects.get_or_create(business=business)
             
             # Get all question ratings for this business
@@ -345,12 +345,17 @@ def reviews_list(request):
                         "total_votes": stats["count"] or 0
                     })
             question_averages = averages
-        except (OperationalError, Exception) as e:
+        except Exception as e:
             # If tables don't exist yet, just skip this section
             # Migration needs to be run: python manage.py migrate reviews
             import logging
             logger = logging.getLogger(__name__)
-            logger.warning(f"ReviewQuestion/QuestionRating tables not found. Run migrations: {str(e)}")
+            # Check if it's a database error (table doesn't exist)
+            error_str = str(e).lower()
+            if 'does not exist' in error_str or 'relation' in error_str or 'table' in error_str:
+                logger.warning(f"ReviewQuestion/QuestionRating tables not found. Run migrations: {str(e)}")
+            else:
+                logger.error(f"Error loading review questions: {str(e)}")
             pass
 
     return render(request, "partners/reviews_list.html", {
