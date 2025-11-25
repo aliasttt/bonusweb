@@ -170,6 +170,9 @@ class SliderListView(APIView):
     """
     GET endpoint for slider - returns list of all active sliders from all businesses
     
+    Query Parameters:
+    - business_id: Filter sliders by business ID (optional)
+    
     Response format:
     [
         {
@@ -184,8 +187,22 @@ class SliderListView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        # Get all active sliders from all businesses
+        # Get business_id from query params if provided
+        business_id = request.query_params.get('business_id')
+        
+        # Filter by business_id if provided, otherwise get all active sliders
+        if business_id:
+            try:
+                business_id = int(business_id)
+                sliders = Slider.objects.filter(is_active=True, business_id=business_id).select_related('business').order_by('order', '-created_at')
+            except ValueError:
+                return Response(
+                    {"error": "Invalid business_id. Must be a number."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
         sliders = Slider.objects.filter(is_active=True).select_related('business').order_by('order', '-created_at')
+        
         serializer = SliderSerializer(sliders, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -417,7 +434,7 @@ class SearchView(APIView):
     Searches across business names, descriptions, addresses, product titles, and service names/descriptions
     
     Query Parameters:
-    - query: Search query string (required)
+    - query or q: Search query string (required) - supports both 'query' and 'q' for backward compatibility
     
     Response format:
     {
@@ -427,18 +444,23 @@ class SearchView(APIView):
             "products": [...],
             "services": [...]
         },
-        "total": 10
+        "total": 10,
+        "counts": {
+            "businesses": 0,
+            "products": 0,
+            "services": 0
+        }
     }
     """
     permission_classes = [permissions.AllowAny]
     
     def get(self, request):
-        # Get search query from query parameters
-        query = request.query_params.get('query', '').strip()
+        # Get search query from query parameters (support both 'q' and 'query' for backward compatibility)
+        query = request.query_params.get('query') or request.query_params.get('q', '').strip()
         
         if not query:
             return Response(
-                {"error": "Query parameter required", "detail": "Please provide 'query' parameter"},
+                {"error": "Query parameter required", "detail": "Please provide 'query' or 'q' parameter"},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
