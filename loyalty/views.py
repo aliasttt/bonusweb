@@ -207,6 +207,7 @@ class SliderListView(APIView):
             # Serialize with proper error handling
             try:
                 serializer = SliderSerializer(sliders, many=True, context={'request': request})
+                # Return as array (not object with data key)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except Exception as serializer_error:
                 return Response(
