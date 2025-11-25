@@ -69,3 +69,5 @@ scalingo --app mywebsite run python manage.py changepassword admin
 
 
 
+
+

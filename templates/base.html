@@ -128,37 +128,37 @@
           <i data-lucide="gift" class="w-8 h-8 text-primary"></i>
           Bonus
         </a>
-        <nav class="hidden lg:flex gap-8 text-sm font-medium">
+        <nav class="hidden lg:flex gap-3 text-sm font-medium">
           <a href="/use-cases/" class="hover:text-primary transition-colors duration-300 flex items-center gap-1">
-            <i data-lucide="briefcase" class="w-4 h-4"></i>
+            <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
             {% trans "Use Cases" %}
           </a>
           <a href="/features/" class="hover:text-primary transition-colors duration-300 flex items-center gap-1">
-            <i data-lucide="star" class="w-4 h-4"></i>
+            <i data-lucide="star" class="w-3.5 h-3.5"></i>
             {% trans "Features" %}
           </a>
           <a href="/businesses/" class="hover:text-primary transition-colors duration-300 flex items-center gap-1">
-            <i data-lucide="building" class="w-4 h-4"></i>
+            <i data-lucide="building" class="w-3.5 h-3.5"></i>
             {% trans "Businesses" %}
           </a>
           <a href="/how-it-works/" class="hover:text-primary transition-colors duration-300 flex items-center gap-1">
-            <i data-lucide="play-circle" class="w-4 h-4"></i>
+            <i data-lucide="play-circle" class="w-3.5 h-3.5"></i>
             {% trans "How It Works" %}
           </a>
           <a href="/integrations/" class="hover:text-primary transition-colors duration-300 flex items-center gap-1">
-            <i data-lucide="link" class="w-4 h-4"></i>
+            <i data-lucide="link" class="w-3.5 h-3.5"></i>
             {% trans "Integrations" %}
           </a>
           <a href="/pricing/" class="hover:text-primary transition-colors duration-300 flex items-center gap-1">
-            <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+            <i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i>
             {% trans "Pricing" %}
           </a>
           <a href="/faq/" class="hover:text-primary transition-colors duration-300 flex items-center gap-1">
-            <i data-lucide="help-circle" class="w-4 h-4"></i>
+            <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
             {% trans "FAQ" %}
           </a>
           <a href="/blog/" class="hover:text-primary transition-colors duration-300 flex items-center gap-1">
-            <i data-lucide="book-open" class="w-4 h-4"></i>
+            <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
             {% trans "Blog" %}
           </a>
         </nav>
@@ -167,24 +167,63 @@
           <form action="{% url 'set_language' %}" method="post" class="flex items-center gap-2">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ request.path }}">
-            <select name="language" onchange="this.form.submit()" class="bg-dark-lighter text-white border border-white/20 rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer">
+            <select name="language" onchange="this.form.submit()" class="bg-dark-lighter text-white border border-white/20 rounded-lg px-2 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer">
               {% get_current_language as CURRENT_LANGUAGE %}
               {% get_available_languages as LANGUAGES %}
               {% for lang_code, lang_name in LANGUAGES %}
+                {% if lang_code != 'fa' %}
                 <option value="{{ lang_code }}" {% if lang_code == CURRENT_LANGUAGE %}selected{% endif %}>
-                  {% if lang_code == 'en' %}🇬🇧 English{% elif lang_code == 'de' %}🇩🇪 Deutsch{% else %}{{ lang_name }}{% endif %}
+                  {% if lang_code == 'en' %}English{% elif lang_code == 'de' %}Deutsch{% else %}{{ lang_name }}{% endif %}
                 </option>
+                {% endif %}
               {% endfor %}
             </select>
           </form>
-          <a href="/partners/login/" class="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 flex items-center gap-2">
-            <i data-lucide="log-in" class="w-4 h-4"></i>
+          <a href="/partners/login/" class="px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 flex items-center gap-1.5">
+            <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
             {% trans "Admin Login" %}
           </a>
-          <button class="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors">
+          <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors" onclick="toggleMobileMenu()">
             <i data-lucide="menu" class="w-6 h-6"></i>
           </button>
         </div>
+      </div>
+      <!-- Mobile Menu -->
+      <div id="mobile-menu" class="lg:hidden hidden border-t border-white/10 bg-dark-lighter">
+        <nav class="flex flex-col p-4 space-y-3">
+          <a href="/use-cases/" class="hover:text-primary transition-colors duration-300 flex items-center gap-2 py-2">
+            <i data-lucide="briefcase" class="w-4 h-4"></i>
+            {% trans "Use Cases" %}
+          </a>
+          <a href="/features/" class="hover:text-primary transition-colors duration-300 flex items-center gap-2 py-2">
+            <i data-lucide="star" class="w-4 h-4"></i>
+            {% trans "Features" %}
+          </a>
+          <a href="/businesses/" class="hover:text-primary transition-colors duration-300 flex items-center gap-2 py-2">
+            <i data-lucide="building" class="w-4 h-4"></i>
+            {% trans "Businesses" %}
+          </a>
+          <a href="/how-it-works/" class="hover:text-primary transition-colors duration-300 flex items-center gap-2 py-2">
+            <i data-lucide="play-circle" class="w-4 h-4"></i>
+            {% trans "How It Works" %}
+          </a>
+          <a href="/integrations/" class="hover:text-primary transition-colors duration-300 flex items-center gap-2 py-2">
+            <i data-lucide="link" class="w-4 h-4"></i>
+            {% trans "Integrations" %}
+          </a>
+          <a href="/pricing/" class="hover:text-primary transition-colors duration-300 flex items-center gap-2 py-2">
+            <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+            {% trans "Pricing" %}
+          </a>
+          <a href="/faq/" class="hover:text-primary transition-colors duration-300 flex items-center gap-2 py-2">
+            <i data-lucide="help-circle" class="w-4 h-4"></i>
+            {% trans "FAQ" %}
+          </a>
+          <a href="/blog/" class="hover:text-primary transition-colors duration-300 flex items-center gap-2 py-2">
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+            {% trans "Blog" %}
+          </a>
+        </nav>
       </div>
     </header>
 
@@ -288,6 +327,22 @@
           element.style.transform = `translateY(${scrolled * speed}px)`;
         });
       });
+
+      // Mobile menu toggle function
+      function toggleMobileMenu() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const menuIcon = menuBtn.querySelector('i');
+        
+        if (mobileMenu.classList.contains('hidden')) {
+          mobileMenu.classList.remove('hidden');
+          menuIcon.setAttribute('data-lucide', 'x');
+        } else {
+          mobileMenu.classList.add('hidden');
+          menuIcon.setAttribute('data-lucide', 'menu');
+        }
+        lucide.createIcons();
+      }
     </script>
     {% if request.user.is_authenticated %}
     <script type="module">
