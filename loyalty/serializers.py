@@ -96,15 +96,19 @@ class SliderSerializer(serializers.ModelSerializer):
     def get_stars(self, obj):
         """Average star rating (0-5) for the slider's business based on approved reviews"""
         try:
+            if not obj.business:
+                return 0.0
             avg = obj.business.reviews.filter(status=Review.Status.APPROVED).aggregate(avg=Avg("rating")).get("avg")
             return round(float(avg), 2) if avg is not None else 0.0
-        except Exception:
+        except Exception as e:
             return 0.0
 
     def get_reviews_count(self, obj):
         try:
+            if not obj.business:
+                return 0
             return obj.business.reviews.filter(status=Review.Status.APPROVED).count()
-        except Exception:
+        except Exception as e:
             return 0
 
 

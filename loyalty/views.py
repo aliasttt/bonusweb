@@ -187,24 +187,41 @@ class SliderListView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        # Get business_id from query params if provided
-        business_id = request.query_params.get('business_id')
-        
-        # Filter by business_id if provided, otherwise get all active sliders
-        if business_id:
+        try:
+            # Get business_id from query params if provided
+            business_id = request.query_params.get('business_id')
+            
+            # Filter by business_id if provided, otherwise get all active sliders
+            if business_id:
+                try:
+                    business_id = int(business_id)
+                    sliders = Slider.objects.filter(is_active=True, business_id=business_id).select_related('business').order_by('order', '-created_at')
+                except ValueError:
+                    return Response(
+                        {"error": "Invalid business_id. Must be a number."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            else:
+                sliders = Slider.objects.filter(is_active=True).select_related('business').order_by('order', '-created_at')
+            
+            # Serialize with proper error handling
             try:
-                business_id = int(business_id)
-                sliders = Slider.objects.filter(is_active=True, business_id=business_id).select_related('business').order_by('order', '-created_at')
-            except ValueError:
+                serializer = SliderSerializer(sliders, many=True, context={'request': request})
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Exception as serializer_error:
                 return Response(
-                    {"error": "Invalid business_id. Must be a number."},
-                    status=status.HTTP_400_BAD_REQUEST
+                    {"error": "Serialization error", "detail": str(serializer_error)},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
-        else:
-        sliders = Slider.objects.filter(is_active=True).select_related('business').order_by('order', '-created_at')
-        
-        serializer = SliderSerializer(sliders, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            error_detail = {"error": "Internal server error", "detail": str(e)}
+            if settings.DEBUG:
+                error_detail["traceback"] = traceback.format_exc()
+            return Response(
+                error_detail,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class MenuListView(APIView):
