@@ -169,3 +169,35 @@ class MenuProductSerializer(serializers.ModelSerializer):
             return 0
 
 
+class BusinessManagementSerializer(serializers.ModelSerializer):
+    """Serializer for Super Admin Business Management - includes restaurant images"""
+    restaurant_images = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Business
+        fields = ["id", "name", "description", "address", "website", "restaurant_images"]
+        read_only_fields = ["id", "restaurant_images"]
+    
+    def get_restaurant_images(self, obj):
+        """Return list of restaurant images (sliders) for this business"""
+        sliders = obj.sliders.filter(is_active=True).order_by('order', '-created_at')
+        images = []
+        for slider in sliders:
+            if slider.image:
+                request = self.context.get('request')
+                if request:
+                    images.append(request.build_absolute_uri(slider.image.url))
+                else:
+                    images.append(slider.image.url)
+        return images
+    
+    def update(self, instance, validated_data):
+        """Update business fields"""
+        instance.name = validated_data.get('name', instance.name)
+        instance.description = validated_data.get('description', instance.description)
+        instance.address = validated_data.get('address', instance.address)
+        instance.website = validated_data.get('website', instance.website)
+        instance.save()
+        return instance
+
+

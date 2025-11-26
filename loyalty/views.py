@@ -20,6 +20,7 @@ from .serializers import (
     WalletSerializer,
     SliderSerializer,
     MenuProductSerializer,
+    BusinessManagementSerializer,
 )
 
 
@@ -600,5 +601,129 @@ class SearchView(APIView):
                 "services": services.count(),
             }
         }, status=status.HTTP_200_OK)
+
+
+class SuperAdminBusinessManagementView(APIView):
+    """
+    Super Admin API for Business Management
+    Only superusers can access this endpoint.
+    
+    GET: List all businesses with name, description, address, website, and restaurant images
+    POST: Create a new business
+    PUT/PATCH: Update an existing business
+    """
+    permission_classes = [permissions.IsAdminUser]  # Only superusers can access
+    
+    def get(self, request):
+        """Get list of all businesses"""
+        try:
+            businesses = Business.objects.all().order_by('-created_at')
+            serializer = BusinessManagementSerializer(businesses, many=True, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": str(e), "detail": "An error occurred while fetching businesses."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def post(self, request):
+        """Create a new business"""
+        try:
+            # Check if owner_id is provided
+            owner_id = request.data.get('owner_id')
+            if not owner_id:
+                return Response(
+                    {"error": "owner_id is required to create a business."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            try:
+                owner = User.objects.get(id=owner_id)
+            except User.DoesNotExist:
+                return Response(
+                    {"error": f"User with id {owner_id} does not exist."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            serializer = BusinessManagementSerializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                business = serializer.save(owner=owner)
+                return Response(
+                    BusinessManagementSerializer(business, context={'request': request}).data,
+                    status=status.HTTP_201_CREATED
+                )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {"error": str(e), "detail": "An error occurred while creating business."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class SuperAdminBusinessDetailView(APIView):
+    """
+    Super Admin API for Business Detail Management
+    Only superusers can access this endpoint.
+    
+    GET: Get a specific business
+    PUT/PATCH: Update a specific business
+    DELETE: Delete a business
+    """
+    permission_classes = [permissions.IsAdminUser]  # Only superusers can access
+    
+    def get(self, request, business_id):
+        """Get a specific business"""
+        try:
+            business = get_object_or_404(Business, id=business_id)
+            serializer = BusinessManagementSerializer(business, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": str(e), "detail": "An error occurred while fetching business."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def put(self, request, business_id):
+        """Update a business (full update)"""
+        return self._update(request, business_id, partial=False)
+    
+    def patch(self, request, business_id):
+        """Update a business (partial update)"""
+        return self._update(request, business_id, partial=True)
+    
+    def _update(self, request, business_id, partial=False):
+        """Internal method to handle PUT and PATCH"""
+        try:
+            business = get_object_or_404(Business, id=business_id)
+            serializer = BusinessManagementSerializer(
+                business, 
+                data=request.data, 
+                partial=partial,
+                context={'request': request}
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {"error": str(e), "detail": "An error occurred while updating business."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def delete(self, request, business_id):
+        """Delete a business"""
+        try:
+            business = get_object_or_404(Business, id=business_id)
+            business.delete()
+            return Response(
+                {"message": "Business deleted successfully."},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e), "detail": "An error occurred while deleting business."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
