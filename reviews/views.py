@@ -812,7 +812,15 @@ class SubmitQuestionRatingsView(APIView):
     """
     POST /api/v1/reviews/questions/rate/
     Submits ratings from users for review questions
-    Expected body:
+    
+    Expected body (Method 1 - Array format):
+    {
+        "userId": "user_id or phone",
+        "businessId": "business_id",
+        "ratings": [5, 4, 3, 5, 4]  // Array of 5 ratings (1-5 stars) for questions 1-5
+    }
+    
+    Expected body (Method 2 - Object format):
     {
         "userId": "user_id or phone",
         "businessId": "business_id",
@@ -826,8 +834,8 @@ class SubmitQuestionRatingsView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        user_id_or_phone = request.data.get("userId") or request.data.get("phone")
-        business_id = request.data.get("businessId")
+        user_id_or_phone = request.data.get("userId") or request.data.get("phone") or request.data.get("user_id")
+        business_id = request.data.get("businessId") or request.data.get("business_id")
         ratings_data = request.data.get("ratings", [])
         
         if not user_id_or_phone:
@@ -842,7 +850,7 @@ class SubmitQuestionRatingsView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        if not ratings_data or not isinstance(ratings_data, list):
+        if not ratings_data:
             return Response(
                 {"error": "ratings array is required"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -867,6 +875,12 @@ class SubmitQuestionRatingsView(APIView):
             pass
         
         if not user:
+            # Try to find by phone
+            customer = Customer.objects.filter(phone=user_id_or_phone).first()
+            if customer:
+                user = customer.user
+        
+        if not user:
             business_by_phone = Business.objects.filter(phone=user_id_or_phone).first()
             if business_by_phone:
                 user = business_by_phone.owner
@@ -876,7 +890,7 @@ class SubmitQuestionRatingsView(APIView):
         
         if not user:
             return Response(
-                {"error": "User authentication required"},
+                {"error": "User authentication required. Please provide valid userId, phone, or authenticate."},
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
@@ -886,49 +900,96 @@ class SubmitQuestionRatingsView(APIView):
         from .models import QuestionRating
         created_ratings = []
         updated_ratings = []
+        errors = []
         
-        for rating_item in ratings_data:
-            question_number = rating_item.get("question_number")
-            rating_value = rating_item.get("rating")
-            
-            if not question_number or not rating_value:
-                continue
-            
-            try:
-                question_number = int(question_number)
-                rating_value = int(rating_value)
-                
-                if question_number < 1 or question_number > 5:
-                    continue
-                if rating_value < 1 or rating_value > 5:
-                    continue
-            except (ValueError, TypeError):
-                continue
-            
-            # Create or update rating
-            question_rating, created = QuestionRating.objects.update_or_create(
-                business=business,
-                customer=customer,
-                question_number=question_number,
-                defaults={"rating": rating_value}
-            )
-            
-            if created:
-                created_ratings.append({
-                    "question_number": question_number,
-                    "rating": rating_value
-                })
+        # Check if ratings is a simple array [5, 4, 3, 5, 4]
+        if isinstance(ratings_data, list) and len(ratings_data) > 0:
+            if isinstance(ratings_data[0], (int, float)):
+                # Simple array format: [5, 4, 3, 5, 4]
+                for idx, rating_value in enumerate(ratings_data[:5], start=1):  # Max 5 questions
+                    try:
+                        rating_value = int(rating_value)
+                        if rating_value < 1 or rating_value > 5:
+                            errors.append(f"Question {idx}: Rating must be between 1 and 5")
+                            continue
+                        
+                        question_rating, created = QuestionRating.objects.update_or_create(
+                            business=business,
+                            customer=customer,
+                            question_number=idx,
+                            defaults={"rating": rating_value}
+                        )
+                        
+                        if created:
+                            created_ratings.append({
+                                "question_number": idx,
+                                "rating": rating_value
+                            })
+                        else:
+                            updated_ratings.append({
+                                "question_number": idx,
+                                "rating": rating_value
+                            })
+                    except (ValueError, TypeError):
+                        errors.append(f"Question {idx}: Invalid rating value")
             else:
-                updated_ratings.append({
-                    "question_number": question_number,
-                    "rating": rating_value
-                })
+                # Object format: [{"question_number": 1, "rating": 5}, ...]
+                for rating_item in ratings_data:
+                    question_number = rating_item.get("question_number") or rating_item.get("questionNumber")
+                    rating_value = rating_item.get("rating")
+                    
+                    if not question_number or rating_value is None:
+                        continue
+                    
+                    try:
+                        question_number = int(question_number)
+                        rating_value = int(rating_value)
+                        
+                        if question_number < 1 or question_number > 5:
+                            errors.append(f"Question {question_number}: Question number must be between 1 and 5")
+                            continue
+                        if rating_value < 1 or rating_value > 5:
+                            errors.append(f"Question {question_number}: Rating must be between 1 and 5")
+                            continue
+                    except (ValueError, TypeError):
+                        errors.append(f"Question {question_number}: Invalid values")
+                        continue
+                    
+                    # Create or update rating
+                    question_rating, created = QuestionRating.objects.update_or_create(
+                        business=business,
+                        customer=customer,
+                        question_number=question_number,
+                        defaults={"rating": rating_value}
+                    )
+                    
+                    if created:
+                        created_ratings.append({
+                            "question_number": question_number,
+                            "rating": rating_value
+                        })
+                    else:
+                        updated_ratings.append({
+                            "question_number": question_number,
+                            "rating": rating_value
+                        })
+        
+        if not created_ratings and not updated_ratings:
+            return Response(
+                {
+                    "error": "No valid ratings were submitted",
+                    "details": errors
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         return Response({
+            "success": True,
             "message": "Ratings submitted successfully",
             "created": created_ratings,
             "updated": updated_ratings,
-            "total": len(created_ratings) + len(updated_ratings)
+            "total": len(created_ratings) + len(updated_ratings),
+            "errors": errors if errors else None
         }, status=status.HTTP_200_OK)
 
 
