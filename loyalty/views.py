@@ -231,6 +231,26 @@ class SliderListView(APIView):
             )
 
 
+class SliderByBusinessView(APIView):
+    """GET endpoint for slider by business_id - returns list of sliders for a specific business"""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, business_id):
+        try:
+            sliders = Slider.objects.filter(is_active=True, business_id=business_id).select_related('business').order_by('order', '-created_at')
+            serializer = SliderSerializer(sliders, many=True, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            error_detail = {"error": "Internal server error", "detail": str(e)}
+            if settings.DEBUG:
+                error_detail["traceback"] = traceback.format_exc()
+            return Response(
+                error_detail,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 class MenuListView(APIView):
     """GET endpoint for menu - returns list of products with id, image, reward, point"""
     permission_classes = [permissions.AllowAny]
