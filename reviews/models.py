@@ -149,13 +149,41 @@ class ReviewQuestion(models.Model):
     def __str__(self) -> str:
         return f"Review Questions for {self.business.name}"
 
-    def get_questions_list(self):
-        """Returns a list of non-empty questions"""
+    def get_default_questions(self, language='en'):
+        """Returns default questions based on language"""
+        default_questions = {
+            'en': [
+                "How satisfied are you with the overall service?",
+                "How satisfied are you with the quality of products/services?",
+                "How satisfied are you with the cleanliness?",
+                "How would you rate the staff friendliness?",
+                "How likely are you to recommend this place?"
+            ],
+            'de': [
+                "Wie zufrieden sind Sie mit dem Gesamtservice?",
+                "Wie zufrieden sind Sie mit der Qualität der Produkte/Dienstleistungen?",
+                "Wie zufrieden sind Sie mit der Sauberkeit?",
+                "Wie bewerten Sie die Freundlichkeit des Personals?",
+                "Wie wahrscheinlich ist es, dass Sie diesen Ort weiterempfehlen?"
+            ]
+        }
+        # Default to English if language not found
+        return default_questions.get(language, default_questions['en'])
+    
+    def get_questions_list(self, language='en'):
+        """Returns a list of questions, using default if admin hasn't configured any"""
         questions = []
+        default_questions = self.get_default_questions(language)
+        
         for i in range(1, 6):
             q = getattr(self, f"question_{i}", "")
+            # If admin has configured a question, use it; otherwise use default
             if q and q.strip():
                 questions.append({"id": i, "text": q.strip()})
+            else:
+                # Use default question
+                questions.append({"id": i, "text": default_questions[i - 1]})
+        
         return questions
 
 

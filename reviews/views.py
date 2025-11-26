@@ -750,24 +750,31 @@ class GetReviewQuestionsView(APIView):
         # Get or create review questions for this business
         from .models import ReviewQuestion, QuestionRating
         from django.db.models import Avg, Count
+        from django.utils import translation
+        
+        # Get language from query parameter, Accept-Language header, or default to 'en'
+        language = request.query_params.get('lang', 'en')
+        if language not in ['en', 'de']:
+            # Try to get from Accept-Language header
+            accept_language = request.META.get('HTTP_ACCEPT_LANGUAGE', '')
+            if 'de' in accept_language.lower():
+                language = 'de'
+            else:
+                language = 'en'
+        
+        # Activate language for translation
+        translation.activate(language)
         
         review_questions, created = ReviewQuestion.objects.get_or_create(business=business)
         
-        # Get questions list
-        questions_list = review_questions.get_questions_list()
+        # Get questions list with language support (will use defaults if admin hasn't configured)
+        questions_list = review_questions.get_questions_list(language=language)
         
         # Initialize ratings list with 5 zeros (one for each possible question)
         ratings_list = [0.0, 0.0, 0.0, 0.0, 0.0]  # [ستاره سوال 1, ستاره سوال 2, ستاره سوال 3, ستاره سوال 4, ستاره سوال 5]
         questions_with_ratings = []
         
-        # If no questions configured, return empty questions but ratings list with zeros
-        if not questions_list:
-            return Response({
-                "business_id": business_id,
-                "questions": [],
-                "ratings": ratings_list
-            }, status=status.HTTP_200_OK)
-        
+        # Always return 5 questions (either configured or default)
         # Calculate average rating for each question and add to response
         for q in questions_list:
             question_num = q["id"]
@@ -795,6 +802,7 @@ class GetReviewQuestionsView(APIView):
         
         return Response({
             "business_id": business_id,
+            "language": language,
             "questions": questions_with_ratings,
             "ratings": ratings_list  # لیست ستاره‌ها: [ستاره سوال 1, ستاره سوال 2, ستاره سوال 3, ستاره سوال 4, ستاره سوال 5]
         }, status=status.HTTP_200_OK)
@@ -942,10 +950,24 @@ class GetQuestionAveragesView(APIView):
         
         from .models import QuestionRating, ReviewQuestion
         from django.db.models import Avg, Count
+        from django.utils import translation
+        
+        # Get language from query parameter, Accept-Language header, or default to 'en'
+        language = request.query_params.get('lang', 'en')
+        if language not in ['en', 'de']:
+            # Try to get from Accept-Language header
+            accept_language = request.META.get('HTTP_ACCEPT_LANGUAGE', '')
+            if 'de' in accept_language.lower():
+                language = 'de'
+            else:
+                language = 'en'
+        
+        # Activate language for translation
+        translation.activate(language)
         
         # Get review questions to know which questions exist
         review_questions, _ = ReviewQuestion.objects.get_or_create(business=business)
-        questions_list = review_questions.get_questions_list()
+        questions_list = review_questions.get_questions_list(language=language)
         
         # Calculate averages for each question
         averages = []

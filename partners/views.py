@@ -326,24 +326,34 @@ def reviews_list(request):
             
             question_ratings_data = list(ratings_by_customer.values())
             
-            # Calculate averages
+            # Calculate averages - use default questions if admin hasn't configured
+            from django.utils import translation
+            language = translation.get_language() or 'en'
+            if language not in ['en', 'de']:
+                language = 'en'
+            
+            # Get questions list (will use defaults if not configured)
+            questions_list = review_questions.get_questions_list(language=language)
+            
             averages = []
-            for i in range(1, 6):
+            for q in questions_list:
+                question_num = q["id"]
+                question_text = q["text"]
+                
                 stats = QuestionRating.objects.filter(
                     business=business,
-                    question_number=i
+                    question_number=question_num
                 ).aggregate(
                     average=Avg("rating"),
                     count=Count("id")
                 )
-                question_text = getattr(review_questions, f"question_{i}", "")
-                if question_text:
-                    averages.append({
-                        "question_number": i,
-                        "question_text": question_text,
-                        "average_rating": round(stats["average"], 2) if stats["average"] else 0,
-                        "total_votes": stats["count"] or 0
-                    })
+                
+                averages.append({
+                    "question_number": question_num,
+                    "question_text": question_text,
+                    "average_rating": round(stats["average"], 2) if stats["average"] else 0,
+                    "total_votes": stats["count"] or 0
+                })
             question_averages = averages
         except Exception as e:
             # If tables don't exist yet, just skip this section
