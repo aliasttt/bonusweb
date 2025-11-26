@@ -516,6 +516,7 @@ def business_settings(request):
         business.name = request.POST.get("name", business.name)
         business.description = request.POST.get("description", business.description)
         business.address = request.POST.get("address", business.address)
+        business.website = request.POST.get("website", business.website)
         business.save()
         
         # Handle uploaded slider images (up to 5)

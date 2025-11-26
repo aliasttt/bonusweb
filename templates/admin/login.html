@@ -17,14 +17,6 @@
 
         <!-- Login Form -->
         <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="mb-4 p-4 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 text-sm">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-
             <form method="post" class="space-y-6">
                 {% csrf_token %}
                 
