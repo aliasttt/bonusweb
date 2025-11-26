@@ -120,10 +120,12 @@ class MenuProductSerializer(serializers.ModelSerializer):
     point = serializers.SerializerMethodField()
     stars = serializers.SerializerMethodField()
     reviews_count = serializers.SerializerMethodField()
+    business_id = serializers.IntegerField(source="business.id", read_only=True)
+    business_name = serializers.CharField(source="business.name", read_only=True)
     
     class Meta:
         model = Product
-        fields = ["id", "image", "reward", "point", "stars", "reviews_count"]
+        fields = ["id", "image", "reward", "point", "stars", "reviews_count", "business_id", "business_name"]
     
     def get_id(self, obj):
         """Return id as string"""
