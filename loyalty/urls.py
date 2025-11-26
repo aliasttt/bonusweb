@@ -13,6 +13,7 @@ urlpatterns = [
     path("scan/", views.ScanStampView.as_view(), name="scan"),
     path("redeem/", views.RedeemView.as_view(), name="redeem"),
     path("slider/", views.SliderListView.as_view(), name="slider_list"),
+    path("menu/<int:business_id>/", views.MenuByBusinessView.as_view(), name="menu_by_business"),
     path("menu/", views.MenuListView.as_view(), name="menu_list"),
     path("unsplash/search/", views.UnsplashSearchView.as_view(), name="unsplash_search"),
     path("businesses/<int:business_id>/", views.BusinessDetailView.as_view(), name="business_detail"),

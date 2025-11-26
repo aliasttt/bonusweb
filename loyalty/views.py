@@ -261,6 +261,22 @@ class MenuListView(APIView):
             )
 
 
+class MenuByBusinessView(APIView):
+    """GET endpoint for menu by business_id - returns list of products for a specific business"""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, business_id):
+        try:
+            products = Product.objects.filter(active=True, business_id=business_id)
+            serializer = MenuProductSerializer(products, many=True, context={'request': request})
+            return Response({"product": serializer.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": str(e), "detail": "An error occurred while fetching menu items."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 class UnsplashSearchView(APIView):
     """
     GET endpoint for Unsplash image search
