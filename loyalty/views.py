@@ -83,8 +83,13 @@ class ScanStampView(APIView):
         business = get_object_or_404(Business, id=business_id)
         customer, _ = Customer.objects.get_or_create(user=request.user)
         wallet, _ = Wallet.objects.select_for_update().get_or_create(
-            customer=customer, business=business
+            customer=customer,
+            business=business,
+            defaults={"reward_point_cost": business.reward_point_cost},
         )
+        if wallet.reward_point_cost != business.reward_point_cost:
+            wallet.reward_point_cost = business.reward_point_cost
+            wallet.save(update_fields=["reward_point_cost"])
         
         # If product_id is provided, check if it's a reward or menu item
         if product_id:
@@ -94,43 +99,43 @@ class ScanStampView(APIView):
                 if product.is_reward:
                     # Reward item: User wants to redeem, so deduct points
                     required_points = product.points_reward
-                    if wallet.stamp_count < required_points:
+                    if wallet.points_balance < required_points:
                         return Response(
                             {
                                 "error": "Insufficient points",
-                                "detail": f"User points ({wallet.stamp_count}) are less than required ({required_points})",
-                                "user_points": wallet.stamp_count,
+                                "detail": f"User points ({wallet.points_balance}) are less than required ({required_points})",
+                                "user_points": wallet.points_balance,
                                 "required_points": required_points
                             },
                             status=status.HTTP_400_BAD_REQUEST
                         )
                     
                     # Deduct points
-                    wallet.stamp_count -= required_points
-                    wallet.save(update_fields=["stamp_count", "updated_at"])
+                    wallet.points_balance -= required_points
+                    wallet.save(update_fields=["points_balance", "updated_at"])
                     Transaction.objects.create(
                         wallet=wallet, 
                         amount=-required_points, 
                         note=f"Redeemed: {product.title}"
                     )
                     return Response({
-                        "stamp_count": wallet.stamp_count,
+                        "points_balance": wallet.points_balance,
                         "message": f"Successfully redeemed {product.title}",
                         "points_deducted": required_points
                     })
                 else:
                     # Menu item: User purchased, so add points
                     points_to_add = product.points_reward
-                    wallet.stamp_count += points_to_add
-                    wallet.save(update_fields=["stamp_count", "updated_at"])
+                    wallet.points_balance += points_to_add
+                    wallet.save(update_fields=["points_balance", "updated_at"])
                     Transaction.objects.create(
                         wallet=wallet, 
                         amount=points_to_add, 
                         note=f"Purchased: {product.title}"
                     )
-                    achieved = wallet.stamp_count >= wallet.target
+                    achieved = wallet.points_balance >= wallet.reward_point_cost
                     return Response({
-                        "stamp_count": wallet.stamp_count,
+                        "points_balance": wallet.points_balance,
                         "achieved": achieved,
                         "points_added": points_to_add,
                         "message": f"Points added for {product.title}"
@@ -142,11 +147,11 @@ class ScanStampView(APIView):
                 )
         
         # Legacy behavior: just add points
-        wallet.stamp_count += amount
-        wallet.save(update_fields=["stamp_count", "updated_at"])
+        wallet.points_balance += amount
+        wallet.save(update_fields=["points_balance", "updated_at"])
         Transaction.objects.create(wallet=wallet, amount=amount, note="scan")
-        achieved = wallet.stamp_count >= wallet.target
-        return Response({"stamp_count": wallet.stamp_count, "achieved": achieved})
+        achieved = wallet.points_balance >= wallet.reward_point_cost
+        return Response({"points_balance": wallet.points_balance, "achieved": achieved})
 
 
 class RedeemView(APIView):
@@ -158,12 +163,13 @@ class RedeemView(APIView):
         business = get_object_or_404(Business, id=business_id)
         customer, _ = Customer.objects.get_or_create(user=request.user)
         wallet = get_object_or_404(Wallet.objects.select_for_update(), customer=customer, business=business)
-        if wallet.stamp_count < wallet.target:
-            return Response({"detail": "not enough stamps"}, status=status.HTTP_400_BAD_REQUEST)
-        wallet.stamp_count = 0
-        wallet.save(update_fields=["stamp_count", "updated_at"])
-        Transaction.objects.create(wallet=wallet, amount=-wallet.target, note="redeem")
-        return Response({"stamp_count": wallet.stamp_count})
+        cost = wallet.reward_point_cost or business.reward_point_cost
+        if wallet.points_balance < cost:
+            return Response({"detail": "not enough points"}, status=status.HTTP_400_BAD_REQUEST)
+        wallet.points_balance -= cost
+        wallet.save(update_fields=["points_balance", "updated_at"])
+        Transaction.objects.create(wallet=wallet, amount=-cost, note="redeem")
+        return Response({"points_balance": wallet.points_balance})
 
 
 class SliderListView(APIView):

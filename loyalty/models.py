@@ -16,7 +16,11 @@ class Business(models.Model):
     website = models.URLField(blank=True)
     phone = models.CharField(max_length=20, blank=True, help_text="Business phone number")
     password = models.CharField(max_length=128, blank=True, help_text="Business password for in-person access")
-    free_reward_threshold = models.PositiveIntegerField(default=10)
+    reward_point_cost = models.PositiveIntegerField(
+        verbose_name="Reward point cost",
+        default=100,
+        help_text="Points required for the default reward",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:  # pragma: no cover - readable admin
@@ -80,8 +84,11 @@ class Product(models.Model):
 class Wallet(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="wallets")
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name="wallets")
-    stamp_count = models.PositiveIntegerField(default=0)
-    target = models.PositiveIntegerField(default=10)  # e.g., 10 stamps to redeem
+    points_balance = models.PositiveIntegerField(default=0)
+    reward_point_cost = models.PositiveIntegerField(
+        default=100,
+        help_text="Points required to unlock the default reward for this wallet",
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -90,7 +97,7 @@ class Wallet(models.Model):
 
 class Transaction(models.Model):
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name="transactions")
-    amount = models.IntegerField(default=1)  # positive = stamp, negative = redeem reset
+    amount = models.IntegerField(default=1)  # positive = earned points, negative = spent points
     created_at = models.DateTimeField(auto_now_add=True)
     note = models.CharField(max_length=200, blank=True)
 

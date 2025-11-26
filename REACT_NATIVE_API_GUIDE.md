@@ -347,7 +347,7 @@ async function refreshToken() {
     "address": "تهران، میدان انقلاب",
     "website": "https://example.com",
     "phone": "021-12345678",
-    "free_reward_threshold": 10,
+    "reward_point_cost": 100,
     "created_at": "2025-01-01T10:00:00Z"
   },
   {
@@ -357,7 +357,7 @@ async function refreshToken() {
     "address": "تهران، خیابان ولیعصر",
     "website": "",
     "phone": "021-87654321",
-    "free_reward_threshold": 10,
+    "reward_point_cost": 100,
     "created_at": "2025-01-01T11:00:00Z"
   }
 ]

@@ -64,7 +64,7 @@ class WalletSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Wallet
-        fields = ["id", "business", "stamp_count", "target", "updated_at"]
+        fields = ["id", "business", "points_balance", "reward_point_cost", "updated_at"]
 
 
 class TransactionSerializer(serializers.ModelSerializer):

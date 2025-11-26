@@ -118,8 +118,8 @@ function displayWallets(wallets) {
                         </div>
                         <div class="col-md-4">
                             <div class="d-flex justify-content-between mb-2">
-                                <span>Stamps:</span>
-                                <strong>${wallet.stamp_count}/${wallet.target}</strong>
+                                <span>Points:</span>
+                                <strong>${wallet.points_balance}/${wallet.reward_point_cost}</strong>
                             </div>
                             <div class="progress">
                                 <div class="progress-bar ${isReady ? 'bg-success' : 'bg-primary'}" 
@@ -133,7 +133,7 @@ function displayWallets(wallets) {
                                 `<button class="btn btn-success btn-sm" onclick="redeemReward(${wallet.business_id})">
                                     <i class="fas fa-gift"></i>
                                 </button>` : 
-                                `<span class="text-muted">${wallet.target - wallet.stamp_count} more stamps needed</span>`
+                                `<span class="text-muted">${wallet.reward_point_cost - wallet.points_balance} more points needed</span>`
                             }
                         </div>
                     </div>

@@ -58,7 +58,7 @@ class BusinessAdmin(admin.ModelAdmin):
             "description": "Password is used for in-person business access. It's securely hashed and never displayed."
         }),
         ("Business Settings", {
-            "fields": ("free_reward_threshold",)
+            "fields": ("reward_point_cost",)
         }),
         ("Timestamps", {
             "fields": ("created_at",)
@@ -93,7 +93,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Wallet)
 class WalletAdmin(admin.ModelAdmin):
-    list_display = ("id", "customer", "business", "stamp_count", "target")
+    list_display = ("id", "customer", "business", "points_balance", "reward_point_cost")
 
 
 @admin.register(Transaction)

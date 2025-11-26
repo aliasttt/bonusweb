@@ -226,7 +226,7 @@ def admin_users_list(request):
             'points_transactions': points_transactions[:10],  # آخرین 10 تراکنش امتیاز
             'total_points_earned': total_points_earned,
             'total_points_redeemed': total_points_redeemed,
-            'current_balance': wallet.stamp_count,
+            'current_balance': wallet.points_balance,
             'total_spent': total_spent,
             'last_order_date': orders.first().created_at if orders.exists() else None,
             'last_transaction_date': points_transactions.first().created_at if points_transactions.exists() else None,

@@ -170,7 +170,7 @@
 - `website`: URL (blank=True)
 - `phone`: string (max_length=20, blank=True)
 - `password`: string (max_length=128, blank=True, hashed)
-- `free_reward_threshold`: integer (default=10)
+- `reward_point_cost`: integer (default=100) — تعداد امتیاز لازم برای دریافت ریوارد
 - `created_at`: datetime (auto_now_add=True)
 
 #### 🗄️ ساختار دیتابیس Business (loyalty):
@@ -184,7 +184,7 @@ class Business(models.Model):
     website = URLField(blank=True)
     phone = CharField(max_length=20, blank=True)
     password = CharField(max_length=128, blank=True)  # hashed
-    free_reward_threshold = PositiveIntegerField(default=10)
+    reward_point_cost = PositiveIntegerField(default=100)
     created_at = DateTimeField(auto_now_add=True)
 ```
 
@@ -273,8 +273,8 @@ class Business(models.Model):
 - `id`: AutoField (Primary Key)
 - `customer`: ForeignKey(Customer, related_name="wallets")
 - `business`: ForeignKey(Business, related_name="wallets")
-- `stamp_count`: PositiveIntegerField(default=0)
-- `target`: PositiveIntegerField(default=10)
+- `points_balance`: PositiveIntegerField(default=0)
+- `reward_point_cost`: PositiveIntegerField(default=100)
 - `updated_at`: DateTimeField(auto_now=True)
 - **unique_together**: ("customer", "business")
 
@@ -542,7 +542,7 @@ class Business(models.Model):
 - `id`, `business`, `title`, `price_cents`, `active`, `points_reward`, `image`
 
 ### Wallet:
-- `id`, `customer`, `business`, `stamp_count`, `target`, `updated_at`
+- `id`, `customer`, `business`, `points_balance`, `reward_point_cost`, `updated_at`
 - **unique_together**: (customer, business)
 
 ### PointsTransaction:

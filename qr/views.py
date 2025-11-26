@@ -96,9 +96,9 @@ def customer_dashboard_view(request):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def process_qr_payment(request):
-    """Process QR code payment - create transaction and stamps"""
+    """Process QR code payment - add loyalty points"""
     token = request.data.get('token')
-    amount = request.data.get('amount', 1)  # Number of stamps
+    amount = int(request.data.get('amount', 1))  # Number of points to add
     note = request.data.get('note', '')
     business_password = request.data.get('business_password', '')  # Password from business owner
     
@@ -123,7 +123,7 @@ def process_qr_payment(request):
     wallet, created = Wallet.objects.get_or_create(
         customer=customer,
         business=qr_code.business,
-        defaults={'target': qr_code.business.free_reward_threshold}
+        defaults={'reward_point_cost': qr_code.business.reward_point_cost}
     )
     
     # Create transaction
@@ -133,18 +133,21 @@ def process_qr_payment(request):
         note=f"QR Payment - {note}" if note else "QR Payment"
     )
     
-    # Update stamp count
-    wallet.stamp_count += amount
-    wallet.save()
+    # Update points balance
+    wallet.points_balance += max(amount, 0)
+    wallet.reward_point_cost = wallet.reward_point_cost or qr_code.business.reward_point_cost
+    wallet.save(update_fields=["points_balance", "reward_point_cost", "updated_at"])
     
-    # Check if customer reached target
-    reward_earned = wallet.stamp_count >= wallet.target
+    # Check if customer reached reward threshold
+    reward_cost = wallet.reward_point_cost or qr_code.business.reward_point_cost
+    reward_earned = wallet.points_balance >= reward_cost
     
     return Response({
         'success': True,
         'transaction_id': transaction.id,
-        'stamp_count': wallet.stamp_count,
-        'target': wallet.target,
+        'points_awarded': amount,
+        'points_balance': wallet.points_balance,
+        'reward_point_cost': reward_cost,
         'reward_earned': reward_earned,
         'business_name': qr_code.business.name
     })
@@ -153,7 +156,7 @@ def process_qr_payment(request):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def redeem_reward(request):
-    """Redeem reward - reset stamps"""
+    """Redeem reward - deduct points"""
     business_id = request.data.get('business_id')
     
     if not business_id:
@@ -166,24 +169,28 @@ def redeem_reward(request):
     except (Business.DoesNotExist, Customer.DoesNotExist, Wallet.DoesNotExist):
         return Response({'error': 'Wallet not found'}, status=status.HTTP_404_NOT_FOUND)
     
-    if wallet.stamp_count < wallet.target:
-        return Response({'error': 'Not enough stamps'}, status=status.HTTP_400_BAD_REQUEST)
+    reward_cost = wallet.reward_point_cost or wallet.business.reward_point_cost
+    
+    if wallet.points_balance < reward_cost:
+        return Response({'error': 'Not enough points'}, status=status.HTTP_400_BAD_REQUEST)
     
     # Create negative transaction for reward redemption
-    transaction = Transaction.objects.create(
+    Transaction.objects.create(
         wallet=wallet,
-        amount=-wallet.stamp_count,  # Negative for reset
+        amount=-reward_cost,
         note="Reward redeemed"
     )
     
-    # Reset stamps
-    wallet.stamp_count = 0
-    wallet.save()
+    # Deduct points
+    wallet.points_balance -= reward_cost
+    wallet.save(update_fields=["points_balance", "updated_at"])
     
     return Response({
         'success': True,
         'message': 'Reward redeemed successfully!',
-        'stamp_count': wallet.stamp_count
+        'points_balance': wallet.points_balance,
+        'reward_point_cost': reward_cost,
+        'reward_earned': wallet.points_balance >= reward_cost,
     })
 
 
@@ -197,13 +204,14 @@ def customer_wallets(request):
         
         wallet_data = []
         for wallet in wallets:
+            cost = wallet.reward_point_cost or wallet.business.reward_point_cost
             wallet_data.append({
                 'business_id': wallet.business.id,
                 'business_name': wallet.business.name,
-                'stamp_count': wallet.stamp_count,
-                'target': wallet.target,
-                'progress_percentage': (wallet.stamp_count / wallet.target) * 100 if wallet.target > 0 else 0,
-                'can_redeem': wallet.stamp_count >= wallet.target,
+                'points_balance': wallet.points_balance,
+                'reward_point_cost': cost,
+                'progress_percentage': (wallet.points_balance / cost) * 100 if cost > 0 else 0,
+                'can_redeem': wallet.points_balance >= cost,
                 'updated_at': wallet.updated_at
             })
         

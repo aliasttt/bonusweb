@@ -44,20 +44,12 @@ class PointsBalanceView(APIView):
             wallets = Wallet.objects.filter(customer=customer).select_related("business")
             result = []
             for w in wallets:
-                try:
-                    balance = sum(t.points for t in w.points_transactions.all())
-                    result.append({
-                        "business_id": w.business_id,
-                        "business_name": w.business.name,
-                        "balance": balance,
-                    })
-                except Exception:
-                    # If error calculating balance, use 0
-                    result.append({
-                        "business_id": w.business_id,
-                        "business_name": w.business.name,
-                        "balance": 0,
-                    })
+                result.append({
+                    "business_id": w.business_id,
+                    "business_name": w.business.name,
+                    "balance": w.points_balance,
+                    "reward_point_cost": w.reward_point_cost or w.business.reward_point_cost,
+                })
             return Response({"wallets": result})
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -73,10 +65,17 @@ class QRScanAwardPointsView(APIView):
         if not qr:
             return Response({"detail": "invalid token"}, status=status.HTTP_400_BAD_REQUEST)
         customer, _ = Customer.objects.get_or_create(user=request.user)
-        wallet, _ = Wallet.objects.select_for_update().get_or_create(customer=customer, business=qr.business)
+        wallet, _ = Wallet.objects.select_for_update().get_or_create(
+            customer=customer,
+            business=qr.business,
+            defaults={"reward_point_cost": qr.business.reward_point_cost},
+        )
+        wallet.reward_point_cost = wallet.reward_point_cost or qr.business.reward_point_cost
         points = qr.campaign.points_per_scan if qr.campaign else 1
+        wallet.points_balance += points
+        wallet.save(update_fields=["points_balance", "reward_point_cost", "updated_at"])
         PointsTransaction.objects.create(wallet=wallet, campaign=qr.campaign, points=points, note="scan")
-        return Response({"awarded": points})
+        return Response({"awarded": points, "points_balance": wallet.points_balance})
 
 
 class RedeemPointsView(APIView):
@@ -91,11 +90,12 @@ class RedeemPointsView(APIView):
         business = get_object_or_404(Business, id=business_id)
         customer, _ = Customer.objects.get_or_create(user=request.user)
         wallet = get_object_or_404(Wallet.objects.select_for_update(), customer=customer, business=business)
-        current = sum(t.points for t in wallet.points_transactions.all())
-        if current < amount:
+        if wallet.points_balance < amount:
             return Response({"detail": "insufficient points"}, status=status.HTTP_400_BAD_REQUEST)
+        wallet.points_balance -= amount
+        wallet.save(update_fields=["points_balance", "updated_at"])
         PointsTransaction.objects.create(wallet=wallet, points=-amount, note="redeem")
-        return Response({"redeemed": amount})
+        return Response({"redeemed": amount, "points_balance": wallet.points_balance})
 
 
 class QRProductScanView(APIView):
@@ -184,8 +184,11 @@ class QRProductScanView(APIView):
         wallet, wallet_created = Wallet.objects.select_for_update().get_or_create(
             customer=customer,
             business=business,
-            defaults={"target": business.free_reward_threshold}
+            defaults={"reward_point_cost": business.reward_point_cost}
         )
+        wallet.reward_point_cost = wallet.reward_point_cost or business.reward_point_cost
+        wallet.points_balance += total_points
+        wallet.save(update_fields=["points_balance", "reward_point_cost", "updated_at"])
         
         # Create points transaction
         note = f"QR scan - Products: {', '.join(str(p.id) for p in products)}"
@@ -196,7 +199,7 @@ class QRProductScanView(APIView):
         )
         
         # Calculate new balance
-        current_balance = sum(t.points for t in wallet.points_transactions.all())
+        current_balance = wallet.points_balance
         
         # Return response for React Native
         return Response({
