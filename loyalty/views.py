@@ -613,6 +613,12 @@ class SuperAdminBusinessManagementView(APIView):
     PUT/PATCH: Update an existing business
     """
     permission_classes = [permissions.IsAdminUser]  # Only superusers can access
+
+    def get_permissions(self):
+        # Allow public access for GET (list) while keeping other methods restricted to admins
+        if getattr(self.request, "method", "") == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
     
     def get(self, request):
         """Get list of all businesses"""
@@ -670,6 +676,12 @@ class SuperAdminBusinessDetailView(APIView):
     DELETE: Delete a business
     """
     permission_classes = [permissions.IsAdminUser]  # Only superusers can access
+
+    def get_permissions(self):
+        # Allow public access for GET (detail) while keeping other methods restricted to admins
+        if getattr(self.request, "method", "") == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
     
     def get(self, request, business_id):
         """Get a specific business"""
