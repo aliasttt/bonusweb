@@ -17,6 +17,9 @@ urlpatterns = [
     path("notifications/", views.notifications_center, name="notifications_center"),
     path("settings/", views.business_settings, name="business_settings"),
     path("settings/delete-slider/<int:slider_id>/", views.delete_slider, name="delete_slider"),
+    # Business email verification
+    path("settings/send-email-code/", views.send_business_email_code, name="send_business_email_code"),
+    path("settings/verify-email-code/", views.verify_business_email_code, name="verify_business_email_code"),
     # QR Code verification endpoints
     path("qr/send-verification-code/", views.send_verification_code, name="send_verification_code"),
     path("qr/verify-code/", views.verify_code_and_generate_qr, name="verify_code_and_generate_qr"),

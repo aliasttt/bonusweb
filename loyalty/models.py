@@ -15,6 +15,8 @@ class Business(models.Model):
     address = models.CharField(max_length=300, blank=True)
     website = models.URLField(blank=True)
     phone = models.CharField(max_length=20, blank=True, help_text="Business phone number")
+    email = models.EmailField(blank=True, help_text="Business contact email")
+    email_verified = models.BooleanField(default=False)
     password = models.CharField(max_length=128, blank=True, help_text="Business password for in-person access")
     reward_point_cost = models.PositiveIntegerField(
         verbose_name="Reward point cost",

@@ -17,6 +17,7 @@ from accounts.models import Profile
 from rewards.models import PointsTransaction
 from django.db.models import Sum, Count
 from django.utils import timezone
+from django.core.mail import send_mail
 
 
 @require_http_methods(["GET", "POST"])
@@ -527,6 +528,12 @@ def business_settings(request):
         business.description = request.POST.get("description", business.description)
         business.address = request.POST.get("address", business.address)
         business.website = request.POST.get("website", business.website)
+        # Email is handled via verification flow; allow saving a raw value only if provided and not changing verification status here
+        posted_email = (request.POST.get("email") or "").strip()
+        if posted_email and posted_email != (business.email or ""):
+            business.email = posted_email
+            # If email changed manually via form submit, mark as not verified until code verification
+            business.email_verified = False
         business.save()
         
         # Handle uploaded slider images (up to 5)
@@ -559,6 +566,87 @@ def business_settings(request):
         "business": business,
         "sliders": sliders
     })
+
+
+@login_required
+@require_http_methods(["POST"])
+def send_business_email_code(request):
+    """Send a verification code to the provided business email."""
+    business = _get_active_business(request)
+    if not business:
+        return JsonResponse({"error": "Business not found"}, status=404)
+    try:
+        payload = json.loads(request.body or "{}")
+        email = (payload.get("email") or "").strip()
+        if not email:
+            return JsonResponse({"error": "Email is required"}, status=400)
+        # Generate code and expiry using existing EmailVerificationCode model
+        from datetime import timedelta
+        from accounts.models import EmailVerificationCode
+        verification_code = str(random.randint(100000, 999999))
+        expires_at = timezone.now() + timedelta(minutes=10)
+        EmailVerificationCode.objects.create(
+            user=request.user,
+            email=email,
+            code=verification_code,
+            expires_at=expires_at
+        )
+        # Send email
+        try:
+            send_mail(
+                subject="Business Email Verification Code",
+                message=f"Your verification code is: {verification_code}\n\nThis code will expire in 10 minutes.",
+                from_email=None,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+        except Exception:
+            # We still return success if code saved; client can retry if email provider fails transiently
+            pass
+        # Tentatively set email on business (unverified) so UI can display it
+        if email != (business.email or ""):
+            business.email = email
+            business.email_verified = False
+            business.save(update_fields=["email", "email_verified"])
+        return JsonResponse({"success": True, "message": "Verification code sent"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def verify_business_email_code(request):
+    """Verify code and mark business email as verified if valid."""
+    business = _get_active_business(request)
+    if not business:
+        return JsonResponse({"error": "Business not found"}, status=404)
+    try:
+        payload = json.loads(request.body or "{}")
+        email = (payload.get("email") or "").strip()
+        code = (payload.get("code") or "").strip()
+        if not email or not code:
+            return JsonResponse({"error": "Email and code are required"}, status=400)
+        from accounts.models import EmailVerificationCode
+        verification = EmailVerificationCode.objects.filter(
+            user=request.user,
+            email=email,
+            code=code,
+            is_verified=False
+        ).order_by("-created_at").first()
+        if not verification:
+            return JsonResponse({"error": "Invalid verification code"}, status=400)
+        if verification.is_expired():
+            return JsonResponse({"error": "Verification code expired"}, status=400)
+        # Mark verification consumed
+        verification.is_verified = True
+        verification.save(update_fields=["is_verified"])
+        # Update business email and mark verified
+        business.email = email
+        business.email_verified = True
+        business.save(update_fields=["email", "email_verified"])
+        return JsonResponse({"success": True, "email": email, "verified": True})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 @login_required

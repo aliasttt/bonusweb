@@ -300,15 +300,13 @@
       return;
     }
     
-    const userId = window.verifiedCustomerData?.user_id || currentPhone || '';
-    const customerId = window.verifiedCustomerData?.customer_id || null;
     const userTotalPoints = window.verifiedCustomerData?.user_total_points || 0;
     // Collect product names from selected checkboxes
     const productNames = Array.from(document.querySelectorAll('.prod'))
       .filter(cb => cb.checked)
       .map(cb => cb.dataset.title || '');
     
-    if (!userId || !customerId) {
+    if (!window.verifiedCustomerData) {
       alert('Please check phone number first!');
       return;
     }
@@ -316,8 +314,6 @@
     const payload = JSON.stringify({
       business_id: biz,
       business_name: businessName,
-      customer_id: customerId,
-      user_id: userId,
       product_ids: productIds,
       product_names: productNames,
       total_points: total,

@@ -26,6 +26,52 @@
         </div>
 
         <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+          <div class="flex gap-2">
+            <input 
+              type="email"
+              id="business-email"
+              name="email"
+              value="{{ business.email|default_if_none:'' }}"
+              class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-gray-900 bg-white" 
+              placeholder="name@example.com"
+            />
+            <button 
+              type="button"
+              onclick="sendEmailCode()"
+              class="px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-medium"
+            >
+              Send Code
+            </button>
+          </div>
+          <p class="text-xs mt-1">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs {% if business.email_verified %}bg-green-100 text-green-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">
+              {% if business.email_verified %}Verified{% else %}Not Verified{% endif %}
+            </span>
+          </p>
+          <div id="email-code-section" class="mt-3 hidden">
+            <div class="flex gap-2">
+              <input 
+                type="text"
+                id="email-code"
+                maxlength="6"
+                placeholder="Enter 6-digit code"
+                class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-gray-900 bg-white text-center tracking-widest"
+              />
+              <button 
+                type="button"
+                onclick="verifyEmailCode()"
+                class="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all font-medium"
+              >
+                Verify
+              </button>
+            </div>
+            <p id="email-error" class="text-xs text-red-500 mt-1 hidden"></p>
+            <p id="email-info" class="text-xs text-gray-500 mt-1"></p>
+          </div>
+        </div>
+
+        <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
           <textarea 
             name="description" 
@@ -295,5 +341,88 @@ document.getElementById('settings-form').addEventListener('submit', function(e) 
 document.addEventListener('DOMContentLoaded', function() {
   updateAddButtonVisibility();
 });
+
+async function sendEmailCode() {
+  const emailInput = document.getElementById('business-email');
+  const email = (emailInput.value || '').trim();
+  const section = document.getElementById('email-code-section');
+  const info = document.getElementById('email-info');
+  const err = document.getElementById('email-error');
+  if (!email) {
+    err.textContent = 'Please enter an email';
+    err.classList.remove('hidden');
+    return;
+  }
+  err.classList.add('hidden');
+  info.textContent = 'Sending...';
+  try {
+    const res = await fetch('/partners/settings/send-email-code/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      section.classList.remove('hidden');
+      info.textContent = 'Verification code sent! Please check your email.';
+    } else {
+      err.textContent = data.error || 'Failed to send verification code';
+      err.classList.remove('hidden');
+      info.textContent = '';
+    }
+  } catch (e) {
+    err.textContent = 'Network error. Please try again.';
+    err.classList.remove('hidden');
+    info.textContent = '';
+  }
+}
+
+async function verifyEmailCode() {
+  const emailInput = document.getElementById('business-email');
+  const codeInput = document.getElementById('email-code');
+  const email = (emailInput.value || '').trim();
+  const code = (codeInput.value || '').trim();
+  const info = document.getElementById('email-info');
+  const err = document.getElementById('email-error');
+  if (!email || !code) {
+    err.textContent = 'Email and code are required';
+    err.classList.remove('hidden');
+    return;
+  }
+  err.classList.add('hidden');
+  info.textContent = 'Verifying...';
+  try {
+    const res = await fetch('/partners/settings/verify-email-code/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify({ email, code })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      info.textContent = 'Email verified successfully';
+      // Update badge
+      const badge = document.querySelector('span.inline-flex');
+      if (badge) {
+        badge.textContent = 'Verified';
+        badge.classList.remove('bg-yellow-100','text-yellow-700');
+        badge.classList.add('bg-green-100','text-green-700');
+      }
+    } else {
+      err.textContent = data.error || 'Invalid verification code';
+      err.classList.remove('hidden');
+      info.textContent = '';
+    }
+  } catch (e) {
+    err.textContent = 'Network error. Please try again.';
+    err.classList.remove('hidden');
+    info.textContent = '';
+  }
+}
 </script>
 {% endblock %}
