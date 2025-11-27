@@ -294,19 +294,20 @@
     const productIds = recalc();
     const total = parseInt(document.getElementById('amt').value || '0');
     const businessName = window.verifiedCustomerData?.business_name || `{% if business %}{{ business.name|escapejs }}{% else %}{% endif %}`;
+    const customerId = window.verifiedCustomerData?.customer_id || null;
     
     if (productIds.length === 0) {
       alert('Please select at least one product!');
       return;
     }
     
-    const userTotalPoints = window.verifiedCustomerData?.user_total_points || 0;
     // Collect product names from selected checkboxes
-    const productNames = Array.from(document.querySelectorAll('.prod'))
+    const productNamesArr = Array.from(document.querySelectorAll('.prod'))
       .filter(cb => cb.checked)
       .map(cb => cb.dataset.title || '');
+    const productName = productNamesArr.join(', ');
     
-    if (!window.verifiedCustomerData) {
+    if (!window.verifiedCustomerData || !customerId) {
       alert('Please check phone number first!');
       return;
     }
@@ -314,10 +315,10 @@
     const payload = JSON.stringify({
       business_id: biz,
       business_name: businessName,
+      customer_id: customerId,
       product_ids: productIds,
-      product_names: productNames,
-      total_points: total,
-      user_total_points: userTotalPoints
+      product_name: productName,
+      total_points: total
     });
     
     document.getElementById('payload').innerText = payload;
