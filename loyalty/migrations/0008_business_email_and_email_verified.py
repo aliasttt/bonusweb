@@ -4,7 +4,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('loyalty', '0003_business_password_business_phone'),
+        ('loyalty', '0007_rename_stamp_count_wallet_points_balance_and_more'),
     ]
 
     operations = [
