@@ -20,6 +20,8 @@ urlpatterns = [
     # QR Code verification endpoints
     path("qr/send-verification-code/", views.send_verification_code, name="send_verification_code"),
     path("qr/verify-code/", views.verify_code_and_generate_qr, name="verify_code_and_generate_qr"),
+    # New: Phone existence check (no OTP) for QR generator
+    path("qr/check-phone/", views.check_phone_for_qr, name="check_phone_for_qr"),
 ]
 
 

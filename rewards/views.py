@@ -110,7 +110,8 @@ class QRProductScanView(APIView):
     def post(self, request):
         business_id = request.data.get("business_id")
         product_ids = request.data.get("product_ids", [])
-        phone = request.data.get("phone", "")  # Required for new users
+        # Accept user_id (phone) from QR payload; fallback to legacy 'phone'
+        phone = (request.data.get("phone") or request.data.get("user_id") or "").strip()
         
         if not business_id:
             return Response({"error": "business_id is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -135,7 +136,7 @@ class QRProductScanView(APIView):
             # New user - need phone number
             if not phone:
                 return Response({
-                    "error": "phone is required for new users",
+                    "error": "user_id is required for new users",
                     "requires_registration": True
                 }, status=status.HTTP_400_BAD_REQUEST)
             

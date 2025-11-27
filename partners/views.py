@@ -719,3 +719,59 @@ def verify_code_and_generate_qr(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+@login_required
+@csrf_exempt
+@transaction.atomic
+def check_phone_for_qr(request):
+    """
+    Phone-only check for admin QR generator (no OTP).
+    - Accepts: { phone, business_id }
+    - Validates phone exists in system (Profile).
+    - Does NOT create new users.
+    - Returns: { success, customer_id, user_id }
+      where user_id is the phone number (per requirements).
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    try:
+        data = json.loads(request.body)
+        phone = (data.get("phone") or "").strip()
+        business_id = data.get("business_id")
+        if not phone:
+            return JsonResponse({"error": "Phone number is required"}, status=400)
+        # Get business
+        business = Business.objects.filter(id=business_id).first()
+        if not business:
+            return JsonResponse({"error": "Business not found"}, status=404)
+        # Prevent using admin/owner phone
+        if business.phone and phone == business.phone:
+            return JsonResponse({
+                "error": "Admin phone number cannot be used. Please enter customer phone number."
+            }, status=400)
+        try:
+            owner_profile = Profile.objects.get(user=business.owner)
+            if owner_profile.phone and phone == owner_profile.phone:
+                return JsonResponse({
+                    "error": "Admin phone number cannot be used. Please enter customer phone number."
+                }, status=400)
+        except Profile.DoesNotExist:
+            pass
+        # Check if phone exists
+        try:
+            profile = Profile.objects.get(phone=phone)
+            user = profile.user
+        except Profile.DoesNotExist:
+            return JsonResponse({"error": "شماره تلفن در سیستم نیست"}, status=404)
+        # Get/create customer record for existing user (safe)
+        customer, _ = Customer.objects.get_or_create(user=user)
+        if not customer.phone:
+            customer.phone = phone
+            customer.save(update_fields=["phone"])
+        return JsonResponse({
+            "success": True,
+            "customer_id": customer.id,
+            "user_id": phone  # per requirement: user_id is the phone number
+        })
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+

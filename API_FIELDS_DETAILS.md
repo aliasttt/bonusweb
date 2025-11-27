@@ -204,7 +204,7 @@ class Business(models.Model):
 |------|-----|----------|---------|
 | `business_id` | integer | ✅ بله | شناسه کسب‌وکار |
 | `product_ids` | array[integer] | ✅ بله | آرایه شناسه محصولات (non-empty) |
-| `phone` | string | ⚠️ شرطی | اگر کاربر لاگین نکرده باشد، required است |
+| `user_id` | string | ⚠️ شرطی | اگر کاربر لاگین نکرده باشد، required است (شماره تلفن کاربر) |
 
 #### 🔍 منطق کد (QRProductScanView.post):
 
@@ -212,14 +212,14 @@ class Business(models.Model):
 # 1. بررسی business_id و product_ids
 # 2. اگر کاربر لاگین کرده: user = request.user
 # 3. اگر کاربر لاگین نکرده:
-#    - اگر phone داده نشده -> Error 400
-#    - بررسی می‌کند آیا Profile با این phone وجود دارد
+#    - اگر user_id (شماره تلفن) داده نشده -> Error 400
+#    - بررسی می‌کند آیا Profile با این شماره تلفن وجود دارد
 #    - اگر وجود دارد: user = profile.user
 #    - اگر وجود ندارد: User و Profile جدید ایجاد می‌کند
 #       - username: "user_{phone}_{business_id}"
 #       - email: "{username}@temp.local"
 #       - password: None
-#       - profile.phone = phone
+#       - profile.phone = user_id (شماره تلفن)
 #       - profile.role = CUSTOMER
 # 4. Customer ایجاد/بازیابی می‌شود
 # 5. Products از business_id و product_ids دریافت می‌شوند

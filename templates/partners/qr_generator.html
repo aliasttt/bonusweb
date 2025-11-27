@@ -14,10 +14,10 @@
   </div>
   
   <div id="main-content" class="mt-8">
-    <!-- Phone and Verification Section - Visible initially -->
+    <!-- Phone Section - Visible initially -->
     <div id="auth-section" class="flex justify-center">
       <div class="w-full max-w-md p-6 rounded-2xl bg-white shadow-lg border border-gray-200">
-        <!-- Phone Number Input - Step 1 -->
+        <!-- Phone Number Input -->
         <div id="phone-section">
           <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
           <div class="flex gap-2">
@@ -28,48 +28,14 @@
               class="flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
             />
             <button 
-              onclick="sendVerificationCode()" 
+              onclick="checkPhone()" 
               id="send-code-btn" 
               class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl"
             >
-              Send Code
+              Check Phone
             </button>
           </div>
           <p id="phone-error" class="text-xs text-red-500 mt-1 hidden"></p>
-        </div>
-
-        <!-- Verification Code Input - Step 2 -->
-        <div id="verification-section" class="hidden mt-4">
-          <label class="block text-sm font-semibold text-gray-700 mb-2">Verification Code</label>
-          <div class="flex gap-2">
-            <input 
-              type="text" 
-              id="verification-code" 
-              placeholder="Enter 6-digit code" 
-              maxlength="6" 
-              class="flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-lg tracking-widest" 
-            />
-            <button 
-              onclick="verifyAndGenerate()" 
-              id="verify-btn" 
-              class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl"
-            >
-              Verify
-            </button>
-          </div>
-          <div class="flex items-center justify-between mt-2">
-            <div class="flex-1">
-              <p id="code-error" class="text-xs text-red-500 hidden"></p>
-              <p id="code-info" class="text-xs text-gray-500"></p>
-            </div>
-            <button 
-              onclick="resendVerificationCode()" 
-              id="resend-btn" 
-              class="text-xs text-purple-600 hover:text-purple-700 underline"
-            >
-              Resend Code
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -194,7 +160,6 @@
 
 <script>
   let currentPhone = '';
-  let verificationCodeSent = false;
 
   function recalc(){
     const checks = Array.from(document.querySelectorAll('.prod'));
@@ -240,11 +205,11 @@
     errorEl.classList.add('hidden');
   }
 
-  async function sendVerificationCode(phoneNumber = null) {
-    const phone = phoneNumber || document.getElementById('phone').value.trim();
+  async function checkPhone(phoneNumber = null) {
+    const phone = (phoneNumber || document.getElementById('phone').value).trim();
     const phoneError = document.getElementById('phone-error');
     const sendBtn = document.getElementById('send-code-btn');
-    const resendBtn = document.getElementById('resend-btn');
+    const biz = parseInt(document.getElementById('biz').value || '0');
     
     if (!phone) {
       showError('phone-error', 'Please enter phone number');
@@ -257,161 +222,51 @@
     }
 
     hideError('phone-error');
-    hideError('code-error');
     
     if (sendBtn) {
       sendBtn.disabled = true;
-      sendBtn.textContent = 'Sending...';
-    }
-    if (resendBtn) {
-      resendBtn.disabled = true;
-      resendBtn.textContent = 'Sending...';
+      sendBtn.textContent = 'Checking...';
     }
 
     try {
-      const response = await fetch('/partners/qr/send-verification-code/', {
+      const response = await fetch('/partners/qr/check-phone/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-CSRFToken': getCookie('csrftoken')
         },
-        body: JSON.stringify({ phone: phone })
+        body: JSON.stringify({ phone: phone, business_id: biz })
       });
 
       const data = await response.json();
 
-      if (response.ok && data.success) {
+      if (response.ok && data.success && data.customer_id) {
         currentPhone = phone;
-        verificationCodeSent = true;
-        
-        if (document.getElementById('phone-section')) {
-          document.getElementById('phone-section').classList.add('hidden');
-        }
-        document.getElementById('verification-section').classList.remove('hidden');
-        document.getElementById('verification-code').value = '';
-        document.getElementById('verification-code').focus();
-        
-        if (data.code) {
-          document.getElementById('code-info').textContent = `Code sent! (Dev: ${data.code})`;
-        } else {
-          document.getElementById('code-info').textContent = 'Code sent! Check your phone.';
-        }
+        // Proceed to main grid
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('main-grid').classList.remove('hidden');
+        window.verifiedCustomerData = {
+          user_id: phone,
+          customer_id: data.customer_id,
+          is_new_user: false
+        };
         
         if (sendBtn) {
           sendBtn.disabled = false;
-          sendBtn.textContent = 'Send Code';
-        }
-        if (resendBtn) {
-          resendBtn.disabled = false;
-          resendBtn.textContent = 'Resend Code';
+          sendBtn.textContent = 'Check Phone';
         }
       } else {
-        showError('phone-error', data.error || 'Failed to send verification code');
+        showError('phone-error', data.error || 'Phone number not found in system');
         if (sendBtn) {
           sendBtn.disabled = false;
-          sendBtn.textContent = 'Send Code';
-        }
-        if (resendBtn) {
-          resendBtn.disabled = false;
-          resendBtn.textContent = 'Resend Code';
+          sendBtn.textContent = 'Check Phone';
         }
       }
     } catch (error) {
       showError('phone-error', 'Network error. Please try again.');
       if (sendBtn) {
         sendBtn.disabled = false;
-        sendBtn.textContent = 'Send Code';
-      }
-      if (resendBtn) {
-        resendBtn.disabled = false;
-        resendBtn.textContent = 'Resend Code';
-      }
-    }
-  }
-
-  async function resendVerificationCode() {
-    if (!currentPhone) {
-      document.getElementById('phone-section').classList.remove('hidden');
-      document.getElementById('verification-section').classList.add('hidden');
-      return;
-    }
-    await sendVerificationCode(currentPhone);
-  }
-
-  async function verifyAndGenerate() {
-    const phone = currentPhone || document.getElementById('phone').value.trim();
-    const code = document.getElementById('verification-code').value.trim();
-    const biz = parseInt(document.getElementById('biz').value || '0');
-    const verifyBtn = document.getElementById('verify-btn');
-    
-    if (!phone) {
-      showError('phone-error', 'Please enter phone number');
-      return;
-    }
-
-    if (!verificationCodeSent) {
-      showError('phone-error', 'Please send verification code first');
-      return;
-    }
-
-    if (!code || code.length !== 6) {
-      showError('code-error', 'Please enter 6-digit verification code');
-      return;
-    }
-
-    hideError('phone-error');
-    hideError('code-error');
-    
-    if (verifyBtn) {
-      verifyBtn.disabled = true;
-      verifyBtn.textContent = 'Verifying...';
-    }
-
-    try {
-      const response = await fetch('/partners/qr/verify-code/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({
-          phone: phone,
-          code: code,
-          product_ids: [],
-          business_id: biz
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        document.getElementById('auth-section').classList.add('hidden');
-        document.getElementById('main-grid').classList.remove('hidden');
-        
-        window.verifiedCustomerData = {
-          phone: phone,
-          customer_id: data.customer_id,
-          is_new_user: data.is_new_user
-        };
-        
-        if (verifyBtn) {
-          verifyBtn.disabled = false;
-          verifyBtn.textContent = 'Verify';
-        }
-      } else {
-        showError('code-error', data.error || 'Invalid verification code');
-        document.getElementById('verification-section').classList.remove('hidden');
-        if (verifyBtn) {
-          verifyBtn.disabled = false;
-          verifyBtn.textContent = 'Verify';
-        }
-      }
-    } catch (error) {
-      showError('code-error', 'Network error. Please try again.');
-      document.getElementById('verification-section').classList.remove('hidden');
-      if (verifyBtn) {
-        verifyBtn.disabled = false;
-        verifyBtn.textContent = 'Verify';
+        sendBtn.textContent = 'Check Phone';
       }
     }
   }
@@ -441,18 +296,18 @@
       return;
     }
     
-    const phone = window.verifiedCustomerData?.phone || currentPhone || '';
+    const userId = window.verifiedCustomerData?.user_id || currentPhone || '';
     const customerId = window.verifiedCustomerData?.customer_id || null;
     
-    if (!phone || !customerId) {
-      alert('Please verify phone number first!');
+    if (!userId || !customerId) {
+      alert('Please check phone number first!');
       return;
     }
     
     const payload = JSON.stringify({
       business_id: biz,
       customer_id: customerId,
-      phone: phone,
+      user_id: userId,
       product_ids: productIds,
       total_points: total
     });
@@ -511,17 +366,10 @@
       cb.addEventListener('change', recalc);
     });
 
-    // Allow Enter key to submit verification code
-    document.getElementById('verification-code').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        verifyAndGenerate();
-      }
-    });
-
     // Allow Enter key to submit phone
     document.getElementById('phone').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
-        sendVerificationCode();
+        checkPhone();
       }
     });
   });
