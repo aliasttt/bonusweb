@@ -761,16 +761,20 @@ def check_phone_for_qr(request):
             profile = Profile.objects.get(phone=phone)
             user = profile.user
         except Profile.DoesNotExist:
-            return JsonResponse({"error": "شماره تلفن در سیستم نیست"}, status=404)
+            return JsonResponse({"error": "Phone number not found in the system"}, status=404)
         # Get/create customer record for existing user (safe)
         customer, _ = Customer.objects.get_or_create(user=user)
         if not customer.phone:
             customer.phone = phone
             customer.save(update_fields=["phone"])
+        # Read current wallet balance for this business (do not create if missing)
+        wallet = Wallet.objects.filter(customer=customer, business=business).first()
+        user_total_points = wallet.points_balance if wallet else 0
         return JsonResponse({
             "success": True,
             "customer_id": customer.id,
-            "user_id": phone  # per requirement: user_id is the phone number
+            "user_id": phone,  # per requirement: user_id is the phone number
+            "user_total_points": user_total_points
         })
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)

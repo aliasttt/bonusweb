@@ -59,7 +59,7 @@
                  data-points="{{ p.points_reward }}"
                        data-is-reward="false"
                  data-selected="false">
-                    <input type="checkbox" class="prod hidden" value="{{ p.id }}" data-points="{{ p.points_reward }}" data-is-reward="false" />
+                    <input type="checkbox" class="prod hidden" value="{{ p.id }}" data-points="{{ p.points_reward }}" data-is-reward="false" data-title="{{ p.title }}" />
                     <div class="w-full h-32 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden mb-2">
                 {% if p.image %}
                   <img src="{{ p.image.url }}" class="max-w-full max-h-full object-contain rounded-lg" alt="{{ p.title }}" />
@@ -93,7 +93,7 @@
                        data-points="{{ p.points_reward }}"
                        data-is-reward="true"
                        data-selected="false">
-                    <input type="checkbox" class="prod hidden" value="{{ p.id }}" data-points="{{ p.points_reward }}" data-is-reward="true" />
+                    <input type="checkbox" class="prod hidden" value="{{ p.id }}" data-points="{{ p.points_reward }}" data-is-reward="true" data-title="{{ p.title }}" />
                     <div class="w-full h-32 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden mb-2">
                       {% if p.image %}
                         <img src="{{ p.image.url }}" class="max-w-full max-h-full object-contain rounded-lg" alt="{{ p.title }}" />
@@ -210,6 +210,7 @@
     const phoneError = document.getElementById('phone-error');
     const sendBtn = document.getElementById('send-code-btn');
     const biz = parseInt(document.getElementById('biz').value || '0');
+    const businessName = `{% if business %}{{ business.name|escapejs }}{% else %}{% endif %}`;
     
     if (!phone) {
       showError('phone-error', 'Please enter phone number');
@@ -248,7 +249,9 @@
         window.verifiedCustomerData = {
           user_id: phone,
           customer_id: data.customer_id,
-          is_new_user: false
+          is_new_user: false,
+          user_total_points: data.user_total_points || 0,
+          business_name: businessName
         };
         
         if (sendBtn) {
@@ -290,6 +293,7 @@
     const biz = parseInt(document.getElementById('biz').value || '0');
     const productIds = recalc();
     const total = parseInt(document.getElementById('amt').value || '0');
+    const businessName = window.verifiedCustomerData?.business_name || `{% if business %}{{ business.name|escapejs }}{% else %}{% endif %}`;
     
     if (productIds.length === 0) {
       alert('Please select at least one product!');
@@ -298,6 +302,11 @@
     
     const userId = window.verifiedCustomerData?.user_id || currentPhone || '';
     const customerId = window.verifiedCustomerData?.customer_id || null;
+    const userTotalPoints = window.verifiedCustomerData?.user_total_points || 0;
+    // Collect product names from selected checkboxes
+    const productNames = Array.from(document.querySelectorAll('.prod'))
+      .filter(cb => cb.checked)
+      .map(cb => cb.dataset.title || '');
     
     if (!userId || !customerId) {
       alert('Please check phone number first!');
@@ -306,10 +315,13 @@
     
     const payload = JSON.stringify({
       business_id: biz,
+      business_name: businessName,
       customer_id: customerId,
       user_id: userId,
       product_ids: productIds,
-      total_points: total
+      product_names: productNames,
+      total_points: total,
+      user_total_points: userTotalPoints
     });
     
     document.getElementById('payload').innerText = payload;
