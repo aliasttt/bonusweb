@@ -199,8 +199,9 @@ REST_FRAMEWORK = {
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=8),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+    # Longer-lived tokens to reduce unexpected logouts in the mobile app
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=24),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=180),
 }
 
 
