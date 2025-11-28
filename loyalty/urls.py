@@ -21,6 +21,8 @@ urlpatterns = [
     path("unsplash/search/", views.UnsplashSearchView.as_view(), name="unsplash_search"),
     path("businesses/<int:business_id>/", views.BusinessDetailView.as_view(), name="business_detail"),
     path("search/", views.SearchView.as_view(), name="search"),
+    path("favorites/toggle/", views.FavoriteToggleView.as_view(), name="favorite_toggle"),
+    path("favorites/", views.FavoriteListView.as_view(), name="favorite_list"),
     # Super Admin Business Management API
     path("super-admin/businesses/<int:business_id>/", views.SuperAdminBusinessDetailView.as_view(), name="super_admin_business_detail"),
     path("super-admin/businesses/", views.SuperAdminBusinessManagementView.as_view(), name="super_admin_business_management"),

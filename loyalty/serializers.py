@@ -3,7 +3,7 @@ from django.db.models import Avg
 from rest_framework import serializers
 
 from reviews.models import Review, QuestionRating
-from .models import Business, Product, Customer, Wallet, Transaction, Slider
+from .models import Business, Product, Customer, Wallet, Transaction, Slider, Favorite
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -16,6 +16,8 @@ class BusinessSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
     slug = serializers.CharField(read_only=True)
+    favorites_count = serializers.SerializerMethodField()
+    is_favorite = serializers.SerializerMethodField()
 
     class Meta:
         model = Business
@@ -29,6 +31,8 @@ class BusinessSerializer(serializers.ModelSerializer):
             "phone",
             "average_rating",
             "review_count",
+            "favorites_count",
+            "is_favorite",
         ]
 
     def get_average_rating(self, obj):
@@ -48,6 +52,22 @@ class BusinessSerializer(serializers.ModelSerializer):
         if count is not None:
             return count
         return obj.reviews.filter(status=Review.Status.APPROVED).count()
+
+    def get_favorites_count(self, obj):
+        try:
+            return obj.favorites.count()
+        except Exception:
+            return 0
+
+    def get_is_favorite(self, obj):
+        request = self.context.get("request")
+        if not request or not getattr(request, "user", None) or not request.user.is_authenticated:
+            return False
+        try:
+            customer, _ = Customer.objects.get_or_create(user=request.user)
+            return Favorite.objects.filter(customer=customer, business=obj).exists()
+        except Exception:
+            return False
 
 
 class ProductSerializer(serializers.ModelSerializer):

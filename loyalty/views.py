@@ -12,7 +12,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Business, Product, Customer, Wallet, Transaction, Slider
+from .models import Business, Product, Customer, Wallet, Transaction, Slider, Favorite
 from reviews.models import Review, Service
 from .serializers import (
     BusinessSerializer,
@@ -733,6 +733,49 @@ class SearchView(APIView):
                 "services": services.count(),
             }
         }, status=status.HTTP_200_OK)
+
+
+class FavoriteToggleView(APIView):
+    """
+    Toggle favorite for a business.
+    POST /api/v1/loyalty/favorites/toggle/
+    Body: { "business_id": 5 }
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        business_id = request.data.get("business_id")
+        if not business_id:
+            return Response({"detail": "business_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        business = get_object_or_404(Business, id=business_id)
+        customer, _ = Customer.objects.get_or_create(user=request.user)
+        fav = Favorite.objects.filter(customer=customer, business=business).first()
+        if fav:
+            fav.delete()
+            is_favorite = False
+        else:
+            Favorite.objects.create(customer=customer, business=business)
+            is_favorite = True
+        count = Favorite.objects.filter(business=business).count()
+        return Response({"business_id": business.id, "is_favorite": is_favorite, "favorites_count": count}, status=status.HTTP_200_OK)
+
+
+class FavoriteListView(APIView):
+    """
+    List user's favorite businesses.
+    GET /api/v1/loyalty/favorites/
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        customer, _ = Customer.objects.get_or_create(user=request.user)
+        favorites = Favorite.objects.filter(customer=customer).select_related("business")
+        businesses = [f.business for f in favorites]
+        data = BusinessSerializer(businesses, many=True, context={"request": request}).data
+        # Enrich with favorites_count (serializer provides) and is_favorite=True
+        for item in data:
+            item["is_favorite"] = True
+        return Response({"favorites": data}, status=status.HTTP_200_OK)
 
 
 class SuperAdminBusinessManagementView(APIView):

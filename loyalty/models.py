@@ -83,6 +83,22 @@ class Product(models.Model):
         return f"{self.title} @ {self.business.name}"
 
 
+class Favorite(models.Model):
+    """A user's favorite business"""
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="favorites")
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name="favorites")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("customer", "business")
+        indexes = [
+            models.Index(fields=["business"]),
+            models.Index(fields=["customer"]),
+        ]
+
+    def __str__(self) -> str:  # pragma: no cover
+        return f"{self.customer.user.get_username()} ❤ {self.business.name}"
+
 class Wallet(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="wallets")
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name="wallets")
