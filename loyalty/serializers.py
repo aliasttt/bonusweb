@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db.models import Avg
 from rest_framework import serializers
 
-from reviews.models import Review
+from reviews.models import Review, QuestionRating
 from .models import Business, Product, Customer, Wallet, Transaction, Slider
 
 
@@ -35,8 +35,13 @@ class BusinessSerializer(serializers.ModelSerializer):
         avg = getattr(obj, "average_rating_value", None) or getattr(obj, "average_rating", None)
         if avg is not None:
             return round(float(avg), 2)
+        # Fallback 1: classic reviews approved
         result = obj.reviews.filter(status=Review.Status.APPROVED).aggregate(avg=Avg("rating")).get("avg")
-        return round(float(result), 2) if result is not None else None
+        if result is not None:
+            return round(float(result), 2)
+        # Fallback 2: question-based ratings average
+        qr_avg = QuestionRating.objects.filter(business=obj).aggregate(avg=Avg("rating")).get("avg")
+        return round(float(qr_avg), 2) if qr_avg is not None else None
 
     def get_review_count(self, obj):
         count = getattr(obj, "review_count_value", None)
@@ -94,12 +99,15 @@ class SliderSerializer(serializers.ModelSerializer):
         return None
 
     def get_stars(self, obj):
-        """Average star rating (0-5) for the slider's business based on approved reviews"""
+        """Average star rating (0-5) for the slider's business; fallback to question ratings."""
         try:
             if not obj.business:
                 return 0.0
             avg = obj.business.reviews.filter(status=Review.Status.APPROVED).aggregate(avg=Avg("rating")).get("avg")
-            return round(float(avg), 2) if avg is not None else 0.0
+            if avg is not None:
+                return round(float(avg), 2)
+            qr_avg = QuestionRating.objects.filter(business=obj.business).aggregate(avg=Avg("rating")).get("avg")
+            return round(float(qr_avg), 2) if qr_avg is not None else 0.0
         except Exception as e:
             return 0.0
 
@@ -152,19 +160,22 @@ class MenuProductSerializer(serializers.ModelSerializer):
         return None
 
     def get_stars(self, obj):
-        """Average star rating (0-5) for this product based on approved reviews"""
+        """Average star rating (0-5). Prefer product reviews; fallback to business question ratings."""
         try:
-            avg = Review.objects.filter(
-                product=obj,
-                status=Review.Status.APPROVED
-            ).aggregate(avg=Avg("rating")).get("avg")
-            return round(float(avg), 2) if avg is not None else 0.0
+            avg = Review.objects.filter(product=obj, status=Review.Status.APPROVED).aggregate(avg=Avg("rating")).get("avg")
+            if avg is not None:
+                return round(float(avg), 2)
+            qr_avg = QuestionRating.objects.filter(business=obj.business).aggregate(avg=Avg("rating")).get("avg")
+            return round(float(qr_avg), 2) if qr_avg is not None else 0.0
         except Exception:
             return 0.0
 
     def get_reviews_count(self, obj):
         try:
-            return Review.objects.filter(product=obj, status=Review.Status.APPROVED).count()
+            count = Review.objects.filter(product=obj, status=Review.Status.APPROVED).count()
+            if count:
+                return count
+            return QuestionRating.objects.filter(business=obj.business).count()
         except Exception:
             return 0
 
