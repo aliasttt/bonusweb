@@ -104,6 +104,31 @@ class EmailVerificationCode(models.Model):
         return timezone.now() > self.expires_at
 
 
+class PasswordResetCode(models.Model):
+    """
+    Stores one-time numeric codes for password reset via email.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="password_reset_codes")
+    email = models.EmailField()
+    code = models.CharField(max_length=6)
+    is_used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'email', 'code']),
+            models.Index(fields=['email', 'code']),
+        ]
+
+    def __str__(self):
+        status = "used" if self.is_used else "active"
+        return f"ResetCode {self.email} - {self.code} ({status})"
+
+    def is_expired(self) -> bool:
+        return timezone.now() > self.expires_at
+
 class Business(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="businesses")
     name = models.CharField(max_length=200)

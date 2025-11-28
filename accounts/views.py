@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from datetime import timedelta
+import random
 from django.db.models import Count, Q
 from django.utils import timezone
 from django.shortcuts import render
@@ -10,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Profile, UserActivity, Business, EmailVerificationCode
+from .models import Profile, UserActivity, Business, EmailVerificationCode, PasswordResetCode
 from .serializers import ProfileSerializer, RegisterSerializer, UserSerializer, UserActivitySerializer, BusinessSerializer
 from .permissions import IsSuperUserRole, IsAdminRole, CanManageUsers, IsOwnerOrSuperUser
 
@@ -518,3 +521,129 @@ class VerifyEmailView(APIView):
                 'error': 'Verification failed',
                 'detail': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PasswordForgotView(APIView):
+    """
+    Start password reset by sending a 6-digit code to user's email.
+    POST /api/accounts/password/forgot/
+    Body: {"email": "user@example.com"}
+
+    Always returns 200 to avoid email enumeration.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = (request.data.get("email") or "").strip().lower()
+        if not email:
+            return Response({"detail": "email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.filter(email__iexact=email).first()
+
+        # Generate and store code only if user exists
+        if user:
+            code = str(random.randint(100000, 999999))
+            expires_at = timezone.now() + timedelta(minutes=10)
+            PasswordResetCode.objects.create(
+                user=user, email=email, code=code, expires_at=expires_at
+            )
+            try:
+                send_mail(
+                    subject="Password Reset Code",
+                    message=f"Your password reset code is: {code}\n\nThis code will expire in 10 minutes.",
+                    from_email=None,
+                    recipient_list=[email],
+                    fail_silently=True,
+                )
+            except Exception:
+                # Intentionally ignored (we still return generic success)
+                pass
+
+        # Generic success response
+        return Response({"message": "If the email exists, a reset code has been sent."}, status=status.HTTP_200_OK)
+
+
+class PasswordVerifyView(APIView):
+    """
+    Verify password reset code (email + code).
+    POST /api/accounts/password/verify/
+    Body: {"email": "user@example.com", "code": "123456"}
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = (request.data.get("email") or "").strip().lower()
+        code = (request.data.get("code") or "").strip()
+        if not email or not code:
+            return Response({"detail": "email and code are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        reset = PasswordResetCode.objects.filter(
+            email__iexact=email,
+            code=code,
+            is_used=False,
+        ).order_by("-created_at").first()
+
+        if not reset:
+            return Response({"detail": "invalid code"}, status=status.HTTP_400_BAD_REQUEST)
+        if reset.is_expired():
+            return Response({"detail": "code expired"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"valid": True}, status=status.HTTP_200_OK)
+
+
+class PasswordResetView(APIView):
+    """
+    Reset password with email + code + new_password.
+    POST /api/accounts/password/reset/
+    Body: {"email":"user@example.com","code":"123456","new_password":"...","confirm_password":"..."}
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = (request.data.get("email") or "").strip().lower()
+        code = (request.data.get("code") or "").strip()
+        new_password = request.data.get("new_password") or ""
+        confirm_password = request.data.get("confirm_password") or ""
+
+        if not email or not code or not new_password or not confirm_password:
+            return Response({"detail": "email, code, new_password, confirm_password are required"}, status=status.HTTP_400_BAD_REQUEST)
+        if new_password != confirm_password:
+            return Response({"detail": "passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.filter(email__iexact=email).first()
+        if not user:
+            # Avoid enumeration but here we need to pretend same outcome
+            return Response({"detail": "invalid code or email"}, status=status.HTTP_400_BAD_REQUEST)
+
+        reset = PasswordResetCode.objects.filter(
+            user=user,
+            email__iexact=email,
+            code=code,
+            is_used=False,
+        ).order_by("-created_at").first()
+
+        if not reset:
+            return Response({"detail": "invalid code or email"}, status=status.HTTP_400_BAD_REQUEST)
+        if reset.is_expired():
+            return Response({"detail": "code expired"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update password
+        user.set_password(new_password)
+        user.save(update_fields=["password"])
+
+        # Mark this and older codes as used
+        PasswordResetCode.objects.filter(user=user, email__iexact=email, is_used=False).update(is_used=True)
+
+        # Log activity (best-effort)
+        try:
+            UserActivity.objects.create(
+                user=user,
+                activity_type=UserActivity.ActivityType.PROFILE_UPDATE,
+                description="User reset password via email code",
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
+        except Exception:
+            pass
+
+        return Response({"message": "password reset successful"}, status=status.HTTP_200_OK)
