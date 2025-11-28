@@ -163,7 +163,9 @@
               </div>
               <div class="flex gap-1">
                 {% for star in "12345"|make_list %}
-                  <i data-lucide="star" class="w-5 h-5 {% if forloop.counter <= avg.average_rating|floatformat:0 %}text-amber-400 fill-amber-400{% else %}text-gray-600{% endif %}"></i>
+                  <span class="w-5 h-5 inline-block text-lg leading-5 {% if forloop.counter <= avg.filled_stars %}text-amber-400{% else %}text-gray-600{% endif %}">
+                    {% if forloop.counter <= avg.filled_stars %}★{% else %}☆{% endif %}
+                  </span>
                 {% endfor %}
               </div>
             </div>

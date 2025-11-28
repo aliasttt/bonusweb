@@ -353,7 +353,8 @@ def reviews_list(request):
                     "question_number": question_num,
                     "question_text": question_text,
                     "average_rating": round(stats["average"], 2) if stats["average"] else 0,
-                    "total_votes": stats["count"] or 0
+                    "total_votes": stats["count"] or 0,
+                    "filled_stars": int(stats["average"]) if stats["average"] else 0,
                 })
             question_averages = averages
         except Exception as e:

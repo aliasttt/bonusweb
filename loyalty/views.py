@@ -224,6 +224,69 @@ class PointsHistoryView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+class EligibleRewardsView(APIView):
+    """
+    List reward products the user can redeem based on TOTAL points across all wallets.
+    Also indicates whether each reward is immediately redeemable from its business wallet.
+    
+    GET /api/v1/loyalty/rewards/eligible/?business_id=&limit=&offset=
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        customer, _ = Customer.objects.get_or_create(user=request.user)
+        total_points = Wallet.objects.filter(customer=customer).aggregate(total=Sum("points_balance")).get("total") or 0
+
+        business_id = request.query_params.get("business_id")
+        try:
+            limit = max(1, min(int(request.query_params.get("limit", 100)), 200))
+        except ValueError:
+            limit = 100
+        try:
+            offset = max(0, int(request.query_params.get("offset", 0)))
+        except ValueError:
+            offset = 0
+
+        # Map user's wallet points by business for quick lookup
+        wallets = Wallet.objects.filter(customer=customer).select_related("business")
+        wallet_points_by_business = {w.business_id: w.points_balance for w in wallets}
+
+        # Find reward products with cost <= total_points
+        products_qs = Product.objects.filter(active=True, is_reward=True, points_reward__lte=total_points).select_related("business").order_by("points_reward")
+        if business_id:
+            products_qs = products_qs.filter(business_id=business_id)
+
+        count = products_qs.count()
+        products = products_qs[offset:offset+limit]
+
+        items = []
+        for p in products:
+            business = p.business
+            business_points = wallet_points_by_business.get(business.id, 0)
+            items.append({
+                "id": p.id,
+                "title": p.title,
+                "business_id": business.id,
+                "business_name": business.name,
+                "points_required": p.points_reward,
+                "eligible_global": True,  # by construction points_reward <= total_points
+                "eligible_in_business_wallet": business_points >= p.points_reward,
+                "current_business_wallet_points": business_points,
+                "remaining_global": 0,
+            })
+
+        return Response({
+            "total_points": total_points,
+            "eligible_rewards": items,
+            "pagination": {
+                "count": count,
+                "limit": limit,
+                "offset": offset,
+                "has_next": (offset + limit) < count
+            }
+        }, status=status.HTTP_200_OK)
+
+
 class RedeemView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 

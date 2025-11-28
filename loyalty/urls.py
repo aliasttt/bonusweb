@@ -13,6 +13,7 @@ urlpatterns = [
     path("scan/", views.ScanStampView.as_view(), name="scan"),
     path("redeem/", views.RedeemView.as_view(), name="redeem"),
     path("points/history/", views.PointsHistoryView.as_view(), name="points_history"),
+    path("rewards/eligible/", views.EligibleRewardsView.as_view(), name="eligible_rewards"),
     path("slider/<int:business_id>/", views.SliderByBusinessView.as_view(), name="slider_by_business"),
     path("slider/", views.SliderListView.as_view(), name="slider_list"),
     path("menu/<int:business_id>/", views.MenuByBusinessView.as_view(), name="menu_by_business"),
