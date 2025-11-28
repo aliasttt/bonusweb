@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Q, Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
@@ -119,8 +119,10 @@ class ScanStampView(APIView):
                         amount=-required_points, 
                         note=f"Redeemed: {product.title}"
                     )
+                    total_points = Wallet.objects.filter(customer=customer).aggregate(total=Sum("points_balance")).get("total") or 0
                     return Response({
                         "points_balance": wallet.points_balance,
+                        "total_points": total_points,
                         "message": f"Successfully redeemed {product.title}",
                         "points_deducted": required_points
                     })
@@ -135,8 +137,10 @@ class ScanStampView(APIView):
                         note=f"Purchased: {product.title}"
                     )
                     achieved = wallet.points_balance >= wallet.reward_point_cost
+                    total_points = Wallet.objects.filter(customer=customer).aggregate(total=Sum("points_balance")).get("total") or 0
                     return Response({
                         "points_balance": wallet.points_balance,
+                        "total_points": total_points,
                         "achieved": achieved,
                         "points_added": points_to_add,
                         "message": f"Points added for {product.title}"
@@ -152,7 +156,72 @@ class ScanStampView(APIView):
         wallet.save(update_fields=["points_balance", "updated_at"])
         Transaction.objects.create(wallet=wallet, amount=amount, note="scan")
         achieved = wallet.points_balance >= wallet.reward_point_cost
-        return Response({"points_balance": wallet.points_balance, "achieved": achieved})
+        total_points = Wallet.objects.filter(customer=customer).aggregate(total=Sum("points_balance")).get("total") or 0
+        return Response({"points_balance": wallet.points_balance, "total_points": total_points, "achieved": achieved})
+
+
+class PointsHistoryView(APIView):
+    """
+    Returns user's total points and transaction history across businesses.
+    GET /api/v1/loyalty/points/history/?business_id=&limit=&offset=&type=
+    type: 'earned' | 'redeemed' | 'all' (default: all)
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        customer, _ = Customer.objects.get_or_create(user=request.user)
+
+        # Summary: total points across all wallets
+        total_points = Wallet.objects.filter(customer=customer).aggregate(total=Sum("points_balance")).get("total") or 0
+
+        # Filters
+        business_id = request.query_params.get("business_id")
+        tx_type = (request.query_params.get("type") or "all").lower()
+        try:
+            limit = max(1, min(int(request.query_params.get("limit", 100)), 200))
+        except ValueError:
+            limit = 100
+        try:
+            offset = max(0, int(request.query_params.get("offset", 0)))
+        except ValueError:
+            offset = 0
+
+        tx_qs = Transaction.objects.filter(wallet__customer=customer).select_related("wallet", "wallet__business").order_by("-created_at")
+
+        if business_id:
+            tx_qs = tx_qs.filter(wallet__business_id=business_id)
+        if tx_type == "earned":
+            tx_qs = tx_qs.filter(amount__gt=0)
+        elif tx_type == "redeemed":
+            tx_qs = tx_qs.filter(amount__lt=0)
+
+        count = tx_qs.count()
+        items = tx_qs[offset:offset+limit]
+
+        transactions = []
+        for t in items:
+            business = getattr(getattr(t, "wallet", None), "business", None)
+            direction = "earned" if t.amount > 0 else "redeemed"
+            transactions.append({
+                "id": t.id,
+                "business_id": business.id if business else None,
+                "business_name": business.name if business else "",
+                "change": t.amount,
+                "direction": direction,
+                "note": t.note or "",
+                "created_at": t.created_at,
+            })
+
+        return Response({
+            "total_points": total_points,
+            "transactions": transactions,
+            "pagination": {
+                "count": count,
+                "limit": limit,
+                "offset": offset,
+                "has_next": (offset + limit) < count
+            }
+        }, status=status.HTTP_200_OK)
 
 
 class RedeemView(APIView):
