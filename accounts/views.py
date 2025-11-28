@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Profile, UserActivity, Business, EmailVerificationCode, PasswordResetCode
+from notifications.models import Device
 from .serializers import ProfileSerializer, RegisterSerializer, UserSerializer, UserActivitySerializer, BusinessSerializer
 from .permissions import IsSuperUserRole, IsAdminRole, CanManageUsers, IsOwnerOrSuperUser
 
@@ -163,6 +164,85 @@ class MeView(APIView):
             "user": UserSerializer(request.user).data,
             "profile": ProfileSerializer(profile).data if profile else None,
         })
+
+    def patch(self, request):
+        """
+        Update current user's personal info.
+        Accepts flat fields: first_name, last_name, email,
+        and profile fields: business_name, business_type, business_address, business_phone, interests.
+        """
+        user = request.user
+        profile = getattr(user, "profile", None)
+
+        updated_user_fields = []
+        updated_profile_fields = []
+
+        first_name = (request.data.get("first_name") or "").strip()
+        last_name = (request.data.get("last_name") or "").strip()
+        email = (request.data.get("email") or "").strip()
+
+        if first_name:
+            user.first_name = first_name
+            updated_user_fields.append("first_name")
+        if last_name:
+            user.last_name = last_name
+            updated_user_fields.append("last_name")
+        if email and email != (user.email or ""):
+            # Ensure unique email
+            from django.contrib.auth.models import User as DjangoUser
+            if DjangoUser.objects.filter(email__iexact=email).exclude(id=user.id).exists():
+                return Response({"detail": "email already in use"}, status=status.HTTP_400_BAD_REQUEST)
+            user.email = email
+            updated_user_fields.append("email")
+
+        if updated_user_fields:
+            user.save(update_fields=updated_user_fields)
+
+        if profile:
+            business_name = (request.data.get("business_name") or "").strip()
+            business_type = (request.data.get("business_type") or "").strip()
+            business_address = (request.data.get("business_address") or "").strip()
+            business_phone = (request.data.get("business_phone") or "").strip()
+            interests = request.data.get("interests", None)
+
+            if business_name:
+                profile.business_name = business_name
+                updated_profile_fields.append("business_name")
+            if business_type:
+                profile.business_type = business_type
+                updated_profile_fields.append("business_type")
+            if business_address:
+                profile.business_address = business_address
+                updated_profile_fields.append("business_address")
+            if business_phone:
+                profile.business_phone = business_phone
+                updated_profile_fields.append("business_phone")
+            if interests is not None:
+                if not isinstance(interests, list):
+                    return Response({"detail": "interests must be a list"}, status=status.HTTP_400_BAD_REQUEST)
+                profile.interests = interests
+                updated_profile_fields.append("interests")
+
+            if updated_profile_fields:
+                profile.save(update_fields=updated_profile_fields)
+
+        # Log activity (best-effort)
+        if updated_user_fields or updated_profile_fields:
+            try:
+                UserActivity.objects.create(
+                    user=user,
+                    activity_type=UserActivity.ActivityType.PROFILE_UPDATE,
+                    description="User updated profile information",
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+            except Exception:
+                pass
+
+        return Response({
+            "user": UserSerializer(user).data,
+            "profile": ProfileSerializer(profile).data if profile else None,
+        }, status=status.HTTP_200_OK)
 
 
 class SetRoleView(APIView):
@@ -647,3 +727,75 @@ class PasswordResetView(APIView):
             pass
 
         return Response({"message": "password reset successful"}, status=status.HTTP_200_OK)
+
+
+class LogoutView(APIView):
+    """
+    Logout endpoint - optional refresh token revoke and device token cleanup
+    POST /api/accounts/logout/
+    Headers: Authorization: Bearer <access>
+    Body (optional):
+      {
+        "refresh": "<refresh_token>",  // optional, to revoke this session
+        "all_sessions": false,         // optional, revoke all refresh tokens (if blacklist installed)
+        "device_token": "<fcm token>", // optional, remove this device
+        "all_devices": false           // optional, remove all user's devices
+      }
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        tokens_revoked = False
+        devices_removed = 0
+
+        refresh_token_str = request.data.get("refresh") or request.data.get("refresh_token")
+        all_sessions = bool(request.data.get("all_sessions"))
+        device_token = (request.data.get("device_token") or request.data.get("fcmToken") or request.data.get("token") or "").strip()
+        all_devices = bool(request.data.get("all_devices"))
+
+        # Revoke refresh token(s) if possible
+        try:
+            # Try to import blacklist models dynamically
+            from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken  # type: ignore
+            if all_sessions:
+                for outstanding in OutstandingToken.objects.filter(user=request.user):
+                    BlacklistedToken.objects.get_or_create(token=outstanding)
+                tokens_revoked = True
+            elif refresh_token_str:
+                try:
+                    refresh_obj = RefreshToken(refresh_token_str)
+                    # blacklist() raises if blacklist app is not installed; but we guarded import above
+                    refresh_obj.blacklist()  # type: ignore[attr-defined]
+                    tokens_revoked = True
+                except Exception:
+                    pass
+        except Exception:
+            # Blacklist app not installed or other error; ignore silently
+            pass
+
+        # Remove device tokens
+        try:
+            if all_devices:
+                devices_removed, _ = Device.objects.filter(user=request.user).delete()
+            elif device_token:
+                devices_removed, _ = Device.objects.filter(user=request.user, token=device_token).delete()
+        except Exception:
+            pass
+
+        # Log activity (best-effort)
+        try:
+            UserActivity.objects.create(
+                user=request.user,
+                activity_type=UserActivity.ActivityType.LOGOUT,
+                description="User logged out",
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
+        except Exception:
+            pass
+
+        return Response({
+            "message": "logged out",
+            "tokens_revoked": tokens_revoked,
+            "devices_removed": devices_removed
+        }, status=status.HTTP_200_OK)
