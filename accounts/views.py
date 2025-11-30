@@ -619,6 +619,8 @@ class SendEmailCodeView(APIView):
     def post(self, request):
         email = (request.data.get("email") or "").strip()
         user_id = request.data.get("user_id")
+        username = (request.data.get("username") or "").strip()
+        number = (request.data.get("number") or "").strip()  # phone number (for mobile app)
 
         if not email:
             return Response({"detail": "email is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -630,6 +632,15 @@ class SendEmailCodeView(APIView):
                 return Response({"detail": "user not found"}, status=status.HTTP_404_NOT_FOUND)
         elif request.user and request.user.is_authenticated:
             user = request.user
+        elif username:
+            user = User.objects.filter(username__iexact=username).first()
+        elif number:
+            # Resolve by phone number via Profile
+            try:
+                profile = Profile.objects.get(phone=number)
+                user = profile.user
+            except Profile.DoesNotExist:
+                user = None
         else:
             # Try to find user by email (only if unique)
             qs = User.objects.filter(email__iexact=email)
