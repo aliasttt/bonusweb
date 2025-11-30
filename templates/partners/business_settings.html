@@ -413,6 +413,11 @@ async function verifyEmailCode() {
         badge.classList.remove('bg-yellow-100','text-yellow-700');
         badge.classList.add('bg-green-100','text-green-700');
       }
+      // Hide verification UI after successful verification
+      const section = document.getElementById('email-code-section');
+      if (section) {
+        section.classList.add('hidden');
+      }
     } else {
       err.textContent = data.error || 'Invalid verification code';
       err.classList.remove('hidden');
