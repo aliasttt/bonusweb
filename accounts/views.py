@@ -674,7 +674,7 @@ class PasswordForgotView(APIView):
     """
     Start password reset by sending a 6-digit code to user's email.
     POST /api/accounts/password/forgot/
-    Body: {"email": "user@example.com"}
+    Body: {"email": "user@example.com", "number": "09...", "username": "...", "user_id": 1}
 
     Always returns 200 to avoid email enumeration.
     """
@@ -682,28 +682,46 @@ class PasswordForgotView(APIView):
 
     def post(self, request):
         email = (request.data.get("email") or "").strip().lower()
+        username = (request.data.get("username") or "").strip()
+        number = (request.data.get("number") or "").strip()
+        user_id = request.data.get("user_id")
+
         if not email:
             return Response({"detail": "email is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Resolve user
         user = User.objects.filter(email__iexact=email).first()
+        if not user and request.user and request.user.is_authenticated:
+            user = request.user
+        if not user and number:
+            try:
+                profile = Profile.objects.get(phone=number)
+                user = profile.user
+            except Profile.DoesNotExist:
+                user = None
+        if not user and username:
+            user = User.objects.filter(username__iexact=username).first()
+        if not user and user_id:
+            user = User.objects.filter(id=user_id).first()
 
-        # Generate and store code only if user exists
+        # Generate and send code only if a user was resolved
         if user:
             code = str(random.randint(100000, 999999))
             expires_at = timezone.now() + timedelta(minutes=10)
-            PasswordResetCode.objects.create(
-                user=user, email=email, code=code, expires_at=expires_at
-            )
+            PasswordResetCode.objects.create(user=user, email=email, code=code, expires_at=expires_at)
             try:
                 send_mail(
                     subject="Password Reset Code",
                     message=f"Your password reset code is: {code}\n\nThis code will expire in 10 minutes.",
                     from_email=None,
                     recipient_list=[email],
-                    fail_silently=True,
+                    fail_silently=False,
                 )
             except Exception:
-                # Intentionally ignored (we still return generic success)
+                # In development, expose code for easier testing
+                if settings.DEBUG:
+                    return Response({"message": "verification code generated (DEBUG)", "code": code}, status=status.HTTP_200_OK)
+                # In production, still return generic success without leaking info
                 pass
 
         # Generic success response
