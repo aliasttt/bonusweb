@@ -18,6 +18,7 @@ from rewards.models import PointsTransaction
 from django.db.models import Sum, Count
 from django.utils import timezone
 from django.core.mail import send_mail
+from django.conf import settings
 
 
 @require_http_methods(["GET", "POST"])
@@ -602,8 +603,11 @@ def send_business_email_code(request):
                 fail_silently=False,
             )
         except Exception:
-            # We still return success if code saved; client can retry if email provider fails transiently
-            pass
+            # In development, expose code to allow testing without SMTP
+            if settings.DEBUG:
+                return JsonResponse({"success": True, "message": "Verification code generated (DEBUG)", "code": verification_code})
+            # Otherwise, instruct client to contact admin
+            return JsonResponse({"error": "Failed to send email. Please contact support."}, status=500)
         # Tentatively set email on business (unverified) so UI can display it
         if email != (business.email or ""):
             business.email = email

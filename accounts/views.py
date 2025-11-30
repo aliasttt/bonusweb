@@ -15,6 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Profile, UserActivity, Business, EmailVerificationCode, PasswordResetCode
 from notifications.models import Device
+from django.conf import settings
 from .serializers import ProfileSerializer, RegisterSerializer, UserSerializer, UserActivitySerializer, BusinessSerializer
 from .permissions import IsSuperUserRole, IsAdminRole, CanManageUsers, IsOwnerOrSuperUser
 
@@ -601,6 +602,61 @@ class VerifyEmailView(APIView):
                 'error': 'Verification failed',
                 'detail': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SendEmailCodeView(APIView):
+    """
+    Send an email verification code to the provided email for a user.
+    POST /api/accounts/send-email-code/
+    Body: {"email": "user@example.com", "user_id": 1 (optional)}
+    Priority for selecting user:
+      - user_id (if provided)
+      - authenticated user (if logged in)
+      - user found by email (if unique)
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = (request.data.get("email") or "").strip()
+        user_id = request.data.get("user_id")
+
+        if not email:
+            return Response({"detail": "email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = None
+        if user_id:
+            user = User.objects.filter(id=user_id).first()
+            if not user:
+                return Response({"detail": "user not found"}, status=status.HTTP_404_NOT_FOUND)
+        elif request.user and request.user.is_authenticated:
+            user = request.user
+        else:
+            # Try to find user by email (only if unique)
+            qs = User.objects.filter(email__iexact=email)
+            if qs.count() == 1:
+                user = qs.first()
+
+        if not user:
+            return Response({"detail": "unable to resolve user for this email"}, status=status.HTTP_400_BAD_REQUEST)
+
+        code = str(random.randint(100000, 999999))
+        expires_at = timezone.now() + timedelta(minutes=10)
+        EmailVerificationCode.objects.create(user=user, email=email, code=code, expires_at=expires_at)
+
+        try:
+            send_mail(
+                subject="Email Verification Code",
+                message=f"Your verification code is: {code}\n\nThis code will expire in 10 minutes.",
+                from_email=None,  # Uses DEFAULT_FROM_EMAIL
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            return Response({"message": "verification code sent"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            # In development, return the code to allow testing
+            if settings.DEBUG:
+                return Response({"message": "verification code generated (DEBUG)", "code": code}, status=status.HTTP_200_OK)
+            return Response({"detail": "failed to send email"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PasswordForgotView(APIView):
