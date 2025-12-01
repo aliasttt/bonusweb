@@ -7,9 +7,9 @@ from rest_framework.views import APIView
 
 from accounts.models import Profile
 from loyalty.models import Business, Customer
-from .models import Device
-from .serializers import DeviceSerializer
-from .services import send_push_to_tokens
+from .models import Device, DeviceToken
+from .serializers import DeviceSerializer, DeviceTokenSerializer
+from .services import send_push_to_tokens, send_push_notification
 
 
 class RegisterDeviceView(APIView):
@@ -64,6 +64,120 @@ class SaveFcmTokenView(APIView):
             return Response({"ok": True, "token": device.token, "user_id": request.user.id, "platform": device.platform}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SaveDeviceTokenAPIView(APIView):
+    """
+    POST /api/device-tokens/
+    Body:
+    {
+        "user_id": 12,                # optional
+        "business_id": 5,             # required
+        "device_token": "fcm_token",  # required
+        "device_type": "android"      # required: android|ios
+    }
+    Behavior:
+    - If token exists -> update business_id/user_id/device_type if changed
+    - Else -> create
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        data = {
+            "user_id": request.data.get("user_id"),
+            "business_id": request.data.get("business_id"),
+            "device_token": (request.data.get("device_token") or "").strip(),
+            "device_type": (request.data.get("device_type") or "").strip().lower(),
+        }
+        # basic validations
+        if not data["device_token"]:
+            return Response({"detail": "device_token is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not data["business_id"]:
+            return Response({"detail": "business_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            data["business_id"] = int(data["business_id"])
+        except (TypeError, ValueError):
+            return Response({"detail": "business_id must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+        if data["device_type"] not in (DeviceToken.ANDROID, DeviceToken.IOS):
+            return Response({"detail": "device_type must be 'android' or 'ios'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # upsert on device_token
+        try:
+            instance = DeviceToken.objects.filter(device_token=data["device_token"]).first()
+            if instance:
+                # update fields if changed
+                updated = False
+                if instance.business_id != data["business_id"]:
+                    instance.business_id = data["business_id"]
+                    updated = True
+                if instance.device_type != data["device_type"]:
+                    instance.device_type = data["device_type"]
+                    updated = True
+                # optional user association
+                new_user_id = data.get("user_id")
+                if new_user_id is not None and new_user_id != instance.user_id:
+                    try:
+                        new_user_id = int(new_user_id) if new_user_id is not None else None
+                    except (TypeError, ValueError):
+                        return Response({"detail": "user_id must be an integer or null"}, status=status.HTTP_400_BAD_REQUEST)
+                    instance.user_id = new_user_id
+                    updated = True
+                if updated:
+                    instance.save()
+                return Response(DeviceTokenSerializer(instance).data, status=status.HTTP_200_OK)
+            # create new
+            serializer = DeviceTokenSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            instance = serializer.save()
+            return Response(DeviceTokenSerializer(instance).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class AdminSendMessageAPIView(APIView):
+    """
+    POST /api/admin/send-message/
+    Body: { "business_id": 5, "message": "Your order is ready" }
+    Sends push to all device tokens for the business_id using FCM HTTP.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        message = (request.data.get("message") or "").strip()
+        business_id = request.data.get("business_id")
+        if not message:
+            return Response({"detail": "message is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if business_id is None:
+            return Response({"detail": "business_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            business_id = int(business_id)
+        except (TypeError, ValueError):
+            return Response({"detail": "business_id must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+
+        tokens = list(DeviceToken.objects.filter(business_id=business_id).values_list("device_token", flat=True))
+        if not tokens:
+            return Response({"status": "success", "sent_to": 0}, status=status.HTTP_200_OK)
+
+        # Prefer Firebase Admin SDK (service account). Fallback to HTTP per-token if needed.
+        extra_data = {"business_id": business_id, "message": message}
+        try:
+            send_push_to_tokens(tokens, title="New Message", body=message, data=extra_data)
+            sent = len(tokens)
+        except Exception:
+            sent = 0
+            for token in tokens:
+                try:
+                    send_push_notification(
+                        device_token=token,
+                        title="New Message",
+                        body=message,
+                        data=extra_data,
+                    )
+                    sent += 1
+                except Exception:
+                    continue
+
+        return Response({"status": "success", "sent_to": sent}, status=status.HTTP_200_OK)
 
 
 class SendTestNotificationView(APIView):

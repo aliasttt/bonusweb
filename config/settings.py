@@ -236,6 +236,8 @@ FIREBASE_CREDENTIALS_FILE = os.environ.get("FIREBASE_CREDENTIALS_FILE", "")
 FIREBASE_CREDENTIALS_JSON = os.environ.get("FIREBASE_CREDENTIALS_JSON", "")
 FIREBASE_CREDENTIALS_BASE64 = os.environ.get("FIREBASE_CREDENTIALS_BASE64", "")
 VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "")
+FCM_SERVER_KEY = os.environ.get("FCM_SERVER_KEY", "")
+FCM_HTTP_API_URL = os.environ.get("FCM_HTTP_API_URL", "https://fcm.googleapis.com/fcm/send")
 
 FIREBASE_CONFIG = {
     "apiKey": os.environ.get("FIREBASE_WEB_API_KEY", "AIzaSyBuZrl2zjPrpOFD_2pZKJTDe1AiRUArviA"),

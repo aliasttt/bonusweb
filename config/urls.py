@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
 from django.views.i18n import set_language
-from notifications.views import SaveFcmTokenView
+from notifications.views import SaveFcmTokenView, SaveDeviceTokenAPIView, AdminSendMessageAPIView
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
@@ -62,6 +62,10 @@ urlpatterns = [
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    
+    # New FCM device token and admin message endpoints
+    path("api/device-tokens/", SaveDeviceTokenAPIView.as_view(), name="device_tokens"),
+    path("api/admin/send-message/", AdminSendMessageAPIView.as_view(), name="admin_send_message"),
 ]
 
 # Serve media files
