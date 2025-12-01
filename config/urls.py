@@ -24,6 +24,8 @@ urlpatterns = [
     
     # API v1 - Versioned API routes (recommended)
     path("api/v1/", include("loyalty.urls")),
+    # Compatibility prefix so existing clients using /api/v1/loyalty/... keep working
+    path("api/v1/loyalty/", include("loyalty.urls")),
     path("api/v1/accounts/", include("accounts.urls")),
     path("api/v1/campaigns/", include("campaigns.urls")),
     path("api/v1/qr/", include("qr.urls")),
@@ -36,6 +38,8 @@ urlpatterns = [
     
     # Legacy API routes (backward compatibility - without versioning)
     path("api/", include("loyalty.urls")),
+    # Legacy compatibility for /api/loyalty/...
+    path("api/loyalty/", include("loyalty.urls")),
     # Direct compatibility endpoint for mobile app token registration
     path("api/users/fcm-token", SaveFcmTokenView.as_view(), name="save_fcm_token_legacy"),
     path("api/v1/users/fcm-token", SaveFcmTokenView.as_view(), name="save_fcm_token_v1"),
