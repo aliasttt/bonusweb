@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django.contrib.auth.models import User
+from django.db.models import Sum
 from accounts.permissions import IsCustomerRole, IsBusinessOwnerRole
 from accounts.models import Profile
 from loyalty.models import Business, Customer, Wallet, Product
@@ -222,3 +223,80 @@ class QRProductScanView(APIView):
             "transaction_id": transaction.id,
             "wallet_id": wallet.id
         }, status=status.HTTP_201_CREATED)
+
+
+class RedeemableProductsView(APIView):
+    """
+    List reward products that can be redeemed with points.
+    GET /api/v1/rewards/redeemable-products/?business_id=&limit=&offset=
+    """
+    permission_classes = [permissions.AllowAny]  # Allow unauthenticated to see products
+
+    def get(self, request):
+        business_id = request.query_params.get("business_id")
+        try:
+            limit = max(1, min(int(request.query_params.get("limit", 100)), 200))
+        except ValueError:
+            limit = 100
+        try:
+            offset = max(0, int(request.query_params.get("offset", 0)))
+        except ValueError:
+            offset = 0
+
+        # Get all active reward products
+        products_qs = Product.objects.filter(active=True, is_reward=True).select_related("business").order_by("points_reward")
+        if business_id:
+            try:
+                business_id = int(business_id)
+                products_qs = products_qs.filter(business_id=business_id)
+            except (TypeError, ValueError):
+                return Response(
+                    {"detail": "business_id must be an integer"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        count = products_qs.count()
+        products = products_qs[offset:offset+limit]
+
+        # If user is authenticated, check their points
+        user_points = {}
+        total_points = 0
+        if request.user.is_authenticated:
+            try:
+                customer, _ = Customer.objects.get_or_create(user=request.user)
+                wallets = Wallet.objects.filter(customer=customer).select_related("business")
+                user_points = {w.business_id: w.points_balance for w in wallets}
+                total_points = sum(user_points.values())
+            except Exception:
+                pass
+
+        items = []
+        for p in products:
+            business = p.business
+            business_points = user_points.get(business.id, 0) if request.user.is_authenticated else 0
+            items.append({
+                "id": p.id,
+                "title": p.title,
+                "image": request.build_absolute_uri(p.image.url) if p.image else None,
+                "business_id": business.id,
+                "business_name": business.name,
+                "points_required": p.points_reward,
+                "price_cents": p.price_cents,
+                "can_redeem": business_points >= p.points_reward if request.user.is_authenticated else False,
+                "user_points": business_points if request.user.is_authenticated else None,
+            })
+
+        response_data = {
+            "products": items,
+            "pagination": {
+                "count": count,
+                "limit": limit,
+                "offset": offset,
+                "has_next": (offset + limit) < count
+            }
+        }
+        
+        if request.user.is_authenticated:
+            response_data["total_points"] = total_points
+
+        return Response(response_data, status=status.HTTP_200_OK)
