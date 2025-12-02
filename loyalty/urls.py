@@ -22,6 +22,8 @@ urlpatterns = [
     path("businesses/<int:business_id>/", views.BusinessDetailView.as_view(), name="business_detail"),
     path("search/", views.SearchView.as_view(), name="search"),
     path("favorites/toggle/", views.FavoriteToggleView.as_view(), name="favorite_toggle"),
+    path("favorites/count/<int:business_id>/", views.FavoriteCountView.as_view(), name="favorite_count"),
+    path("favorites/count/", views.FavoriteCountView.as_view(), name="favorite_count_query"),
     path("favorites/", views.FavoriteListView.as_view(), name="favorite_list"),
     # Super Admin Business Management API
     path("super-admin/businesses/<int:business_id>/", views.SuperAdminBusinessDetailView.as_view(), name="super_admin_business_detail"),

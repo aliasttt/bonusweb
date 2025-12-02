@@ -55,6 +55,9 @@ class BusinessSerializer(serializers.ModelSerializer):
 
     def get_favorites_count(self, obj):
         try:
+            # Use annotated value if available (more efficient)
+            if hasattr(obj, 'favorites_count_value'):
+                return obj.favorites_count_value
             return obj.favorites.count()
         except Exception:
             return 0

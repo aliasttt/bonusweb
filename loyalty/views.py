@@ -29,7 +29,7 @@ class BusinessListView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        return Business.objects.annotate(
+        queryset = Business.objects.annotate(
             average_rating_value=Avg(
                 "reviews__rating",
                 filter=Q(reviews__status=Review.Status.APPROVED),
@@ -38,7 +38,15 @@ class BusinessListView(generics.ListAPIView):
                 "reviews",
                 filter=Q(reviews__status=Review.Status.APPROVED),
             ),
+            favorites_count_value=Count("favorites"),
         )
+        return queryset
+    
+    def get_serializer_context(self):
+        """Pass request context to serializer for is_favorite check"""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 
 class ProductListView(generics.ListAPIView):
@@ -776,6 +784,52 @@ class FavoriteListView(APIView):
         for item in data:
             item["is_favorite"] = True
         return Response({"favorites": data}, status=status.HTTP_200_OK)
+
+
+class FavoriteCountView(APIView):
+    """
+    Get favorites count for a business (and whether current user has favorited it).
+    GET /api/v1/loyalty/favorites/count/?business_id=1
+    Or GET /api/v1/loyalty/favorites/count/1/
+    """
+    permission_classes = [permissions.AllowAny]  # Allow unauthenticated to see count
+
+    def get(self, request, business_id=None):
+        # Support both query param and path param
+        if business_id is None:
+            business_id = request.query_params.get("business_id")
+        
+        if not business_id:
+            return Response(
+                {"detail": "business_id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            business_id = int(business_id)
+        except (TypeError, ValueError):
+            return Response(
+                {"detail": "business_id must be an integer"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        business = get_object_or_404(Business, id=business_id)
+        favorites_count = Favorite.objects.filter(business=business).count()
+        
+        # Check if current user has favorited (if authenticated)
+        is_favorite = False
+        if request.user.is_authenticated:
+            try:
+                customer, _ = Customer.objects.get_or_create(user=request.user)
+                is_favorite = Favorite.objects.filter(customer=customer, business=business).exists()
+            except Exception:
+                pass
+        
+        return Response({
+            "business_id": business_id,
+            "favorites_count": favorites_count,
+            "is_favorite": is_favorite
+        }, status=status.HTTP_200_OK)
 
 
 class SuperAdminBusinessManagementView(APIView):
