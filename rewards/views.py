@@ -80,23 +80,72 @@ class QRScanAwardPointsView(APIView):
 
 
 class RedeemPointsView(APIView):
-    permission_classes = [permissions.IsAuthenticated, IsCustomerRole]
+    permission_classes = [permissions.IsAuthenticated]  # Removed IsCustomerRole to allow auto-creation
 
     @transaction.atomic
     def post(self, request):
-        business_id = request.data.get("business_id")
-        amount = int(request.data.get("amount", 0))
-        if amount <= 0:
-            return Response({"detail": "invalid amount"}, status=status.HTTP_400_BAD_REQUEST)
-        business = get_object_or_404(Business, id=business_id)
-        customer, _ = Customer.objects.get_or_create(user=request.user)
-        wallet = get_object_or_404(Wallet.objects.select_for_update(), customer=customer, business=business)
-        if wallet.points_balance < amount:
-            return Response({"detail": "insufficient points"}, status=status.HTTP_400_BAD_REQUEST)
-        wallet.points_balance -= amount
-        wallet.save(update_fields=["points_balance", "updated_at"])
-        PointsTransaction.objects.create(wallet=wallet, points=-amount, note="redeem")
-        return Response({"redeemed": amount, "points_balance": wallet.points_balance})
+        try:
+            business_id = request.data.get("business_id")
+            if not business_id:
+                return Response({"detail": "business_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                business_id = int(business_id)
+            except (TypeError, ValueError):
+                return Response({"detail": "business_id must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            amount = request.data.get("amount")
+            if amount is None:
+                return Response({"detail": "amount is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                amount = int(amount)
+            except (TypeError, ValueError):
+                return Response({"detail": "amount must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if amount <= 0:
+                return Response({"detail": "amount must be greater than 0"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                business = Business.objects.get(id=business_id)
+            except Business.DoesNotExist:
+                return Response({"detail": "Business not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Ensure user has customer profile
+            customer, _ = Customer.objects.get_or_create(user=request.user)
+            # Ensure user has customer role in profile (if needed)
+            profile, _ = Profile.objects.get_or_create(user=request.user)
+            if not profile.role or profile.role not in [Profile.Role.CUSTOMER, Profile.Role.BUSINESS_OWNER, Profile.Role.ADMIN, Profile.Role.SUPERUSER]:
+                profile.role = Profile.Role.CUSTOMER
+                profile.save(update_fields=["role"])
+            wallet, wallet_created = Wallet.objects.select_for_update().get_or_create(
+                customer=customer,
+                business=business,
+                defaults={"reward_point_cost": business.reward_point_cost}
+            )
+            
+            if wallet.points_balance < amount:
+                return Response({
+                    "detail": "insufficient points",
+                    "current_balance": wallet.points_balance,
+                    "required": amount
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            wallet.points_balance -= amount
+            wallet.save(update_fields=["points_balance", "updated_at"])
+            PointsTransaction.objects.create(wallet=wallet, points=-amount, note="redeem")
+            
+            return Response({
+                "redeemed": amount,
+                "points_balance": wallet.points_balance,
+                "business_id": business_id
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                "detail": "An error occurred while processing redemption",
+                "error": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class QRProductScanView(APIView):
