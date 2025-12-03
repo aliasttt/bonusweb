@@ -111,18 +111,40 @@
   let currentBusinessId = businessIdInput ? parseInt(businessIdInput.value, 10) : (Object.keys(customersByBusiness)[0] || null);
 
   function getFilteredCustomers() {
+    try {
+      // Debug: Log current state
+      console.log("DEBUG: currentBusinessId =", currentBusinessId);
+      console.log("DEBUG: customersByBusiness =", customersByBusiness);
+      
     const list = customersByBusiness[currentBusinessId] || [];
+      
+      // Debug: Check if list is array
+      if (!Array.isArray(list)) {
+        console.error("DEBUG ERROR: customersByBusiness[currentBusinessId] is not an array!", typeof list, list);
+        return [];
+      }
+      
+      console.log("DEBUG: list length =", list.length);
+      
     const searchTerm = (customerSearch?.value || "").trim().toLowerCase();
     if (!searchTerm) {
       return list;
     }
-    return list.filter((item) => {
+      
+      const filtered = list.filter((item) => {
       return (
         item.name?.toLowerCase().includes(searchTerm) ||
         item.email?.toLowerCase().includes(searchTerm) ||
         item.phone?.toLowerCase().includes(searchTerm)
       );
     });
+      
+      console.log("DEBUG: filtered length =", filtered.length);
+      return filtered;
+    } catch (error) {
+      console.error("DEBUG ERROR in getFilteredCustomers:", error);
+      return [];
+    }
   }
 
   function updateSelectionSummary() {
@@ -135,28 +157,57 @@
   }
 
   function renderCustomerList() {
-    if (!customerList) return;
+    try {
+      console.log("DEBUG: renderCustomerList called");
+      
+      if (!customerList) {
+        console.error("DEBUG ERROR: customerList element not found!");
+        return;
+      }
+      
     customerList.innerHTML = "";
-    
-    if (!currentBusinessId) {
-      customerList.innerHTML = `<div class="text-slate-400 text-sm col-span-2">No business selected.</div>`;
-      return;
-    }
-    
-    const allCustomers = customersByBusiness[currentBusinessId] || [];
-    if (!allCustomers.length) {
-      customerList.innerHTML = `<div class="text-slate-400 text-sm col-span-2">No customers found for this business.</div>`;
-      updateSelectionSummary();
-      return;
-    }
-    
+      
+      if (!currentBusinessId) {
+        console.log("DEBUG: No business ID");
+        customerList.innerHTML = `<div class="text-slate-400 text-sm col-span-2">No business selected.</div>`;
+        return;
+      }
+      
+      const allCustomers = customersByBusiness[currentBusinessId] || [];
+      console.log("DEBUG: allCustomers =", allCustomers);
+      console.log("DEBUG: allCustomers is array?", Array.isArray(allCustomers));
+      
+      if (!Array.isArray(allCustomers)) {
+        console.error("DEBUG ERROR: allCustomers is not an array!", typeof allCustomers, allCustomers);
+        customerList.innerHTML = `<div class="text-red-400 text-sm col-span-2">Error: Invalid customer data format. Check console for details.</div>`;
+        return;
+      }
+      
+      if (!allCustomers.length) {
+        console.log("DEBUG: No customers found");
+        customerList.innerHTML = `<div class="text-slate-400 text-sm col-span-2">No customers found for this business.</div>`;
+        updateSelectionSummary();
+        return;
+      }
+      
     const items = getFilteredCustomers();
+      console.log("DEBUG: items =", items);
+      console.log("DEBUG: items is array?", Array.isArray(items));
+      
+      if (!Array.isArray(items)) {
+        console.error("DEBUG ERROR: items is not an array!", typeof items, items);
+        customerList.innerHTML = `<div class="text-red-400 text-sm col-span-2">Error: Filtered customers is not an array. Check console for details.</div>`;
+        return;
+      }
+      
     if (!items.length) {
+        console.log("DEBUG: No items after filter");
       customerList.innerHTML = `<div class="text-slate-400 text-sm col-span-2">No customers found for this filter.</div>`;
-      updateSelectionSummary();
+        updateSelectionSummary();
       return;
     }
-    
+      
+      console.log("DEBUG: Rendering", items.length, "items");
     const fragment = document.createDocumentFragment();
     items.forEach((item) => {
       const wrapper = document.createElement("label");
@@ -186,7 +237,25 @@
     });
     customerList.appendChild(fragment);
     updateSelectionSummary();
+      console.log("DEBUG: renderCustomerList completed successfully");
+    } catch (error) {
+      console.error("DEBUG ERROR in renderCustomerList:", error);
+      if (customerList) {
+        customerList.innerHTML = `<div class="text-red-400 text-sm col-span-2">Error rendering customers: ${error.message}. Check console for details.</div>`;
+      }
+    }
   }
+
+  // Debug: Log initial state
+  console.log("DEBUG: Initial state");
+  console.log("DEBUG: businessIdInput =", businessIdInput);
+  console.log("DEBUG: businessIdInput value =", businessIdInput?.value);
+  console.log("DEBUG: customerDataEl =", customerDataEl);
+  console.log("DEBUG: customersByBusiness =", customersByBusiness);
+  console.log("DEBUG: currentBusinessId =", currentBusinessId);
+  console.log("DEBUG: selectAllBtn =", selectAllBtn);
+  console.log("DEBUG: clearAllBtn =", clearAllBtn);
+  console.log("DEBUG: previewButton =", previewButton);
 
   // Initialize customer list on page load
   if (currentBusinessId) {
@@ -199,23 +268,50 @@
 
   if (customerSearch) {
     customerSearch.addEventListener("input", () => {
+      console.log("DEBUG: Search input changed");
       renderCustomerList();
     });
+  } else {
+    console.error("DEBUG ERROR: customerSearch element not found!");
   }
 
   if (selectAllBtn) {
-    selectAllBtn.addEventListener("click", () => {
-      const customers = getFilteredCustomers();
-      customers.forEach((item) => selectedUserIds.add(item.user_id));
+    selectAllBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("DEBUG: Select all button clicked");
+      try {
+        const customers = getFilteredCustomers();
+        console.log("DEBUG: customers to select =", customers);
+        if (Array.isArray(customers)) {
+          customers.forEach((item) => {
+            if (item && item.user_id) {
+              selectedUserIds.add(item.user_id);
+            }
+          });
+          console.log("DEBUG: Selected", selectedUserIds.size, "customers");
       renderCustomerList();
+        } else {
+          console.error("DEBUG ERROR: customers is not an array!", customers);
+          alert("Error: Cannot select customers. Check console for details.");
+        }
+      } catch (error) {
+        console.error("DEBUG ERROR in selectAllBtn:", error);
+        alert("Error selecting all: " + error.message);
+      }
     });
+  } else {
+    console.error("DEBUG ERROR: selectAllBtn element not found!");
   }
 
   if (clearAllBtn) {
-    clearAllBtn.addEventListener("click", () => {
+    clearAllBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("DEBUG: Clear all button clicked");
       selectedUserIds.clear();
       renderCustomerList();
     });
+      } else {
+    console.error("DEBUG ERROR: clearAllBtn element not found!");
   }
 
 
@@ -243,32 +339,47 @@
     }
 
     const businessId = formData.get("business_id");
-    if (!businessId) {
+      if (!businessId) {
       throw new Error("Business ID is required.");
-    }
-    payload.business_id = parseInt(businessId, 10);
+      }
+      payload.business_id = parseInt(businessId, 10);
     
-    if (selectedUserIds.size) {
+      if (selectedUserIds.size) {
       payload.user_ids = Array.from(selectedUserIds);
     }
 
     return payload;
   }
 
-  if (previewButton && form) {
+  if (previewButton) {
+    console.log("DEBUG: previewButton found, adding event listener");
     previewButton.addEventListener("click", (e) => {
       e.preventDefault();
+      console.log("DEBUG: Preview button clicked");
       try {
+        if (!form) {
+          console.error("DEBUG ERROR: form not found!");
+          alert("Error: Form not found. Please refresh the page.");
+          return;
+        }
+        
         const formData = new FormData(form);
         const title = formData.get("title")?.trim();
         const body = formData.get("body")?.trim();
+        
+        console.log("DEBUG: title =", title);
+        console.log("DEBUG: body =", body);
         
         if (!title || !body) {
           showStatus(`<div class="font-semibold text-lg mb-2">Validation error</div><p>Title and body are required.</p>`, "error");
           return;
         }
         
-        const recipientCount = selectedUserIds.size || (customersByBusiness[currentBusinessId] || []).length;
+        const allCustomers = customersByBusiness[currentBusinessId] || [];
+        const recipientCount = selectedUserIds.size || (Array.isArray(allCustomers) ? allCustomers.length : 0);
+        
+        console.log("DEBUG: recipientCount =", recipientCount);
+        
         showStatus(`
           <div class="font-semibold text-lg mb-2">Preview</div>
           <div class="text-white text-base mb-1 font-semibold">${title}</div>
@@ -278,9 +389,12 @@
           </div>
         `, "success");
       } catch (err) {
+        console.error("DEBUG ERROR in previewButton:", err);
         showStatus(`<div class="font-semibold text-lg mb-2">Validation error</div><p>${err.message}</p>`, "error");
       }
     });
+  } else {
+    console.error("DEBUG ERROR: previewButton element not found!");
   }
 
   if (form) {
