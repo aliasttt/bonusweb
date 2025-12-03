@@ -164,7 +164,9 @@ def product_create(request):
     if request.method == "POST" and business:
         title = request.POST.get("title", "").strip()
         description = request.POST.get("description", "").strip()
-        price_cents = int(request.POST.get("price_cents", "0") or 0)
+        # تبدیل یورو به cents
+        price_eur = float(request.POST.get("price_eur", "0") or 0)
+        price_cents = int(round(price_eur * 100))
         points_reward = int(request.POST.get("points_reward", "0") or 0)
         is_reward = request.POST.get("is_reward") == "1"
         image = request.FILES.get("image")
@@ -179,7 +181,10 @@ def product_create(request):
         )
         messages.success(request, "Item added successfully")
         return redirect("products_list")
-    return render(request, "partners/product_form.html", {"business": business})
+    return render(request, "partners/product_form.html", {
+        "business": business,
+        "price_eur": 0.0
+    })
 
 
 @login_required
@@ -193,7 +198,9 @@ def product_edit(request, pk: int):
     if request.method == "POST":
         product.title = request.POST.get("title", product.title)
         product.description = request.POST.get("description", product.description)
-        product.price_cents = int(request.POST.get("price_cents", product.price_cents) or 0)
+        # تبدیل یورو به cents
+        price_eur = float(request.POST.get("price_eur", "0") or 0)
+        product.price_cents = int(round(price_eur * 100))
         product.points_reward = int(request.POST.get("points_reward", product.points_reward) or 0)
         product.is_reward = request.POST.get("is_reward") == "1"
         if request.FILES.get("image"):
@@ -201,7 +208,13 @@ def product_edit(request, pk: int):
         product.save()
         messages.success(request, "Saved")
         return redirect("products_list")
-    return render(request, "partners/product_form.html", {"business": business, "product": product})
+    # تبدیل price_cents به یورو برای نمایش در فرم
+    price_eur = product.price_cents / 100.0 if product.price_cents else 0.0
+    return render(request, "partners/product_form.html", {
+        "business": business, 
+        "product": product,
+        "price_eur": price_eur
+    })
 
 
 @login_required

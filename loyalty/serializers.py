@@ -144,11 +144,12 @@ class SliderSerializer(serializers.ModelSerializer):
 
 
 class MenuProductSerializer(serializers.ModelSerializer):
-    """Serializer for Menu Products - returns id, title, description, image, reward, point, stars"""
+    """Serializer for Menu Products - returns id, title, description, image, price, reward, point, stars"""
     id = serializers.SerializerMethodField()
     title = serializers.CharField(read_only=True)
     description = serializers.CharField(read_only=True)
     image = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
     reward = serializers.SerializerMethodField()
     point = serializers.SerializerMethodField()
     stars = serializers.SerializerMethodField()
@@ -158,7 +159,13 @@ class MenuProductSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Product
-        fields = ["id", "title", "description", "image", "reward", "point", "stars", "reviews_count", "business_id", "business_name"]
+        fields = ["id", "title", "description", "image", "price", "reward", "point", "stars", "reviews_count", "business_id", "business_name"]
+    
+    def get_price(self, obj):
+        """Return price in EUR (converted from cents)"""
+        if obj.price_cents:
+            return round(obj.price_cents / 100.0, 2)
+        return 0.0
     
     def get_id(self, obj):
         """Return id as string"""
