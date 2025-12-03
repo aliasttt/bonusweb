@@ -17,14 +17,9 @@
       <p class="text-sm text-red-100">You need to register at least one business before sending notifications.</p>
     </div>
   {% else %}
-  <div class="grid lg:grid-cols-3 gap-6 mb-10">
+  <div class="grid lg:grid-cols-2 gap-6 mb-10">
     <div class="bg-white/5 rounded-2xl border border-white/10 p-5">
-      <p class="text-sm text-slate-400">Audience</p>
-      <p class="text-2xl font-semibold text-white mt-1" id="audienceLabel">Business Customers</p>
-      <p class="text-xs text-slate-400 mt-1">Choose between your own customers or (if allowed) everyone.</p>
-    </div>
-    <div class="bg-white/5 rounded-2xl border border-white/10 p-5">
-      <p class="text-sm text-slate-400">Default Business</p>
+      <p class="text-sm text-slate-400">Business</p>
       <p class="text-2xl font-semibold text-white mt-1">
         {% if default_business_id %}
           {% for biz in businesses %}
@@ -36,7 +31,7 @@
           Not Selected
         {% endif %}
       </p>
-      <p class="text-xs text-slate-400 mt-1">You can switch any time from the selector below.</p>
+      <p class="text-xs text-slate-400 mt-1">Notifications will be sent to customers of this business.</p>
     </div>
     <div class="bg-white/5 rounded-2xl border border-white/10 p-5">
       <p class="text-sm text-slate-400">Delivery</p>
@@ -56,33 +51,8 @@
         <label class="block text-sm font-semibold text-slate-200 mb-2">Message body</label>
         <textarea name="body" rows="4" required class="w-full px-4 py-3 rounded-xl bg-white text-slate-900 border-2 border-transparent focus:border-primary outline-none transition" placeholder="Only today! Grab 20% off on all doners when you show this message."></textarea>
       </div>
-      <div class="grid md:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-sm font-semibold text-slate-200 mb-2">Audience</label>
-          <select name="audience" id="audienceSelect" class="w-full px-4 py-3 rounded-xl bg-white text-slate-900 border-2 border-transparent focus:border-primary outline-none transition">
-            <option value="business_customers" selected>Customers of selected business</option>
-            {% if can_broadcast %}
-              <option value="all_customers">All customers (global broadcast)</option>
-            {% endif %}
-          </select>
-          <p class="text-xs text-slate-400 mt-2">
-            {% if can_broadcast %}
-              Choose <strong>All customers</strong> to broadcast platform wide. Use responsibly.
-            {% else %}
-              Only your business customers are available. Contact a super admin for global broadcasts.
-            {% endif %}
-          </p>
-        </div>
-        <div id="businessPicker">
-          <label class="block text-sm font-semibold text-slate-200 mb-2">Select business</label>
-          <select name="business_id" id="businessSelect" class="w-full px-4 py-3 rounded-xl bg-white text-slate-900 border-2 border-transparent focus:border-primary outline-none transition">
-            {% for biz in businesses %}
-              <option value="{{ biz.id }}" {% if biz.id == default_business_id %}selected{% endif %}>{{ biz.name }}</option>
-            {% endfor %}
-          </select>
-          <p class="text-xs text-slate-400 mt-2">Notification will be sent to customers who have wallets with this business.</p>
-        </div>
-      </div>
+      <input type="hidden" name="business_id" id="businessIdInput" value="{{ default_business_id }}">
+      <input type="hidden" name="audience" value="business_customers">
 
       <div id="recipientSection" class="rounded-2xl border border-white/15 bg-white/5 p-5">
         <div class="flex items-center justify-between mb-4">
@@ -100,11 +70,6 @@
         <p class="text-xs text-slate-400 mt-3" id="selectionSummary">No specific recipients selected. All customers of this business will receive this notification.</p>
       </div>
 
-      <div>
-        <label class="block text-sm font-semibold text-slate-200 mb-2">Optional custom data (JSON)</label>
-        <textarea name="data_json" rows="3" class="w-full px-4 py-3 rounded-xl bg-white text-slate-900 border-2 border-transparent focus:border-primary outline-none transition" placeholder='{"deep_link": "/offers", "discount": "20"}'></textarea>
-        <p class="text-xs text-slate-400 mt-2">This data will be delivered to the app and can be used for deep links or custom actions.</p>
-      </div>
       <div class="flex items-center gap-4">
         <button type="submit" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow-lg shadow-primary/30 hover:shadow-xl transition">
           Send notification
@@ -132,22 +97,18 @@
 <script>
   const form = document.getElementById("notificationForm");
   const statusCard = document.getElementById("statusCard");
-  const audienceSelect = document.getElementById("audienceSelect");
-  const businessPicker = document.getElementById("businessPicker");
-  const businessSelect = document.getElementById("businessSelect");
+  const businessIdInput = document.getElementById("businessIdInput");
   const customerDataEl = document.getElementById("business-customers");
   const customerSearch = document.getElementById("customerSearch");
   const customerList = document.getElementById("customerList");
   const selectionSummary = document.getElementById("selectionSummary");
   const selectAllBtn = document.getElementById("selectAllBtn");
   const clearAllBtn = document.getElementById("clearAllBtn");
-  const recipientSection = document.getElementById("recipientSection");
   const previewButton = document.getElementById("previewButton");
   const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]")?.value;
-  const audienceLabel = document.getElementById("audienceLabel");
   const customersByBusiness = customerDataEl ? JSON.parse(customerDataEl.textContent || "{}") : {};
   let selectedUserIds = new Set();
-  let currentBusinessId = businessSelect ? parseInt(businessSelect.value, 10) : (Object.keys(customersByBusiness)[0] || null);
+  let currentBusinessId = businessIdInput ? parseInt(businessIdInput.value, 10) : (Object.keys(customersByBusiness)[0] || null);
 
   function getFilteredCustomers() {
     const list = customersByBusiness[currentBusinessId] || [];
@@ -176,11 +137,26 @@
   function renderCustomerList() {
     if (!customerList) return;
     customerList.innerHTML = "";
+    
+    if (!currentBusinessId) {
+      customerList.innerHTML = `<div class="text-slate-400 text-sm col-span-2">No business selected.</div>`;
+      return;
+    }
+    
+    const allCustomers = customersByBusiness[currentBusinessId] || [];
+    if (!allCustomers.length) {
+      customerList.innerHTML = `<div class="text-slate-400 text-sm col-span-2">No customers found for this business.</div>`;
+      updateSelectionSummary();
+      return;
+    }
+    
     const items = getFilteredCustomers();
     if (!items.length) {
       customerList.innerHTML = `<div class="text-slate-400 text-sm col-span-2">No customers found for this filter.</div>`;
+      updateSelectionSummary();
       return;
     }
+    
     const fragment = document.createDocumentFragment();
     items.forEach((item) => {
       const wrapper = document.createElement("label");
@@ -212,22 +188,13 @@
     updateSelectionSummary();
   }
 
-  function resetRecipientsForBusiness(bizId) {
-    currentBusinessId = parseInt(bizId, 10);
-    selectedUserIds.clear();
-    if (customerSearch) {
-      customerSearch.value = "";
+  // Initialize customer list on page load
+  if (currentBusinessId) {
+    renderCustomerList();
+  } else {
+    if (customerList) {
+      customerList.innerHTML = `<div class="text-slate-400 text-sm col-span-2">No business selected. Please select a business first.</div>`;
     }
-    renderCustomerList();
-  }
-
-  if (businessSelect) {
-    businessSelect.addEventListener("change", () => {
-      resetRecipientsForBusiness(businessSelect.value);
-    });
-    resetRecipientsForBusiness(businessSelect.value);
-  } else if (currentBusinessId) {
-    renderCustomerList();
   }
 
   if (customerSearch) {
@@ -238,7 +205,8 @@
 
   if (selectAllBtn) {
     selectAllBtn.addEventListener("click", () => {
-      (customersByBusiness[currentBusinessId] || []).forEach((item) => selectedUserIds.add(item.user_id));
+      const customers = getFilteredCustomers();
+      customers.forEach((item) => selectedUserIds.add(item.user_id));
       renderCustomerList();
     });
   }
@@ -250,41 +218,6 @@
     });
   }
 
-  if (audienceSelect && businessPicker) {
-    audienceSelect.addEventListener("change", () => {
-      const value = audienceSelect.value;
-      audienceLabel.textContent = value === "all_customers" ? "All Customers" : "Business Customers";
-      if (value === "all_customers") {
-        businessPicker.classList.add("opacity-50");
-        const selectEl = businessPicker.querySelector("select");
-        if (selectEl) {
-          selectEl.setAttribute("disabled", "disabled");
-        }
-        if (recipientSection) {
-          recipientSection.classList.add("opacity-50");
-        }
-        selectedUserIds.clear();
-        if (customerList) {
-          customerList.innerHTML = `<div class="text-slate-400 text-sm col-span-2">All customers will receive this notification.</div>`;
-        }
-        updateSelectionSummary();
-      } else {
-        businessPicker.classList.remove("opacity-50");
-        const selectEl = businessPicker.querySelector("select");
-        if (selectEl) {
-          selectEl.removeAttribute("disabled");
-        }
-        if (recipientSection) {
-          recipientSection.classList.remove("opacity-50");
-        }
-        if (businessSelect) {
-          resetRecipientsForBusiness(businessSelect.value);
-        } else {
-          renderCustomerList();
-        }
-      }
-    });
-  }
 
   function showStatus(message, type = "success") {
     if (!statusCard) return;
@@ -302,7 +235,7 @@
     const payload = {
       title: formData.get("title")?.trim(),
       body: formData.get("body")?.trim(),
-      audience: formData.get("audience") || "business_customers",
+      audience: "business_customers",
     };
 
     if (!payload.title || !payload.body) {
@@ -310,25 +243,13 @@
     }
 
     const businessId = formData.get("business_id");
-    if (payload.audience !== "all_customers") {
-      if (!businessId) {
-        throw new Error("Please select a business.");
-      }
-      payload.business_id = parseInt(businessId, 10);
-      if (selectedUserIds.size) {
-        payload.user_ids = Array.from(selectedUserIds);
-      }
-    } else if (selectedUserIds.size) {
-      payload.user_ids = Array.from(selectedUserIds);
+    if (!businessId) {
+      throw new Error("Business ID is required.");
     }
-
-    const dataJson = formData.get("data_json")?.trim();
-    if (dataJson) {
-      try {
-        payload.data = JSON.parse(dataJson);
-      } catch (err) {
-        throw new Error("Optional custom data must be valid JSON.");
-      }
+    payload.business_id = parseInt(businessId, 10);
+    
+    if (selectedUserIds.size) {
+      payload.user_ids = Array.from(selectedUserIds);
     }
 
     return payload;
@@ -338,12 +259,23 @@
     previewButton.addEventListener("click", (e) => {
       e.preventDefault();
       try {
-        const data = buildPayload(new FormData(form));
+        const formData = new FormData(form);
+        const title = formData.get("title")?.trim();
+        const body = formData.get("body")?.trim();
+        
+        if (!title || !body) {
+          showStatus(`<div class="font-semibold text-lg mb-2">Validation error</div><p>Title and body are required.</p>`, "error");
+          return;
+        }
+        
+        const recipientCount = selectedUserIds.size || (customersByBusiness[currentBusinessId] || []).length;
         showStatus(`
           <div class="font-semibold text-lg mb-2">Preview</div>
-          <div class="text-white text-base mb-1">${data.title}</div>
-          <div class="text-slate-100 text-sm mb-2">${data.body}</div>
-          <pre class="text-xs bg-black/30 p-3 rounded-xl border border-white/10">${JSON.stringify(data, null, 2)}</pre>
+          <div class="text-white text-base mb-1 font-semibold">${title}</div>
+          <div class="text-slate-100 text-sm mb-3">${body}</div>
+          <div class="text-xs text-slate-300 pt-2 border-t border-white/10">
+            Will be sent to ${recipientCount} recipient(s)
+          </div>
         `, "success");
       } catch (err) {
         showStatus(`<div class="font-semibold text-lg mb-2">Validation error</div><p>${err.message}</p>`, "error");
@@ -375,10 +307,10 @@
           throw new Error(data.detail || data.error || "Failed to send notification.");
         }
 
+        // Success message in English with green color
         showStatus(`
-          <div class="font-semibold text-lg mb-1">Notification sent 🎉</div>
-          <p class="text-sm text-slate-100 mb-1">Audience: <strong>${data.audience}</strong></p>
-          <p class="text-sm text-slate-100">Delivered to <strong>${data.sent}</strong> registered devices.</p>
+          <div class="font-semibold text-lg mb-2">✅ Notification sent successfully!</div>
+          <p class="text-sm text-slate-100">Delivered to <strong>${data.sent || 0}</strong> registered device(s).</p>
         `, "success");
       } catch (err) {
         showStatus(`
