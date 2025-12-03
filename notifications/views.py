@@ -307,11 +307,28 @@ class SendNotificationView(APIView):
             extra_data.setdefault("business_id", str(business.id))
             extra_data.setdefault("business_name", business.name)
 
-        send_push_to_tokens(tokens, title, body, data=extra_data)
+        # Send notifications with error handling
+        sent_count = 0
+        try:
+            send_push_to_tokens(tokens, title, body, data=extra_data)
+            sent_count = len(tokens)
+        except Exception as e:
+            # Log the error but don't fail the request
+            import traceback
+            print(f"Error sending push notifications: {e}")
+            print(traceback.format_exc())
+            # Try to send individually as fallback
+            for token in tokens:
+                try:
+                    send_push_notification(token, title, body, data=extra_data)
+                    sent_count += 1
+                except Exception as e2:
+                    print(f"Error sending to token {token[:20]}...: {e2}")
+                    continue
 
         return Response(
             {
-                "sent": len(tokens),
+                "sent": sent_count,
                 "audience": audience,
                 "business_id": business.id if business else None,
             },

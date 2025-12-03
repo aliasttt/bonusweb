@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Notifications{% endblock %}
 {% block content %}
-{{ business_customers_json|json_script:"business-customers" }}
+<script id="business-customers" type="application/json">{{ business_customers_json|safe }}</script>
 <div class="max-w-6xl mx-auto px-4 py-12">
   <div class="mb-8">
     <a href="/partners/dashboard/" class="inline-flex items-center px-4 py-2 rounded-md border border-white/20 bg-white/5 hover:bg-white/10 transition text-slate-200 mb-4">← Back to Dashboard</a>
@@ -111,63 +111,88 @@
   let customersByBusiness = {};
   if (customerDataEl) {
     try {
-      const jsonText = customerDataEl.textContent || "{}";
+      let jsonText = customerDataEl.textContent || "{}";
       console.log("DEBUG: Raw JSON text =", jsonText);
       console.log("DEBUG: JSON text type =", typeof jsonText);
+      console.log("DEBUG: JSON text length =", jsonText.length);
       
-      // Try to parse JSON
-      const parsed = JSON.parse(jsonText);
-      console.log("DEBUG: Parsed data =", parsed);
-      console.log("DEBUG: Parsed data type =", typeof parsed);
-      console.log("DEBUG: Is array?", Array.isArray(parsed));
-      console.log("DEBUG: Is object?", typeof parsed === "object" && parsed !== null);
-      
-      // Accept both objects and arrays (though we expect an object)
-      // Check if parsed is a valid object (not null, not array, is object type)
-      const isValidObject = parsed !== null && typeof parsed === "object" && !Array.isArray(parsed);
-      const isValidArray = Array.isArray(parsed);
-      
-      console.log("DEBUG: isValidObject =", isValidObject);
-      console.log("DEBUG: isValidArray =", isValidArray);
-      
-      if (isValidObject || isValidArray) {
-        // If it's an array, convert to object with default key
-        if (isValidArray) {
-          console.warn("DEBUG: Parsed data is an array, converting to object");
-          customersByBusiness = { "default": parsed };
-        } else {
-          // It's an object, use it directly
-          customersByBusiness = parsed;
-          console.log("DEBUG: Using parsed object directly");
-        }
+      // If it's already a string that looks like JSON, try to parse it
+      // Sometimes Django json_script escapes the JSON, so we need to handle that
+      if (typeof jsonText === "string") {
+        // Remove any HTML entities or extra escaping
+        jsonText = jsonText.trim();
         
-        // Ensure all values are arrays
-        for (const key in customersByBusiness) {
-          if (!Array.isArray(customersByBusiness[key])) {
-            console.warn(`DEBUG: Converting ${key} from ${typeof customersByBusiness[key]} to array`);
-            // If it's a string, try to parse it again
-            if (typeof customersByBusiness[key] === "string") {
-              try {
-                customersByBusiness[key] = JSON.parse(customersByBusiness[key]);
-              } catch (e) {
-                console.error(`DEBUG: Failed to parse ${key} as JSON:`, e);
-                customersByBusiness[key] = [];
-              }
-            } else {
-              customersByBusiness[key] = [];
-            }
-            // Ensure it's still an array after conversion
-            if (!Array.isArray(customersByBusiness[key])) {
-              customersByBusiness[key] = [];
-            }
+        // Try to parse directly
+        let parsed;
+        try {
+          parsed = JSON.parse(jsonText);
+        } catch (e) {
+          // If direct parse fails, it might be double-encoded
+          console.warn("DEBUG: First parse failed, trying to unescape:", e);
+          try {
+            // Try parsing again (in case it's double-encoded)
+            parsed = JSON.parse(JSON.parse(jsonText));
+          } catch (e2) {
+            console.error("DEBUG: Both parse attempts failed:", e2);
+            throw e;
           }
         }
-        console.log("DEBUG: Successfully processed customersByBusiness");
+        
+        console.log("DEBUG: Parsed data =", parsed);
+        console.log("DEBUG: Parsed data type =", typeof parsed);
+        console.log("DEBUG: Is array?", Array.isArray(parsed));
+        console.log("DEBUG: Is object?", typeof parsed === "object" && parsed !== null);
+        
+        // Accept both objects and arrays (though we expect an object)
+        // Check if parsed is a valid object (not null, not array, is object type)
+        const isValidObject = parsed !== null && typeof parsed === "object" && !Array.isArray(parsed);
+        const isValidArray = Array.isArray(parsed);
+        
+        console.log("DEBUG: isValidObject =", isValidObject);
+        console.log("DEBUG: isValidArray =", isValidArray);
+        
+        if (isValidObject || isValidArray) {
+          // If it's an array, convert to object with default key
+          if (isValidArray) {
+            console.warn("DEBUG: Parsed data is an array, converting to object");
+            customersByBusiness = { "default": parsed };
+          } else {
+            // It's an object, use it directly
+            customersByBusiness = parsed;
+            console.log("DEBUG: Using parsed object directly");
+          }
+          
+          // Ensure all values are arrays
+          for (const key in customersByBusiness) {
+            if (!Array.isArray(customersByBusiness[key])) {
+              console.warn(`DEBUG: Converting ${key} from ${typeof customersByBusiness[key]} to array`);
+              // If it's a string, try to parse it again
+              if (typeof customersByBusiness[key] === "string") {
+                try {
+                  customersByBusiness[key] = JSON.parse(customersByBusiness[key]);
+                } catch (e) {
+                  console.error(`DEBUG: Failed to parse ${key} as JSON:`, e);
+                  customersByBusiness[key] = [];
+                }
+              } else {
+                customersByBusiness[key] = [];
+              }
+              // Ensure it's still an array after conversion
+              if (!Array.isArray(customersByBusiness[key])) {
+                customersByBusiness[key] = [];
+              }
+            }
+          }
+          console.log("DEBUG: Successfully processed customersByBusiness");
+        } else {
+          console.error("DEBUG: Parsed data is not an object or array!", parsed);
+          console.error("DEBUG: parsed type =", typeof parsed);
+          console.error("DEBUG: parsed is null =", parsed === null);
+          customersByBusiness = {};
+        }
       } else {
-        console.error("DEBUG: Parsed data is not an object or array!", parsed);
-        console.error("DEBUG: parsed type =", typeof parsed);
-        console.error("DEBUG: parsed is null =", parsed === null);
-        customersByBusiness = {};
+        // If it's not a string, use it directly
+        customersByBusiness = jsonText;
       }
     } catch (error) {
       console.error("DEBUG: Error parsing JSON:", error);
@@ -532,9 +557,21 @@
           body: JSON.stringify(payload),
         });
 
-        const data = await response.json();
+        // Check if response is JSON
+        const contentType = response.headers.get("content-type");
+        let data;
+        
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          // If it's not JSON (probably HTML error page), get text
+          const text = await response.text();
+          console.error("DEBUG: Response is not JSON:", text.substring(0, 200));
+          throw new Error(`Server error (${response.status}): ${response.statusText}. Please check server logs.`);
+        }
+        
         if (!response.ok) {
-          throw new Error(data.detail || data.error || "Failed to send notification.");
+          throw new Error(data.detail || data.error || `Failed to send notification (${response.status}).`);
         }
 
         // Success message in English with green color
