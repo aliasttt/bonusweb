@@ -106,7 +106,58 @@
   const clearAllBtn = document.getElementById("clearAllBtn");
   const previewButton = document.getElementById("previewButton");
   const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]")?.value;
-  const customersByBusiness = customerDataEl ? JSON.parse(customerDataEl.textContent || "{}") : {};
+  
+  // Parse customers data with error handling
+  let customersByBusiness = {};
+  if (customerDataEl) {
+    try {
+      const jsonText = customerDataEl.textContent || "{}";
+      console.log("DEBUG: Raw JSON text =", jsonText);
+      console.log("DEBUG: JSON text type =", typeof jsonText);
+      
+      // Try to parse JSON
+      const parsed = JSON.parse(jsonText);
+      console.log("DEBUG: Parsed data =", parsed);
+      console.log("DEBUG: Parsed data type =", typeof parsed);
+      
+      // Ensure it's an object
+      if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+        customersByBusiness = parsed;
+        
+        // Ensure all values are arrays
+        for (const key in customersByBusiness) {
+          if (!Array.isArray(customersByBusiness[key])) {
+            console.warn(`DEBUG: Converting ${key} from ${typeof customersByBusiness[key]} to array`);
+            // If it's a string, try to parse it again
+            if (typeof customersByBusiness[key] === "string") {
+              try {
+                customersByBusiness[key] = JSON.parse(customersByBusiness[key]);
+              } catch (e) {
+                console.error(`DEBUG: Failed to parse ${key} as JSON:`, e);
+                customersByBusiness[key] = [];
+              }
+            } else {
+              customersByBusiness[key] = [];
+            }
+            // Ensure it's still an array after conversion
+            if (!Array.isArray(customersByBusiness[key])) {
+              customersByBusiness[key] = [];
+            }
+          }
+        }
+      } else {
+        console.error("DEBUG: Parsed data is not an object!", parsed);
+        customersByBusiness = {};
+      }
+    } catch (error) {
+      console.error("DEBUG: Error parsing JSON:", error);
+      console.error("DEBUG: JSON text was:", customerDataEl.textContent);
+      customersByBusiness = {};
+    }
+  }
+  
+  console.log("DEBUG: Final customersByBusiness =", customersByBusiness);
+  
   let selectedUserIds = new Set();
   let currentBusinessId = businessIdInput ? parseInt(businessIdInput.value, 10) : (Object.keys(customersByBusiness)[0] || null);
 
@@ -116,28 +167,50 @@
       console.log("DEBUG: currentBusinessId =", currentBusinessId);
       console.log("DEBUG: customersByBusiness =", customersByBusiness);
       
-    const list = customersByBusiness[currentBusinessId] || [];
+      let list = customersByBusiness[currentBusinessId];
       
-      // Debug: Check if list is array
+      // If list is undefined or null, return empty array
+      if (list === undefined || list === null) {
+        console.log("DEBUG: No customers for business", currentBusinessId);
+        return [];
+      }
+      
+      // If list is a string, try to parse it
+      if (typeof list === "string") {
+        console.warn("DEBUG: List is a string, trying to parse:", list);
+        try {
+          list = JSON.parse(list);
+        } catch (e) {
+          console.error("DEBUG: Failed to parse string as JSON:", e);
+          return [];
+        }
+      }
+      
+      // Ensure list is an array
       if (!Array.isArray(list)) {
         console.error("DEBUG ERROR: customersByBusiness[currentBusinessId] is not an array!", typeof list, list);
-        return [];
+        // Try to convert to array if it's an object
+        if (typeof list === "object" && list !== null) {
+          list = Object.values(list);
+        } else {
+          return [];
+        }
       }
       
       console.log("DEBUG: list length =", list.length);
       
-    const searchTerm = (customerSearch?.value || "").trim().toLowerCase();
-    if (!searchTerm) {
-      return list;
-    }
+      const searchTerm = (customerSearch?.value || "").trim().toLowerCase();
+      if (!searchTerm) {
+        return list;
+      }
       
       const filtered = list.filter((item) => {
-      return (
-        item.name?.toLowerCase().includes(searchTerm) ||
-        item.email?.toLowerCase().includes(searchTerm) ||
-        item.phone?.toLowerCase().includes(searchTerm)
-      );
-    });
+        return (
+          item.name?.toLowerCase().includes(searchTerm) ||
+          item.email?.toLowerCase().includes(searchTerm) ||
+          item.phone?.toLowerCase().includes(searchTerm)
+        );
+      });
       
       console.log("DEBUG: filtered length =", filtered.length);
       return filtered;
@@ -173,15 +246,37 @@
         return;
       }
       
-      const allCustomers = customersByBusiness[currentBusinessId] || [];
+      let allCustomers = customersByBusiness[currentBusinessId];
+      
+      // If undefined or null, set to empty array
+      if (allCustomers === undefined || allCustomers === null) {
+        allCustomers = [];
+      }
+      
+      // If it's a string, try to parse it
+      if (typeof allCustomers === "string") {
+        console.warn("DEBUG: allCustomers is a string, trying to parse:", allCustomers);
+        try {
+          allCustomers = JSON.parse(allCustomers);
+        } catch (e) {
+          console.error("DEBUG: Failed to parse allCustomers as JSON:", e);
+          allCustomers = [];
+        }
+      }
+      
+      // Ensure it's an array
+      if (!Array.isArray(allCustomers)) {
+        console.warn("DEBUG: allCustomers is not an array, converting:", typeof allCustomers, allCustomers);
+        // If it's an object, try to convert to array
+        if (typeof allCustomers === "object" && allCustomers !== null) {
+          allCustomers = Object.values(allCustomers);
+        } else {
+          allCustomers = [];
+        }
+      }
+      
       console.log("DEBUG: allCustomers =", allCustomers);
       console.log("DEBUG: allCustomers is array?", Array.isArray(allCustomers));
-      
-      if (!Array.isArray(allCustomers)) {
-        console.error("DEBUG ERROR: allCustomers is not an array!", typeof allCustomers, allCustomers);
-        customerList.innerHTML = `<div class="text-red-400 text-sm col-span-2">Error: Invalid customer data format. Check console for details.</div>`;
-        return;
-      }
       
       if (!allCustomers.length) {
         console.log("DEBUG: No customers found");
