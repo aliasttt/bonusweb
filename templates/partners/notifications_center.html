@@ -119,10 +119,27 @@
       const parsed = JSON.parse(jsonText);
       console.log("DEBUG: Parsed data =", parsed);
       console.log("DEBUG: Parsed data type =", typeof parsed);
+      console.log("DEBUG: Is array?", Array.isArray(parsed));
+      console.log("DEBUG: Is object?", typeof parsed === "object" && parsed !== null);
       
-      // Ensure it's an object
-      if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
-        customersByBusiness = parsed;
+      // Accept both objects and arrays (though we expect an object)
+      // Check if parsed is a valid object (not null, not array, is object type)
+      const isValidObject = parsed !== null && typeof parsed === "object" && !Array.isArray(parsed);
+      const isValidArray = Array.isArray(parsed);
+      
+      console.log("DEBUG: isValidObject =", isValidObject);
+      console.log("DEBUG: isValidArray =", isValidArray);
+      
+      if (isValidObject || isValidArray) {
+        // If it's an array, convert to object with default key
+        if (isValidArray) {
+          console.warn("DEBUG: Parsed data is an array, converting to object");
+          customersByBusiness = { "default": parsed };
+        } else {
+          // It's an object, use it directly
+          customersByBusiness = parsed;
+          console.log("DEBUG: Using parsed object directly");
+        }
         
         // Ensure all values are arrays
         for (const key in customersByBusiness) {
@@ -145,8 +162,11 @@
             }
           }
         }
+        console.log("DEBUG: Successfully processed customersByBusiness");
       } else {
-        console.error("DEBUG: Parsed data is not an object!", parsed);
+        console.error("DEBUG: Parsed data is not an object or array!", parsed);
+        console.error("DEBUG: parsed type =", typeof parsed);
+        console.error("DEBUG: parsed is null =", parsed === null);
         customersByBusiness = {};
       }
     } catch (error) {
@@ -199,18 +219,18 @@
       
       console.log("DEBUG: list length =", list.length);
       
-      const searchTerm = (customerSearch?.value || "").trim().toLowerCase();
-      if (!searchTerm) {
-        return list;
-      }
+    const searchTerm = (customerSearch?.value || "").trim().toLowerCase();
+    if (!searchTerm) {
+      return list;
+    }
       
       const filtered = list.filter((item) => {
-        return (
-          item.name?.toLowerCase().includes(searchTerm) ||
-          item.email?.toLowerCase().includes(searchTerm) ||
-          item.phone?.toLowerCase().includes(searchTerm)
-        );
-      });
+      return (
+        item.name?.toLowerCase().includes(searchTerm) ||
+        item.email?.toLowerCase().includes(searchTerm) ||
+        item.phone?.toLowerCase().includes(searchTerm)
+      );
+    });
       
       console.log("DEBUG: filtered length =", filtered.length);
       return filtered;
@@ -508,6 +528,7 @@
             "Content-Type": "application/json",
             "X-CSRFToken": csrfToken || "",
           },
+          credentials: "same-origin",
           body: JSON.stringify(payload),
         });
 
