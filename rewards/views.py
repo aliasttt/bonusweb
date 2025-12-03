@@ -313,6 +313,20 @@ class RedeemableProductsView(APIView):
         if request.user.is_authenticated:
             try:
                 customer, _ = Customer.objects.get_or_create(user=request.user)
+                
+                # محاسبه total_points از تاریخچه تراکنش‌ها (واقعی)
+                from rewards.models import PointsTransaction
+                all_points_transactions = PointsTransaction.objects.filter(wallet__customer=customer)
+                total_points = all_points_transactions.aggregate(
+                    total=Sum("points")
+                ).get("total") or 0
+                
+                # اگر total_points 0 است و هیچ تراکنشی وجود ندارد، از Wallet.points_balance استفاده کن
+                if total_points == 0 and not all_points_transactions.exists():
+                    all_wallets = Wallet.objects.filter(customer=customer)
+                    total_points = sum(w.points_balance for w in all_wallets) or 0
+                
+                # برای business های موجود در products، wallets را بگیر
                 wallets = Wallet.objects.filter(customer=customer).select_related("business")
                 
                 # اگر Wallet برای business های موجود وجود ندارد، ایجاد کن با 200 points
@@ -323,20 +337,56 @@ class RedeemableProductsView(APIView):
                 for bid in missing_business_ids:
                     try:
                         business = Business.objects.get(id=bid)
-                        Wallet.objects.create(
+                        wallet, created = Wallet.objects.get_or_create(
                             customer=customer,
                             business=business,
-                            points_balance=200,
-                            reward_point_cost=business.reward_point_cost or 100
+                            defaults={
+                                'points_balance': 200,
+                                'reward_point_cost': business.reward_point_cost or 100
+                            }
                         )
+                        # اگر wallet از قبل وجود داشت اما points_balance 0 است، آن را به 200 تنظیم کن
+                        if not created and wallet.points_balance == 0:
+                            wallet.points_balance = 200
+                            wallet.save(update_fields=['points_balance'])
+                            # total_points را دوباره محاسبه کن
+                            all_wallets = Wallet.objects.filter(customer=customer)
+                            total_points = sum(w.points_balance for w in all_wallets) or 0
                     except Business.DoesNotExist:
                         pass
                 
                 # دوباره wallets را بگیر (شامل wallet های جدید)
                 wallets = Wallet.objects.filter(customer=customer).select_related("business")
-                user_points = {w.business_id: w.points_balance for w in wallets}
-                total_points = sum(user_points.values())
-            except Exception:
+                
+                # محاسبه user_points از PointsTransaction برای هر business (واقعی)
+                user_points = {}
+                for wallet in wallets:
+                    # محاسبه balance از PointsTransaction
+                    wallet_points = PointsTransaction.objects.filter(wallet=wallet).aggregate(
+                        total=Sum("points")
+                    ).get("total") or 0
+                    
+                    # اگر هیچ تراکنشی وجود ندارد، از wallet.points_balance استفاده کن
+                    if wallet_points == 0:
+                        wallet_points = wallet.points_balance or 0
+                    
+                    user_points[wallet.business_id] = wallet_points
+                
+                # دوباره total_points را از تاریخچه تراکنش‌ها محاسبه کن (واقعی)
+                all_points_transactions = PointsTransaction.objects.filter(wallet__customer=customer)
+                total_points = all_points_transactions.aggregate(
+                    total=Sum("points")
+                ).get("total") or 0
+                
+                # اگر total_points 0 است و هیچ تراکنشی وجود ندارد، از Wallet.points_balance استفاده کن
+                if total_points == 0 and not all_points_transactions.exists():
+                    all_wallets = Wallet.objects.filter(customer=customer)
+                    total_points = sum(w.points_balance for w in all_wallets) or 0
+                
+            except Exception as e:
+                import traceback
+                print(f"Error in RedeemableProductsView: {e}")
+                print(traceback.format_exc())
                 pass
 
         items = []
@@ -344,23 +394,30 @@ class RedeemableProductsView(APIView):
             business = p.business
             business_points = user_points.get(business.id, 0) if request.user.is_authenticated else 0
             
-            # اگر Wallet وجود ندارد، ایجاد کن با 200 points
-            if request.user.is_authenticated and business.id not in user_points:
+            # اگر Wallet وجود ندارد یا business_points 0 است، از PointsTransaction محاسبه کن
+            if request.user.is_authenticated:
                 try:
                     customer, _ = Customer.objects.get_or_create(user=request.user)
-                    Wallet.objects.get_or_create(
+                    wallet, created = Wallet.objects.get_or_create(
                         customer=customer,
                         business=business,
                         defaults={
-                            'points_balance': 200,
+                            'points_balance': 0,
                             'reward_point_cost': business.reward_point_cost or 100
                         }
                     )
-                    # دوباره business_points را بگیر
-                    wallet = Wallet.objects.filter(customer=customer, business=business).first()
-                    if wallet:
-                        business_points = wallet.points_balance
-                        user_points[business.id] = business_points
+                    
+                    # محاسبه business_points از PointsTransaction (واقعی)
+                    wallet_points = PointsTransaction.objects.filter(wallet=wallet).aggregate(
+                        total=Sum("points")
+                    ).get("total") or 0
+                    
+                    # اگر هیچ تراکنشی وجود ندارد، از wallet.points_balance استفاده کن
+                    if wallet_points == 0:
+                        wallet_points = wallet.points_balance or 0
+                    
+                    business_points = wallet_points
+                    user_points[business.id] = business_points
                 except Exception:
                     pass
             
@@ -388,6 +445,7 @@ class RedeemableProductsView(APIView):
         }
         
         if request.user.is_authenticated:
+            # total_points از تاریخچه تراکنش‌ها محاسبه شده است (واقعی)
             response_data["total_points"] = total_points
 
         return Response(response_data, status=status.HTTP_200_OK)

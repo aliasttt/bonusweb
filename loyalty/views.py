@@ -84,10 +84,19 @@ class UserDashboardView(APIView):
                 points__lt=0
             ).aggregate(total=Sum("points")).get("total") or 0)
             
-            # موجودی فعلی امتیازها
-            total_points_balance = Wallet.objects.filter(customer=customer).aggregate(
-                total=Sum("points_balance")
+            # موجودی فعلی امتیازها - محاسبه از تاریخچه تراکنش‌ها (واقعی)
+            from rewards.models import PointsTransaction
+            
+            # محاسبه total_points_balance از مجموع همه PointsTransaction
+            all_points_transactions = PointsTransaction.objects.filter(wallet__customer=customer)
+            total_points_balance = all_points_transactions.aggregate(
+                total=Sum("points")
             ).get("total") or 0
+            
+            # اگر total_points_balance 0 است و هیچ تراکنشی وجود ندارد، از Wallet.points_balance استفاده کن
+            if total_points_balance == 0 and not all_points_transactions.exists():
+                wallets = Wallet.objects.filter(customer=customer)
+                total_points_balance = sum(w.points_balance for w in wallets) or 0
             
             # تعداد business هایی که کاربر در آن‌ها فعال است
             active_businesses_count = Wallet.objects.filter(customer=customer).count()
