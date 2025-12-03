@@ -11,6 +11,7 @@ urlpatterns = [
     path("businesses/", views.BusinessListView.as_view(), name="business_list"),
     path("products/", views.ProductListView.as_view(), name="product_list"),
     path("wallet/", views.MyWalletView.as_view(), name="wallet"),
+    path("dashboard/", views.UserDashboardView.as_view(), name="user_dashboard"),
     path("scan/", views.ScanStampView.as_view(), name="scan"),
     path("redeem/", views.RedeemView.as_view(), name="redeem"),
     path("points/history/", views.PointsHistoryView.as_view(), name="points_history"),

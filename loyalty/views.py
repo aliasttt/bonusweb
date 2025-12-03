@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Business, Product, Customer, Wallet, Transaction, Slider, Favorite
+from payments.models import Order
 from reviews.models import Review, Service
 from .serializers import (
     BusinessSerializer,
@@ -53,6 +54,64 @@ class ProductListView(generics.ListAPIView):
     queryset = Product.objects.filter(active=True)
     serializer_class = ProductSerializer
     permission_classes = [permissions.AllowAny]
+
+
+class UserDashboardView(APIView):
+    """
+    Dashboard API برای نمایش اطلاعات کاربر در اپلیکیشن موبایل
+    شامل: تعداد سفارش‌ها، مجموع امتیازهای کسب شده، موجودی فعلی و...
+    GET /api/v1/loyalty/dashboard/
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        try:
+            customer, _ = Customer.objects.get_or_create(user=request.user)
+            
+            # محاسبه تعداد سفارش‌ها
+            total_orders = Order.objects.filter(user=request.user, status=Order.Status.PAID).count()
+            
+            # محاسبه مجموع امتیازهای کسب شده
+            from rewards.models import PointsTransaction
+            total_points_earned = PointsTransaction.objects.filter(
+                wallet__customer=customer,
+                points__gt=0
+            ).aggregate(total=Sum("points")).get("total") or 0
+            
+            # محاسبه مجموع امتیازهای خرج شده
+            total_points_redeemed = abs(PointsTransaction.objects.filter(
+                wallet__customer=customer,
+                points__lt=0
+            ).aggregate(total=Sum("points")).get("total") or 0)
+            
+            # موجودی فعلی امتیازها
+            total_points_balance = Wallet.objects.filter(customer=customer).aggregate(
+                total=Sum("points_balance")
+            ).get("total") or 0
+            
+            # تعداد business هایی که کاربر در آن‌ها فعال است
+            active_businesses_count = Wallet.objects.filter(customer=customer).count()
+            
+            # مجموع مبلغ خریدها (به یورو)
+            total_spent_cents = Order.objects.filter(
+                user=request.user,
+                status=Order.Status.PAID
+            ).aggregate(total=Sum("amount_cents")).get("total") or 0
+            total_spent_eur = round(total_spent_cents / 100.0, 2)
+            
+            return Response({
+                "total_orders": total_orders,
+                "total_points_earned": total_points_earned,
+                "total_points_redeemed": total_points_redeemed,
+                "total_points_balance": total_points_balance,
+                "active_businesses_count": active_businesses_count,
+                "total_spent_eur": total_spent_eur,
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": str(e), "detail": "An error occurred while fetching dashboard data."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class MyWalletView(APIView):
@@ -203,6 +262,15 @@ class PointsHistoryView(APIView):
         elif tx_type == "redeemed":
             tx_qs = tx_qs.filter(amount__lt=0)
 
+        # محاسبه total_points_earned و total_points_redeemed
+        from rewards.models import PointsTransaction
+        points_tx_qs = PointsTransaction.objects.filter(wallet__customer=customer)
+        if business_id:
+            points_tx_qs = points_tx_qs.filter(wallet__business_id=business_id)
+        
+        total_points_earned = points_tx_qs.filter(points__gt=0).aggregate(total=Sum("points")).get("total") or 0
+        total_points_redeemed = abs(points_tx_qs.filter(points__lt=0).aggregate(total=Sum("points")).get("total") or 0)
+
         count = tx_qs.count()
         items = tx_qs[offset:offset+limit]
 
@@ -222,6 +290,8 @@ class PointsHistoryView(APIView):
 
         return Response({
             "total_points": total_points,
+            "total_points_earned": total_points_earned,
+            "total_points_redeemed": total_points_redeemed,
             "transactions": transactions,
             "pagination": {
                 "count": count,
