@@ -314,6 +314,26 @@ class RedeemableProductsView(APIView):
             try:
                 customer, _ = Customer.objects.get_or_create(user=request.user)
                 wallets = Wallet.objects.filter(customer=customer).select_related("business")
+                
+                # اگر Wallet برای business های موجود وجود ندارد، ایجاد کن با 200 points
+                business_ids_in_products = set(p.business_id for p in products)
+                existing_business_ids = set(w.business_id for w in wallets)
+                missing_business_ids = business_ids_in_products - existing_business_ids
+                
+                for bid in missing_business_ids:
+                    try:
+                        business = Business.objects.get(id=bid)
+                        Wallet.objects.create(
+                            customer=customer,
+                            business=business,
+                            points_balance=200,
+                            reward_point_cost=business.reward_point_cost or 100
+                        )
+                    except Business.DoesNotExist:
+                        pass
+                
+                # دوباره wallets را بگیر (شامل wallet های جدید)
+                wallets = Wallet.objects.filter(customer=customer).select_related("business")
                 user_points = {w.business_id: w.points_balance for w in wallets}
                 total_points = sum(user_points.values())
             except Exception:
