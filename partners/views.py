@@ -163,13 +163,15 @@ def product_create(request):
     business = _get_active_business(request)
     if request.method == "POST" and business:
         title = request.POST.get("title", "").strip()
+        description = request.POST.get("description", "").strip()
         price_cents = int(request.POST.get("price_cents", "0") or 0)
         points_reward = int(request.POST.get("points_reward", "0") or 0)
         is_reward = request.POST.get("is_reward") == "1"
         image = request.FILES.get("image")
         Product.objects.create(
             business=business, 
-            title=title, 
+            title=title,
+            description=description,
             price_cents=price_cents, 
             points_reward=points_reward, 
             is_reward=is_reward,
@@ -190,6 +192,7 @@ def product_edit(request, pk: int):
         return redirect("products_list")
     if request.method == "POST":
         product.title = request.POST.get("title", product.title)
+        product.description = request.POST.get("description", product.description)
         product.price_cents = int(request.POST.get("price_cents", product.price_cents) or 0)
         product.points_reward = int(request.POST.get("points_reward", product.points_reward) or 0)
         product.is_reward = request.POST.get("is_reward") == "1"

@@ -73,6 +73,7 @@ class Customer(models.Model):
 class Product(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name="products")
     title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, help_text="Product description")
     price_cents = models.PositiveIntegerField(default=0)
     active = models.BooleanField(default=True)
     points_reward = models.PositiveIntegerField(default=0)
