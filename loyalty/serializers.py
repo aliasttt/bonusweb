@@ -154,12 +154,13 @@ class MenuProductSerializer(serializers.ModelSerializer):
     point = serializers.SerializerMethodField()
     stars = serializers.SerializerMethodField()
     reviews_count = serializers.SerializerMethodField()
+    is_reward = serializers.BooleanField(read_only=True)
     business_id = serializers.IntegerField(source="business.id", read_only=True)
     business_name = serializers.CharField(source="business.name", read_only=True)
     
     class Meta:
         model = Product
-        fields = ["id", "title", "description", "image", "price", "reward", "point", "stars", "reviews_count", "business_id", "business_name"]
+        fields = ["id", "title", "description", "image", "price", "reward", "point", "stars", "reviews_count", "is_reward", "business_id", "business_name"]
     
     def get_price(self, obj):
         """Return price in EUR (converted from cents)"""

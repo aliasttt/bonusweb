@@ -463,7 +463,7 @@ class SliderByBusinessView(APIView):
 
 
 class MenuListView(APIView):
-    """GET endpoint for menu - returns list of products with id, image, reward, point"""
+    """GET endpoint for menu - returns list of products separated into menu_items and reward_items"""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
@@ -483,8 +483,17 @@ class MenuListView(APIView):
             else:
                 products = Product.objects.filter(active=True)
             
-            serializer = MenuProductSerializer(products, many=True, context={'request': request})
-            return Response({"product": serializer.data}, status=status.HTTP_200_OK)
+            # جدا کردن منو و ریوارد
+            menu_items = products.filter(is_reward=False)
+            reward_items = products.filter(is_reward=True)
+            
+            menu_serializer = MenuProductSerializer(menu_items, many=True, context={'request': request})
+            reward_serializer = MenuProductSerializer(reward_items, many=True, context={'request': request})
+            
+            return Response({
+                "menu_items": menu_serializer.data,
+                "reward_items": reward_serializer.data
+            }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(
                 {"error": str(e), "detail": "An error occurred while fetching menu items."},
@@ -493,14 +502,24 @@ class MenuListView(APIView):
 
 
 class MenuByBusinessView(APIView):
-    """GET endpoint for menu by business_id - returns list of products for a specific business"""
+    """GET endpoint for menu by business_id - returns list of products separated into menu_items and reward_items"""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, business_id):
         try:
             products = Product.objects.filter(active=True, business_id=business_id)
-            serializer = MenuProductSerializer(products, many=True, context={'request': request})
-            return Response({"product": serializer.data}, status=status.HTTP_200_OK)
+            
+            # جدا کردن منو و ریوارد
+            menu_items = products.filter(is_reward=False)
+            reward_items = products.filter(is_reward=True)
+            
+            menu_serializer = MenuProductSerializer(menu_items, many=True, context={'request': request})
+            reward_serializer = MenuProductSerializer(reward_items, many=True, context={'request': request})
+            
+            return Response({
+                "menu_items": menu_serializer.data,
+                "reward_items": reward_serializer.data
+            }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(
                 {"error": str(e), "detail": "An error occurred while fetching menu items."},
