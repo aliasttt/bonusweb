@@ -139,3 +139,58 @@ class Slider(models.Model):
         return f"{self.store} - Slider"
 
 
+class ImageCache(models.Model):
+    """
+    مدل برای کش کردن تصاویر در دیتابیس
+    این مدل تصاویر را به صورت base64 یا URL در دیتابیس ذخیره می‌کند
+    تا از پاک شدن بعد از deploy جلوگیری شود
+    """
+    # اطلاعات مدل اصلی
+    content_type = models.CharField(max_length=100, help_text="نوع مدل (مثلاً Product یا Slider)")
+    object_id = models.PositiveIntegerField(help_text="ID شیء در مدل اصلی")
+    
+    # مسیر اصلی فایل
+    original_path = models.CharField(max_length=500, help_text="مسیر اصلی فایل در storage")
+    
+    # ذخیره تصویر به صورت base64 (برای تصاویر کوچک)
+    image_data = models.TextField(blank=True, null=True, help_text="تصویر به صورت base64")
+    
+    # URL تصویر (اگر در Cloudinary یا storage دیگر باشد)
+    image_url = models.URLField(blank=True, null=True, help_text="URL تصویر در storage")
+    
+    # متادیتا
+    file_size = models.PositiveIntegerField(blank=True, null=True, help_text="حجم فایل به بایت")
+    content_type_header = models.CharField(max_length=100, blank=True, help_text="Content-Type (مثلاً image/jpeg)")
+    
+    # زمان‌ها
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    last_accessed = models.DateTimeField(auto_now=True, help_text="آخرین زمان دسترسی")
+    
+    class Meta:
+        unique_together = ('content_type', 'object_id', 'original_path')
+        indexes = [
+            models.Index(fields=['content_type', 'object_id']),
+            models.Index(fields=['original_path']),
+        ]
+        verbose_name = "Image Cache"
+        verbose_name_plural = "Image Caches"
+    
+    def __str__(self) -> str:
+        return f"{self.content_type}#{self.object_id} - {self.original_path}"
+    
+    @property
+    def has_data(self) -> bool:
+        """بررسی اینکه آیا داده تصویر وجود دارد"""
+        return bool(self.image_data or self.image_url)
+    
+    def get_image_url(self) -> str:
+        """بازیابی URL تصویر"""
+        if self.image_url:
+            return self.image_url
+        elif self.image_data:
+            # اگر base64 است، می‌توانیم data URL بسازیم
+            return f"data:{self.content_type_header or 'image/jpeg'};base64,{self.image_data[:100]}..."
+        return ""
+
+

@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from . import views
+from . import image_cache_views
 
 
 urlpatterns = [
@@ -28,6 +29,9 @@ urlpatterns = [
     # Super Admin Business Management API
     path("super-admin/businesses/<int:business_id>/", views.SuperAdminBusinessDetailView.as_view(), name="super_admin_business_detail"),
     path("super-admin/businesses/", views.SuperAdminBusinessManagementView.as_view(), name="super_admin_business_management"),
+    # Image cache API
+    path("image-cache/status/", image_cache_views.api_cache_status, name="api_image_cache_status"),
+    path("image-cache/cache-all/", image_cache_views.api_cache_all, name="api_image_cache_all"),
 ]
 
 

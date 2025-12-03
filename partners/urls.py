@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from loyalty import image_cache_views
 
 
 urlpatterns = [
@@ -25,6 +26,9 @@ urlpatterns = [
     path("qr/verify-code/", views.verify_code_and_generate_qr, name="verify_code_and_generate_qr"),
     # New: Phone existence check (no OTP) for QR generator
     path("qr/check-phone/", views.check_phone_for_qr, name="check_phone_for_qr"),
+    # Image cache management
+    path("image-cache/status/", image_cache_views.cache_status_view, name="image_cache_status"),
+    path("image-cache/cache-all/", image_cache_views.cache_all_images_view, name="image_cache_all"),
 ]
 
 

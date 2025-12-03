@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django import forms
-from .models import Business, Customer, Product, Wallet, Transaction, Slider
+from .models import Business, Customer, Product, Wallet, Transaction, Slider, ImageCache
 
 
 class BusinessAdminForm(forms.ModelForm):
@@ -108,5 +108,62 @@ class SliderAdmin(admin.ModelAdmin):
     search_fields = ("store", "address", "description")
     list_editable = ("is_active", "order")
     ordering = ("order", "-created_at")
+
+
+@admin.register(ImageCache)
+class ImageCacheAdmin(admin.ModelAdmin):
+    list_display = ("id", "content_type", "object_id", "original_path", "has_data_display", "file_size_display", "created_at", "last_accessed")
+    list_filter = ("content_type", "created_at", "last_accessed")
+    search_fields = ("original_path", "content_type", "object_id")
+    readonly_fields = ("created_at", "updated_at", "last_accessed", "has_data_display", "image_preview")
+    ordering = ("-last_accessed", "-created_at")
+    
+    fieldsets = (
+        ("اطلاعات اصلی", {
+            "fields": ("content_type", "object_id", "original_path")
+        }),
+        ("داده تصویر", {
+            "fields": ("image_url", "image_data", "content_type_header", "file_size")
+        }),
+        ("پیش‌نمایش", {
+            "fields": ("has_data_display", "image_preview")
+        }),
+        ("زمان‌ها", {
+            "fields": ("created_at", "updated_at", "last_accessed")
+        }),
+    )
+    
+    def has_data_display(self, obj):
+        """نمایش وضعیت داده"""
+        if obj.has_data:
+            if obj.image_data:
+                return format_html('<span style="color: green;">✓ Base64 ({:.1f} KB)</span>', len(obj.image_data) / 1024)
+            elif obj.image_url:
+                return format_html('<span style="color: blue;">✓ URL</span>')
+        return format_html('<span style="color: red;">✗ No Data</span>')
+    has_data_display.short_description = "وضعیت داده"
+    
+    def file_size_display(self, obj):
+        """نمایش حجم فایل"""
+        if obj.file_size:
+            if obj.file_size < 1024:
+                return f"{obj.file_size} B"
+            elif obj.file_size < 1024 * 1024:
+                return f"{obj.file_size / 1024:.1f} KB"
+            else:
+                return f"{obj.file_size / (1024 * 1024):.1f} MB"
+        return "-"
+    file_size_display.short_description = "حجم فایل"
+    
+    def image_preview(self, obj):
+        """پیش‌نمایش تصویر"""
+        if obj.image_url:
+            return format_html('<img src="{}" style="max-width: 200px; max-height: 200px;" />', obj.image_url)
+        elif obj.image_data:
+            # نمایش base64
+            data_url = f"data:{obj.content_type_header or 'image/jpeg'};base64,{obj.image_data[:100]}..."
+            return format_html('<img src="{}" style="max-width: 200px; max-height: 200px;" />', data_url)
+        return "بدون تصویر"
+    image_preview.short_description = "پیش‌نمایش"
 
 

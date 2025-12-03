@@ -4,5 +4,9 @@ from django.apps import AppConfig
 class LoyaltyConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "loyalty"
+    
+    def ready(self):
+        """وارد کردن signal ها هنگام راه‌اندازی اپلیکیشن"""
+        import loyalty.signals  # noqa
 
 
