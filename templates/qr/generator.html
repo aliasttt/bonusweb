@@ -61,13 +61,20 @@
                                              class="img-thumbnail">
                                     </td>
                                     <td>
-                                        {% if qr.active %}
+                                        {% if qr.scanned_at %}
+                                            <span class="badge bg-warning">اسکن شده</span>
+                                        {% elif qr.active %}
                                             <span class="badge bg-success">Active</span>
                                         {% else %}
                                             <span class="badge bg-secondary">Inactive</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ qr.created_at|date:"Y/m/d H:i" }}</td>
+                                    <td>
+                                        {{ qr.created_at|date:"Y/m/d H:i" }}
+                                        {% if qr.scanned_at %}
+                                            <br><small class="text-muted">اسکن شده: {{ qr.scanned_at|date:"Y/m/d H:i" }}</small>
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <button class="btn btn-outline-primary" 

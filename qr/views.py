@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+from datetime import datetime
 
 import qrcode
 from django.http import HttpResponse
@@ -8,6 +9,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.utils import timezone
 from rest_framework import generics, permissions, status, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -39,6 +41,70 @@ class QRCodeImageView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, token: str):
+        # Check if QR code exists and is scanned
+        try:
+            qr_code_obj = QRCode.objects.get(token=token)
+            if qr_code_obj.scanned_at:
+                # QR code has been scanned - return success message as image
+                try:
+                    from PIL import Image, ImageDraw, ImageFont
+                    
+                    # Create a success message image
+                    width, height = 400, 300
+                    img = Image.new('RGB', (width, height), color='#28a745')
+                    draw = ImageDraw.Draw(img)
+                    
+                    # Try to use a nice font, fallback to default if not available
+                    try:
+                        font_large = ImageFont.truetype("arial.ttf", 32)
+                        font_small = ImageFont.truetype("arial.ttf", 18)
+                    except:
+                        try:
+                            font_large = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32)
+                            font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 18)
+                        except:
+                            font_large = ImageFont.load_default()
+                            font_small = ImageFont.load_default()
+                    
+                    # Draw success message
+                    message = "✓ موفقیت"
+                    submessage = "این QR کد قبلاً اسکن شده است"
+                    
+                    # Get text dimensions
+                    bbox_large = draw.textbbox((0, 0), message, font=font_large)
+                    text_width_large = bbox_large[2] - bbox_large[0]
+                    text_height_large = bbox_large[3] - bbox_large[1]
+                    
+                    bbox_small = draw.textbbox((0, 0), submessage, font=font_small)
+                    text_width_small = bbox_small[2] - bbox_small[0]
+                    text_height_small = bbox_small[3] - bbox_small[1]
+                    
+                    # Center text
+                    x_large = (width - text_width_large) // 2
+                    y_large = (height - text_height_large - text_height_small - 20) // 2
+                    x_small = (width - text_width_small) // 2
+                    y_small = y_large + text_height_large + 20
+                    
+                    # Draw text
+                    draw.text((x_large, y_large), message, fill='white', font=font_large)
+                    draw.text((x_small, y_small), submessage, fill='white', font=font_small)
+                    
+                    buffer = io.BytesIO()
+                    img.save(buffer, format="PNG")
+                    buffer.seek(0)
+                    return HttpResponse(buffer.getvalue(), content_type="image/png")
+                except ImportError:
+                    # If PIL is not available, create a simple SVG success message
+                    svg_content = f'''<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="400" height="300" fill="#28a745"/>
+                        <text x="200" y="130" font-family="Arial" font-size="32" fill="white" text-anchor="middle">✓ موفقیت</text>
+                        <text x="200" y="170" font-family="Arial" font-size="18" fill="white" text-anchor="middle">این QR کد قبلاً اسکن شده است</text>
+                    </svg>'''
+                    return HttpResponse(svg_content, content_type="image/svg+xml")
+        except QRCode.DoesNotExist:
+            pass
+        
+        # Generate QR code image
         qr = qrcode.QRCode(version=1, box_size=10, border=2)
         qr.add_data(token)
         qr.make(fit=True)
@@ -56,7 +122,17 @@ class QRCodeValidateView(APIView):
         token = request.data.get("token")
         qr = QRCode.objects.filter(token=token, active=True).select_related("business", "campaign").first()
         if not qr:
-            return Response({"valid": False})
+            return Response({"valid": False, "error": "QR code not found or inactive"})
+        
+        # Check if QR code has already been scanned
+        if qr.scanned_at:
+            return Response({
+                "valid": False,
+                "error": "این QR کد قبلاً اسکن شده است",
+                "scanned": True,
+                "scanned_at": qr.scanned_at
+            })
+        
         return Response({
             "valid": True,
             "business_id": qr.business_id,
@@ -79,7 +155,7 @@ def qr_generator_view(request):
         return render(request, 'qr/no_business.html')
     
     business = request.user.business
-    qr_codes = QRCode.objects.filter(business=business, active=True).order_by('-created_at')
+    qr_codes = QRCode.objects.filter(business=business).order_by('-created_at')
     
     return render(request, 'qr/generator.html', {
         'business': business,
@@ -111,6 +187,14 @@ def process_qr_payment(request):
     except QRCode.DoesNotExist:
         return Response({'error': 'Invalid QR code'}, status=status.HTTP_404_NOT_FOUND)
     
+    # Check if QR code has already been scanned
+    if qr_code.scanned_at:
+        return Response({
+            'error': 'این QR کد قبلاً اسکن شده است',
+            'scanned': True,
+            'scanned_at': qr_code.scanned_at
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
     # Verify business password if provided
     if business_password and qr_code.business.has_password():
         if not qr_code.business.check_password(business_password):
@@ -137,6 +221,10 @@ def process_qr_payment(request):
     wallet.points_balance += max(amount, 0)
     wallet.reward_point_cost = wallet.reward_point_cost or qr_code.business.reward_point_cost
     wallet.save(update_fields=["points_balance", "reward_point_cost", "updated_at"])
+    
+    # Mark QR code as scanned
+    qr_code.scanned_at = timezone.now()
+    qr_code.save(update_fields=["scanned_at"])
     
     # Check if customer reached reward threshold
     reward_cost = wallet.reward_point_cost or qr_code.business.reward_point_cost

@@ -6,5 +6,5 @@ from .models import QRCode
 class QRCodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = QRCode
-        fields = ["id", "business", "campaign", "token", "active", "created_at"]
-        read_only_fields = ["token", "created_at"]
+        fields = ["id", "business", "campaign", "token", "active", "created_at", "scanned_at"]
+        read_only_fields = ["token", "created_at", "scanned_at"]

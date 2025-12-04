@@ -65,6 +65,15 @@ class QRScanAwardPointsView(APIView):
         qr = QRCode.objects.filter(token=token, active=True).select_related("business", "campaign").first()
         if not qr:
             return Response({"detail": "invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if QR code has already been scanned
+        if qr.scanned_at:
+            return Response({
+                "detail": "این QR کد قبلاً اسکن شده است",
+                "scanned": True,
+                "scanned_at": qr.scanned_at
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         customer, _ = Customer.objects.get_or_create(user=request.user)
         wallet, _ = Wallet.objects.select_for_update().get_or_create(
             customer=customer,
@@ -76,6 +85,12 @@ class QRScanAwardPointsView(APIView):
         wallet.points_balance += points
         wallet.save(update_fields=["points_balance", "reward_point_cost", "updated_at"])
         PointsTransaction.objects.create(wallet=wallet, campaign=qr.campaign, points=points, note="scan")
+        
+        # Mark QR code as scanned
+        from django.utils import timezone
+        qr.scanned_at = timezone.now()
+        qr.save(update_fields=["scanned_at"])
+        
         return Response({"awarded": points, "points_balance": wallet.points_balance})
 
 

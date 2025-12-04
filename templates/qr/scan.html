@@ -187,7 +187,11 @@ function processToken(token) {
             currentBusinessId = data.business_id;
             showPaymentForm(data);
         } else {
-            alert('Invalid QR code');
+            if (data.scanned) {
+                alert('این QR کد قبلاً اسکن شده است و دیگر قابل استفاده نیست.');
+            } else {
+                alert('Invalid QR code');
+            }
         }
     })
     .catch(error => {

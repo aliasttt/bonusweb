@@ -13,6 +13,7 @@ class QRCode(models.Model):
     token = models.CharField(max_length=64, unique=True, db_index=True)
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    scanned_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     @staticmethod
     def generate_token() -> str:
