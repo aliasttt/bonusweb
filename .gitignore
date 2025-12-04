@@ -47,3 +47,6 @@ Thumbs.db
 
 # Scalingo
 .scalingo/
+
+# Secrets and credentials
+service-account.json

@@ -50,15 +50,31 @@ def _load_credentials_from_env():
 
 def _ensure_init() -> None:
     global _initialized
-    if _initialized or not firebase_admin:
+    if _initialized:
+        print("DEBUG: Firebase already initialized")
+        return
+    
+    if not firebase_admin:
+        print("DEBUG: Firebase Admin SDK not installed (firebase-admin package missing)")
         return
 
     cred = _load_credentials_from_env()
     if not cred:
+        print("DEBUG: Firebase credentials not found. Check FIREBASE_CREDENTIALS_FILE, FIREBASE_CREDENTIALS_JSON, or FIREBASE_CREDENTIALS_BASE64")
+        print(f"DEBUG: FIREBASE_CREDENTIALS_FILE = {settings.FIREBASE_CREDENTIALS_FILE}")
+        print(f"DEBUG: FIREBASE_CREDENTIALS_JSON = {'SET' if settings.FIREBASE_CREDENTIALS_JSON else 'NOT SET'}")
+        print(f"DEBUG: FIREBASE_CREDENTIALS_BASE64 = {'SET' if settings.FIREBASE_CREDENTIALS_BASE64 else 'NOT SET'}")
         return
 
-    firebase_admin.initialize_app(cred)
-    _initialized = True
+    try:
+        firebase_admin.initialize_app(cred)
+        _initialized = True
+        print("DEBUG: Firebase Admin SDK initialized successfully")
+    except Exception as e:
+        print(f"DEBUG: Failed to initialize Firebase Admin SDK: {e}")
+        import traceback
+        print(traceback.format_exc())
+        raise
 
 
 def send_push_to_tokens(tokens: Iterable[str], title: str, body: str, data: dict | None = None):
@@ -67,9 +83,16 @@ def send_push_to_tokens(tokens: Iterable[str], title: str, body: str, data: dict
     Returns BatchResponse with success/failure details.
     """
     if not firebase_admin:
-        print("DEBUG: Firebase Admin SDK not available")
+        print("DEBUG: Firebase Admin SDK not available (firebase-admin package not installed)")
         return None
+    
     _ensure_init()
+    
+    # Check if initialization was successful
+    if not _initialized:
+        print("DEBUG: Firebase Admin SDK not initialized, cannot send notifications")
+        return None
+    
     if not tokens:
         print("DEBUG: No tokens provided")
         return None
