@@ -61,18 +61,45 @@ def _ensure_init() -> None:
     _initialized = True
 
 
-def send_push_to_tokens(tokens: Iterable[str], title: str, body: str, data: dict | None = None) -> None:
+def send_push_to_tokens(tokens: Iterable[str], title: str, body: str, data: dict | None = None):
+    """
+    Send push notifications to multiple tokens using Firebase Admin SDK.
+    Returns BatchResponse with success/failure details.
+    """
     if not firebase_admin:
-        return
+        print("DEBUG: Firebase Admin SDK not available")
+        return None
     _ensure_init()
     if not tokens:
-        return
+        print("DEBUG: No tokens provided")
+        return None
+    
+    token_list = list(tokens)
+    print(f"DEBUG: Sending to {len(token_list)} tokens via Firebase")
+    
     message = messaging.MulticastMessage(
-        tokens=list(tokens),
+        tokens=token_list,
         notification=messaging.Notification(title=title, body=body),
         data={k: str(v) for k, v in (data or {}).items()},
     )
-    messaging.send_multicast(message)
+    
+    try:
+        response = messaging.send_multicast(message)
+        print(f"DEBUG: Firebase BatchResponse - Success: {response.success_count}, Failure: {response.failure_count}")
+        
+        # Log details for each response
+        for idx, resp in enumerate(response.responses):
+            if resp.success:
+                print(f"DEBUG: Token {idx} ({token_list[idx][:20]}...): ✅ Success - Message ID: {resp.message_id}")
+            else:
+                print(f"DEBUG: Token {idx} ({token_list[idx][:20]}...): ❌ Failed - {resp.exception}")
+        
+        return response
+    except Exception as e:
+        print(f"DEBUG: Firebase send_multicast error: {e}")
+        import traceback
+        print(traceback.format_exc())
+        raise
 
 
 def send_push_notification(device_token: str, title: str, body: str, data: dict | None = None):

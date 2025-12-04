@@ -318,8 +318,15 @@ class SendNotificationView(APIView):
         # Send notifications with error handling
         sent_count = 0
         try:
-            send_push_to_tokens(tokens, title, body, data=extra_data)
-            sent_count = len(tokens)
+            response = send_push_to_tokens(tokens, title, body, data=extra_data)
+            if response:
+                # Use actual success count from Firebase response
+                sent_count = response.success_count
+                print(f"DEBUG: Firebase sent {sent_count} out of {len(tokens)} notifications successfully")
+            else:
+                # Fallback: assume all sent if no response (for backward compatibility)
+                sent_count = len(tokens)
+                print(f"DEBUG: No Firebase response, assuming all {sent_count} sent")
         except Exception as e:
             # Log the error but don't fail the request
             import traceback
