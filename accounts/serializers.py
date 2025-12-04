@@ -7,6 +7,40 @@ from rest_framework import serializers
 from .models import Profile, UserActivity, Business, EmailVerificationCode
 
 
+class SendOTPSerializer(serializers.Serializer):
+    """Serializer for sending OTP"""
+    phone = serializers.CharField(required=True, help_text="Phone number (supports European formats)")
+    
+    def validate_phone(self, value):
+        """Validate phone number format"""
+        phone = value.strip()
+        if not phone:
+            raise serializers.ValidationError("Phone number is required")
+        return phone
+
+
+class CheckOTPSerializer(serializers.Serializer):
+    """Serializer for verifying OTP"""
+    phone = serializers.CharField(required=True, help_text="Phone number")
+    code = serializers.CharField(required=True, min_length=4, max_length=10, help_text="OTP code")
+    
+    def validate_phone(self, value):
+        """Validate phone number format"""
+        phone = value.strip()
+        if not phone:
+            raise serializers.ValidationError("Phone number is required")
+        return phone
+    
+    def validate_code(self, value):
+        """Validate OTP code format"""
+        code = value.strip()
+        if not code:
+            raise serializers.ValidationError("OTP code is required")
+        if not code.isdigit():
+            raise serializers.ValidationError("OTP code must contain only digits")
+        return code
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -20,12 +54,12 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = [
-            "id", "user", "role", "phone", "business_name", "is_active",
+            "id", "user", "role", "phone", "phone_verified", "business_name", "is_active",
             "last_login_ip", "created_at", "updated_at", "business_type",
             "business_address", "business_phone", "total_logins", "last_activity",
             "interests"
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "last_login_ip", "total_logins", "last_activity"]
+        read_only_fields = ["id", "created_at", "updated_at", "last_login_ip", "total_logins", "last_activity", "phone_verified"]
 
 
 class RegisterSerializer(serializers.Serializer):

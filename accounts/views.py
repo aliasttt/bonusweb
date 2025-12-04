@@ -16,8 +16,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Profile, UserActivity, Business, EmailVerificationCode, PasswordResetCode
 from notifications.models import Device
 from django.conf import settings
-from .serializers import ProfileSerializer, RegisterSerializer, UserSerializer, UserActivitySerializer, BusinessSerializer
+from django.db import transaction
+from .serializers import (
+    ProfileSerializer, RegisterSerializer, UserSerializer, UserActivitySerializer, 
+    BusinessSerializer, SendOTPSerializer, CheckOTPSerializer
+)
 from .permissions import IsSuperUserRole, IsAdminRole, CanManageUsers, IsOwnerOrSuperUser
+from .twilio_utils import send_otp, check_otp, format_phone_number
 
 
 class LoginView(APIView):
@@ -884,3 +889,149 @@ class LogoutView(APIView):
             "tokens_revoked": tokens_revoked,
             "devices_removed": devices_removed
         }, status=status.HTTP_200_OK)
+
+
+class SendOTPView(APIView):
+    """
+    Send OTP code to phone number via Twilio SMS
+    POST /api/accounts/send-otp/
+    Body: {"phone": "+491234567890"}
+    
+    Supports European phone numbers
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        serializer = SendOTPSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response({
+                "success": False,
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        phone = serializer.validated_data['phone']
+        
+        # Format phone number
+        try:
+            formatted_phone = format_phone_number(phone)
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": f"Invalid phone number format: {str(e)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Send OTP via Twilio
+        result = send_otp(formatted_phone)
+        
+        if result['success']:
+            return Response({
+                "success": True,
+                "message": result['message'],
+                "status": result['status'],
+                "phone": formatted_phone
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "success": False,
+                "message": result['message'],
+                "status": result.get('status', 'error'),
+                "error_code": result.get('error_code')
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CheckOTPView(APIView):
+    """
+    Verify OTP code entered by user
+    POST /api/accounts/check-otp/
+    Body: {"phone": "+491234567890", "code": "123456"}
+    
+    If OTP is correct, marks phone as verified and completes registration
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    @transaction.atomic
+    def post(self, request):
+        serializer = CheckOTPSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response({
+                "success": False,
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        phone = serializer.validated_data['phone']
+        code = serializer.validated_data['code']
+        
+        # Format phone number
+        try:
+            formatted_phone = format_phone_number(phone)
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": f"Invalid phone number format: {str(e)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Verify OTP via Twilio
+        result = check_otp(formatted_phone, code)
+        
+        if not result['success']:
+            return Response({
+                "success": False,
+                "message": result['message'],
+                "status": result.get('status', 'error'),
+                "error_code": result.get('error_code')
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not result['approved']:
+            return Response({
+                "success": False,
+                "message": result['message'],
+                "approved": False
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # OTP is correct - mark phone as verified
+        # Find user by phone number
+        try:
+            profile = Profile.objects.get(phone=formatted_phone)
+            profile.phone_verified = True
+            profile.save(update_fields=['phone_verified'])
+            
+            user = profile.user
+            
+            # Log activity
+            try:
+                UserActivity.objects.create(
+                    user=user,
+                    activity_type=UserActivity.ActivityType.PROFILE_UPDATE,
+                    description=f"Phone number verified: {formatted_phone}",
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+            except Exception:
+                pass
+            
+            return Response({
+                "success": True,
+                "message": "Phone number verified successfully",
+                "approved": True,
+                "user_id": user.id,
+                "phone_verified": True
+            }, status=status.HTTP_200_OK)
+        
+        except Profile.DoesNotExist:
+            # Phone number not found in database
+            # This might be a new registration - return success but note that user needs to be created
+            return Response({
+                "success": True,
+                "message": "OTP verified successfully, but phone number not found in database. Please complete registration.",
+                "approved": True,
+                "phone_verified": False,
+                "requires_registration": True
+            }, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": f"Error updating phone verification: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

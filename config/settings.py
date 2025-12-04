@@ -256,6 +256,13 @@ UNSPLASH_ACCESS_TOKEN = os.environ.get("UNSPLASH_ACCESS_TOKEN", "")
 UNSPLASH_ACCESS_KEY = os.environ.get("UNSPLASH_ACCESS_KEY", "")  # Fallback for public API
 UNSPLASH_SECRET_KEY = os.environ.get("UNSPLASH_SECRET_KEY", "")
 
+# Twilio API for SMS OTP
+# IMPORTANT: Never commit actual credentials to git!
+# Set these via environment variables or .env file
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
+TWILIO_VERIFY_SERVICE_SID = os.environ.get("TWILIO_VERIFY_SERVICE_SID", "")
+
 
 # Audit logging toggle (enabled by default)
 AUDIT_LOGGING_ENABLED = os.environ.get("AUDIT_LOGGING_ENABLED", "1") == "1"

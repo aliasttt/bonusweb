@@ -15,6 +15,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     role = models.CharField(max_length=32, choices=Role.choices, default=Role.CUSTOMER)
     phone = models.CharField(max_length=32, blank=True)
+    phone_verified = models.BooleanField(default=False, help_text="Whether the phone number has been verified via OTP")
     business_name = models.CharField(max_length=200, blank=True)
     is_active = models.BooleanField(default=True)
     last_login_ip = models.GenericIPAddressField(null=True, blank=True)

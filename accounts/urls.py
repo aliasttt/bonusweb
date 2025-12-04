@@ -7,6 +7,7 @@ from .views import (
     UserActivityViewSet, BusinessManagementViewSet, DashboardStatsView,
     SendMobileView, VerifyEmailView, SendEmailCodeView,
     PasswordForgotView, PasswordVerifyView, PasswordResetView, LogoutView,
+    SendOTPView, CheckOTPView,
 )
 
 router = DefaultRouter()
@@ -26,6 +27,8 @@ urlpatterns = [
     re_path(r'^password/verify/?$', PasswordVerifyView.as_view(), name="password_verify"),
     re_path(r'^password/reset/?$', PasswordResetView.as_view(), name="password_reset"),
     re_path(r'^logout/?$', LogoutView.as_view(), name="logout"),
+    re_path(r'^send-otp/?$', SendOTPView.as_view(), name="send_otp"),
+    re_path(r'^check-otp/?$', CheckOTPView.as_view(), name="check_otp"),
     re_path(r'^me/?$', MeView.as_view(), name="me"),
     path("users/<int:user_id>/role/", SetRoleView.as_view(), name="set_role"),
     path("dashboard-stats/", DashboardStatsView.as_view(), name="dashboard-stats"),

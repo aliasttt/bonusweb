@@ -24,4 +24,5 @@ django-cloudinary-storage==0.3.0
 
 # External APIs
 requests==2.31.0
+twilio==9.3.0
 

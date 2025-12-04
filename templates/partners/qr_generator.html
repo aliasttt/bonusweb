@@ -123,6 +123,11 @@
                 <div id="qr-placeholder" class="py-16 text-gray-400 text-sm">
                   QR Code will appear here
                 </div>
+                <div id="qr-success" class="hidden py-16 bg-green-500 rounded-xl text-white">
+                  <div class="text-4xl mb-2">✓</div>
+                  <div class="text-lg font-semibold">Success!</div>
+                  <div class="text-sm mt-2">This QR code has been scanned</div>
+                </div>
               </div>
               <p class="mt-4 text-center text-xs text-gray-500 font-mono break-all" id="payload"></p>
           </div>
@@ -326,6 +331,54 @@
     document.getElementById('qr').src = dataUrl;
     document.getElementById('qr').style.display = 'block';
     document.getElementById('qr-placeholder').style.display = 'none';
+    document.getElementById('qr-success').classList.add('hidden');
+    
+    // Store payload data for checking status
+    window.currentQRPayload = {
+      business_id: biz,
+      customer_id: customerId,
+      product_ids: productIds
+    };
+    
+    // Periodically check if QR code has been scanned
+    if (window.qrCheckInterval) {
+      clearInterval(window.qrCheckInterval);
+    }
+    
+    window.qrCheckInterval = setInterval(async () => {
+      if (!window.currentQRPayload) return;
+      
+      try {
+        const response = await fetch('/api/v1/rewards/check-qr-status/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify(window.currentQRPayload)
+        });
+        
+        const data = await response.json();
+        
+        if (data.scanned) {
+          // QR code has been scanned - hide QR and show success message
+          document.getElementById('qr').style.display = 'none';
+          document.getElementById('qr-placeholder').style.display = 'none';
+          document.getElementById('qr-success').classList.remove('hidden');
+          
+          // Clear interval
+          if (window.qrCheckInterval) {
+            clearInterval(window.qrCheckInterval);
+            window.qrCheckInterval = null;
+          }
+          
+          // Clear payload
+          window.currentQRPayload = null;
+        }
+      } catch (error) {
+        console.error('Error checking QR status:', error);
+      }
+    }, 2000); // Check every 2 seconds
   }
 
   // Initialize product card click handlers

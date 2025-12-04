@@ -13,7 +13,7 @@ from accounts.models import Profile
 from loyalty.models import Business, Customer, Wallet, Product
 from qr.models import QRCode
 from campaigns.models import Campaign
-from .models import PointsTransaction
+from .models import PointsTransaction, QRCodeScan
 from .serializers import PointsTransactionSerializer
 
 
@@ -175,6 +175,7 @@ class QRProductScanView(APIView):
     def post(self, request):
         business_id = request.data.get("business_id")
         product_ids = request.data.get("product_ids", [])
+        customer_id = request.data.get("customer_id")
         # Accept user_id (phone) from QR payload; fallback to legacy 'phone'
         phone = (request.data.get("phone") or request.data.get("user_id") or "").strip()
         
@@ -183,6 +184,25 @@ class QRProductScanView(APIView):
         
         if not isinstance(product_ids, list) or len(product_ids) == 0:
             return Response({"error": "product_ids must be a non-empty array"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if this QR code has already been scanned
+        # Create payload dict for hashing (exclude phone/user_id as it may vary)
+        payload_dict = {
+            "business_id": business_id,
+            "customer_id": customer_id,
+            "product_ids": sorted(product_ids)  # Sort for consistent hash
+        }
+        payload_hash = QRCodeScan.generate_hash(payload_dict)
+        
+        # Check if already scanned
+        existing_scan = QRCodeScan.objects.filter(payload_hash=payload_hash).first()
+        if existing_scan:
+            return Response({
+                "error": "This QR code has already been scanned",
+                "scanned": True,
+                "scanned_at": existing_scan.scanned_at,
+                "message": "Success! This QR code was already used."
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         # Get business
         try:
@@ -264,6 +284,14 @@ class QRProductScanView(APIView):
             note=note
         )
         
+        # Mark QR code as scanned
+        QRCodeScan.objects.create(
+            payload_hash=payload_hash,
+            business_id=business_id,
+            customer_id=customer.id if customer else None,
+            product_ids=product_ids
+        )
+        
         # Calculate new balance
         current_balance = wallet.points_balance
         
@@ -287,6 +315,49 @@ class QRProductScanView(APIView):
             "transaction_id": transaction.id,
             "wallet_id": wallet.id
         }, status=status.HTTP_201_CREATED)
+
+
+class CheckQRCodeStatusView(APIView):
+    """
+    Check if a QR code (JSON payload) has already been scanned
+    POST /api/rewards/check-qr-status/
+    Body: {"business_id": 1, "customer_id": 3, "product_ids": [1, 2]}
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        business_id = request.data.get("business_id")
+        customer_id = request.data.get("customer_id")
+        product_ids = request.data.get("product_ids", [])
+        
+        if not business_id:
+            return Response({"error": "business_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not isinstance(product_ids, list):
+            return Response({"error": "product_ids must be an array"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Generate hash
+        payload_dict = {
+            "business_id": business_id,
+            "customer_id": customer_id,
+            "product_ids": sorted(product_ids)
+        }
+        payload_hash = QRCodeScan.generate_hash(payload_dict)
+        
+        # Check if scanned
+        existing_scan = QRCodeScan.objects.filter(payload_hash=payload_hash).first()
+        
+        if existing_scan:
+            return Response({
+                "scanned": True,
+                "scanned_at": existing_scan.scanned_at,
+                "message": "Success! This QR code was already used."
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "scanned": False,
+                "message": "QR code is valid and ready to scan"
+            }, status=status.HTTP_200_OK)
 
 
 class RedeemableProductsView(APIView):
