@@ -266,9 +266,13 @@ class SendNotificationView(APIView):
                         {"detail": "Selected recipients do not belong to this business."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-                tokens = self._get_tokens_for_user_ids(target_user_ids)
+                print(f"DEBUG: Sending to specific user_ids: {target_user_ids}")
+                tokens = list(self._get_tokens_for_user_ids(target_user_ids))
+                print(f"DEBUG: Found {len(tokens)} tokens for user_ids {target_user_ids}")
             else:
-                tokens = self._get_tokens_for_business(business)
+                print(f"DEBUG: Sending to all customers of business {business.id}")
+                tokens = list(self._get_tokens_for_business(business))
+                print(f"DEBUG: Found {len(tokens)} tokens for business {business.id}")
         elif audience == "all_customers":
             if not profile or profile.role != Profile.Role.SUPERUSER:
                 return Response(
@@ -285,9 +289,13 @@ class SendNotificationView(APIView):
                         {"detail": "Selected recipients are not valid customers."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-                tokens = self._get_tokens_for_user_ids(target_user_ids)
+                print(f"DEBUG: Sending to specific user_ids: {target_user_ids}")
+                tokens = list(self._get_tokens_for_user_ids(target_user_ids))
+                print(f"DEBUG: Found {len(tokens)} tokens for user_ids {target_user_ids}")
             else:
-                tokens = self._get_tokens_for_all_customers()
+                print(f"DEBUG: Sending to all customers")
+                tokens = list(self._get_tokens_for_all_customers())
+                print(f"DEBUG: Found {len(tokens)} tokens for all customers")
         else:
             return Response(
                 {"detail": "Invalid audience. Use 'business_customers' or 'all_customers'."},
@@ -361,23 +369,39 @@ class SendNotificationView(APIView):
 
     def _get_tokens_for_business(self, business: Business):
         customer_user_ids = self._get_customer_user_ids_for_business(business)
-        return Device.objects.filter(user_id__in=customer_user_ids).values_list(
+        tokens = Device.objects.filter(user_id__in=customer_user_ids).values_list(
             "token", flat=True
         )
+        print(f"DEBUG: _get_tokens_for_business - business_id={business.id}, customer_user_ids={list(customer_user_ids)}, found_tokens={tokens.count()}")
+        return tokens
 
     def _get_tokens_for_all_customers(self):
         customer_user_ids = Customer.objects.values_list("user_id", flat=True)
-        return Device.objects.filter(user_id__in=customer_user_ids).values_list(
+        tokens = Device.objects.filter(user_id__in=customer_user_ids).values_list(
             "token", flat=True
         )
+        print(f"DEBUG: _get_tokens_for_all_customers - customer_user_ids count={customer_user_ids.count()}, found_tokens={tokens.count()}")
+        return tokens
 
     def _get_customer_user_ids_for_all(self):
         return Customer.objects.values_list("user_id", flat=True)
 
     def _get_tokens_for_user_ids(self, user_ids):
-        return Device.objects.filter(user_id__in=user_ids).values_list(
+        tokens = Device.objects.filter(user_id__in=user_ids).values_list(
             "token", flat=True
         )
+        # Debug logging
+        print(f"DEBUG: _get_tokens_for_user_ids called with user_ids={user_ids}")
+        print(f"DEBUG: Found {tokens.count()} tokens for these user_ids")
+        if tokens.count() == 0:
+            # Check if users exist
+            from django.contrib.auth.models import User
+            existing_users = User.objects.filter(id__in=user_ids).values_list("id", flat=True)
+            print(f"DEBUG: Users exist: {list(existing_users)}")
+            # Check all devices
+            all_devices = Device.objects.all().values_list("user_id", "token", "platform")
+            print(f"DEBUG: All devices in database: {list(all_devices[:10])}")  # Show first 10
+        return tokens
 
     def _deduplicate_tokens(self, tokens):
         unique = []
