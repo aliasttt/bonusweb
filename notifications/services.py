@@ -180,13 +180,13 @@ def send_push_to_tokens(tokens: Iterable[str], title: str, body: str, data: dict
     token_list = list(tokens)
     print(f"DEBUG: Sending to {len(token_list)} tokens via Firebase")
     
-    message = messaging.MulticastMessage(
-        tokens=token_list,
-        notification=messaging.Notification(title=title, body=body),
-        data={k: str(v) for k, v in (data or {}).items()},
-    )
-    
+    # Try send_multicast first (more efficient)
     try:
+        message = messaging.MulticastMessage(
+            tokens=token_list,
+            notification=messaging.Notification(title=title, body=body),
+            data={k: str(v) for k, v in (data or {}).items()},
+        )
         response = messaging.send_multicast(message)
         print(f"DEBUG: Firebase BatchResponse - Success: {response.success_count}, Failure: {response.failure_count}")
         
@@ -198,6 +198,55 @@ def send_push_to_tokens(tokens: Iterable[str], title: str, body: str, data: dict
                 print(f"DEBUG: Token {idx} ({token_list[idx][:20]}...): ❌ Failed - {resp.exception}")
         
         return response
+    except Exception as multicast_error:
+        # If send_multicast fails (e.g., 404 on /batch), fallback to individual sends
+        if firebase_exceptions and isinstance(multicast_error, firebase_exceptions.NotFoundError):
+            print(f"DEBUG: send_multicast failed with 404, falling back to individual sends (messaging.send)")
+            print(f"DEBUG: Multicast error: {multicast_error}")
+            
+            # Fallback: send each message individually using messaging.send (doesn't use /batch)
+            success_count = 0
+            failure_count = 0
+            responses = []
+            
+            for idx, token in enumerate(token_list):
+                try:
+                    msg = messaging.Message(
+                        token=token,
+                        notification=messaging.Notification(title=title, body=body),
+                        data={k: str(v) for k, v in (data or {}).items()},
+                    )
+                    message_id = messaging.send(msg)
+                    success_count += 1
+                    print(f"DEBUG: Token {idx} ({token[:20]}...): ✅ Success - Message ID: {message_id}")
+                    # Create a mock success response
+                    class MockSuccessResponse:
+                        def __init__(self, msg_id):
+                            self.success = True
+                            self.message_id = msg_id
+                            self.exception = None
+                    responses.append(MockSuccessResponse(message_id))
+                except Exception as send_error:
+                    failure_count += 1
+                    print(f"DEBUG: Token {idx} ({token[:20]}...): ❌ Failed - {send_error}")
+                    # Create a mock failure response
+                    class MockFailureResponse:
+                        def __init__(self, exc):
+                            self.success = False
+                            self.message_id = None
+                            self.exception = exc
+                    responses.append(MockFailureResponse(send_error))
+            
+            print(f"DEBUG: Individual sends completed - Success: {success_count}, Failure: {failure_count}")
+            # Return a mock response object for compatibility
+            class MockBatchResponse:
+                def __init__(self, success, failure, resp_list):
+                    self.success_count = success
+                    self.failure_count = failure
+                    self.responses = resp_list
+            return MockBatchResponse(success_count, failure_count, responses)
+        else:
+            raise  # Re-raise if not a NotFoundError
     except Exception as e:
         if firebase_exceptions and isinstance(e, firebase_exceptions.NotFoundError):
             error_msg = (
