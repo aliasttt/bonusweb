@@ -8,6 +8,12 @@ from typing import Iterable
 from django.conf import settings
 import os
 
+# Import DeviceToken model for cleanup
+try:
+    from notifications.models import DeviceToken
+except ImportError:
+    DeviceToken = None
+
 try:
     import requests  # HTTP-based FCM (legacy) sender
 except Exception:  # pragma: no cover - optional dependency
@@ -195,7 +201,19 @@ def send_push_to_tokens(tokens: Iterable[str], title: str, body: str, data: dict
             if resp.success:
                 print(f"DEBUG: Token {idx} ({token_list[idx][:20]}...): ✅ Success - Message ID: {resp.message_id}")
             else:
-                print(f"DEBUG: Token {idx} ({token_list[idx][:20]}...): ❌ Failed - {resp.exception}")
+                error_str = str(resp.exception) if resp.exception else "Unknown error"
+                print(f"DEBUG: Token {idx} ({token_list[idx][:20]}...): ❌ Failed - {error_str}")
+                
+                # Delete invalid tokens from database
+                # "Requested entity was not found" means token is invalid/expired
+                if "not found" in error_str.lower() or "invalid" in error_str.lower():
+                    try:
+                        if DeviceToken:
+                            deleted_count = DeviceToken.objects.filter(device_token=token_list[idx]).delete()[0]
+                            if deleted_count > 0:
+                                print(f"DEBUG: Deleted {deleted_count} invalid token(s) from database: {token_list[idx][:20]}...")
+                    except Exception as delete_error:
+                        print(f"DEBUG: Failed to delete invalid token from database: {delete_error}")
         
         return response
     except Exception as multicast_error:
@@ -228,7 +246,20 @@ def send_push_to_tokens(tokens: Iterable[str], title: str, body: str, data: dict
                     responses.append(MockSuccessResponse(message_id))
                 except Exception as send_error:
                     failure_count += 1
-                    print(f"DEBUG: Token {idx} ({token[:20]}...): ❌ Failed - {send_error}")
+                    error_str = str(send_error)
+                    print(f"DEBUG: Token {idx} ({token[:20]}...): ❌ Failed - {error_str}")
+                    
+                    # Delete invalid tokens from database
+                    # "Requested entity was not found" means token is invalid/expired
+                    if "not found" in error_str.lower() or "invalid" in error_str.lower():
+                        try:
+                            if DeviceToken:
+                                deleted_count = DeviceToken.objects.filter(device_token=token).delete()[0]
+                                if deleted_count > 0:
+                                    print(f"DEBUG: Deleted {deleted_count} invalid token(s) from database: {token[:20]}...")
+                        except Exception as delete_error:
+                            print(f"DEBUG: Failed to delete invalid token from database: {delete_error}")
+                    
                     # Create a mock failure response
                     class MockFailureResponse:
                         def __init__(self, exc):
