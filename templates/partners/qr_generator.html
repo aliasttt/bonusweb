@@ -295,6 +295,51 @@
   }
 
   async function generateQRCode() {
+    const generateBtn = document.getElementById('generate-btn');
+    const isRefreshMode = generateBtn.textContent.trim() === 'Refresh';
+    
+    // If in refresh mode, reset everything
+    if (isRefreshMode) {
+      // Hide QR code
+      document.getElementById('qr').style.display = 'none';
+      document.getElementById('qr-placeholder').style.display = 'block';
+      document.getElementById('qr-success').classList.add('hidden');
+      
+      // Clear payload display
+      document.getElementById('payload').innerText = '';
+      
+      // Stop checking interval
+      if (window.qrCheckInterval) {
+        clearInterval(window.qrCheckInterval);
+        window.qrCheckInterval = null;
+      }
+      
+      // Clear payload data
+      window.currentQRPayload = null;
+      
+      // Unselect all products
+      document.querySelectorAll('.prod').forEach(cb => {
+        cb.checked = false;
+      });
+      
+      // Reset product card borders
+      document.querySelectorAll('.menu-product-card, .reward-product-card').forEach(card => {
+        card.dataset.selected = 'false';
+        card.style.borderColor = '#d1d5db'; // gray-300
+      });
+      
+      // Reset total points
+      const amtInput = document.getElementById('amt');
+      amtInput.value = '0';
+      amtInput.classList.remove('text-red-600', 'text-green-600', 'border-red-300', 'border-green-300');
+      amtInput.classList.add('text-gray-900', 'border-gray-300');
+      
+      // Change button back to Generate QR Code
+      generateBtn.textContent = 'Generate QR Code';
+      return;
+    }
+    
+    // Generate QR Code mode
     const biz = parseInt(document.getElementById('biz').value || '0');
     const productIds = recalc();
     const total = parseInt(document.getElementById('amt').value || '0');
@@ -339,6 +384,9 @@
       customer_id: customerId,
       product_ids: productIds
     };
+    
+    // Change button to Refresh
+    generateBtn.textContent = 'Refresh';
     
     // Periodically check if QR code has been scanned
     if (window.qrCheckInterval) {
