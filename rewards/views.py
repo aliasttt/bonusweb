@@ -264,7 +264,11 @@ class QRProductScanView(APIView):
                 "found_products": list(products.values_list("id", flat=True))
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        total_points = sum(p.points_reward for p in products)
+        # Calculate total points: negative for rewards (is_reward=True), positive for menu items
+        total_points = sum(
+            -p.points_reward if p.is_reward else p.points_reward 
+            for p in products
+        )
         
         # Get or create wallet
         wallet, wallet_created = Wallet.objects.select_for_update().get_or_create(
@@ -273,6 +277,15 @@ class QRProductScanView(APIView):
             defaults={"reward_point_cost": business.reward_point_cost}
         )
         wallet.reward_point_cost = wallet.reward_point_cost or business.reward_point_cost
+        
+        # Check if user has enough points for reward redemption
+        if total_points < 0 and wallet.points_balance < abs(total_points):
+            return Response({
+                "error": "Insufficient points",
+                "current_balance": wallet.points_balance,
+                "required": abs(total_points)
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         wallet.points_balance += total_points
         wallet.save(update_fields=["points_balance", "reward_point_cost", "updated_at"])
         
