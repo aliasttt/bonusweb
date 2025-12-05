@@ -362,13 +362,17 @@
       return;
     }
     
+    // Generate unique timestamp for this QR code to ensure uniqueness
+    const qrTimestamp = Date.now();
+    
     const payload = JSON.stringify({
       business_id: biz,
       business_name: businessName,
       customer_id: customerId,
       product_ids: productIds,
       product_name: productName,
-      total_points: total
+      total_points: total,
+      qr_timestamp: qrTimestamp
     });
     
     document.getElementById('payload').innerText = payload;
@@ -378,11 +382,12 @@
     document.getElementById('qr-placeholder').style.display = 'none';
     document.getElementById('qr-success').classList.add('hidden');
     
-    // Store payload data for checking status
+    // Store payload data for checking status (include timestamp for uniqueness)
     window.currentQRPayload = {
       business_id: biz,
       customer_id: customerId,
-      product_ids: productIds
+      product_ids: productIds,
+      qr_timestamp: qrTimestamp
     };
     
     // Change button to Refresh

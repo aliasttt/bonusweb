@@ -187,11 +187,16 @@ class QRProductScanView(APIView):
         
         # Check if this QR code has already been scanned
         # Create payload dict for hashing (exclude phone/user_id as it may vary)
+        # Include qr_timestamp if provided to ensure uniqueness
         payload_dict = {
             "business_id": business_id,
             "customer_id": customer_id,
             "product_ids": sorted(product_ids)  # Sort for consistent hash
         }
+        # Add qr_timestamp if provided (for new QR codes with unique timestamp)
+        qr_timestamp = request.data.get("qr_timestamp")
+        if qr_timestamp is not None:
+            payload_dict["qr_timestamp"] = qr_timestamp
         payload_hash = QRCodeScan.generate_hash(payload_dict)
         
         # Check if already scanned
@@ -355,6 +360,10 @@ class CheckQRCodeStatusView(APIView):
             "customer_id": customer_id,
             "product_ids": sorted(product_ids)
         }
+        # Add qr_timestamp if provided (for new QR codes with unique timestamp)
+        qr_timestamp = request.data.get("qr_timestamp")
+        if qr_timestamp is not None:
+            payload_dict["qr_timestamp"] = qr_timestamp
         payload_hash = QRCodeScan.generate_hash(payload_dict)
         
         # Check if scanned
