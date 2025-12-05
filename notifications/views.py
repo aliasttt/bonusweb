@@ -324,22 +324,19 @@ class SendNotificationView(APIView):
                 sent_count = response.success_count
                 print(f"DEBUG: Firebase sent {sent_count} out of {len(tokens)} notifications successfully")
             else:
-                # Fallback: assume all sent if no response (for backward compatibility)
-                sent_count = len(tokens)
-                print(f"DEBUG: No Firebase response, assuming all {sent_count} sent")
+                # Firebase Admin SDK is not available or not initialized
+                # DO NOT fallback to Legacy API (it's deprecated and returns 404)
+                print(f"DEBUG: Firebase Admin SDK not available. Cannot send notifications.")
+                print(f"DEBUG: Legacy FCM API is deprecated and not available. Please configure FIREBASE_CREDENTIALS_BASE64.")
+                sent_count = 0
         except Exception as e:
             # Log the error but don't fail the request
             import traceback
-            print(f"Error sending push notifications: {e}")
+            print(f"ERROR: Error sending push notifications: {e}")
             print(traceback.format_exc())
-            # Try to send individually as fallback
-            for token in tokens:
-                try:
-                    send_push_notification(token, title, body, data=extra_data)
-                    sent_count += 1
-                except Exception as e2:
-                    print(f"Error sending to token {token[:20]}...: {e2}")
-                    continue
+            # DO NOT fallback to Legacy API - it's deprecated
+            print(f"DEBUG: Not falling back to Legacy FCM API (deprecated). Please fix Firebase Admin SDK configuration.")
+            sent_count = 0
 
         return Response(
             {

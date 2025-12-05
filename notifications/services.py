@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import binascii
 import json
 from typing import Iterable
 
@@ -43,10 +44,23 @@ def _load_credentials_from_env():
     # Priority 1: Base64 (RECOMMENDED for production)
     if settings.FIREBASE_CREDENTIALS_BASE64:
         try:
+            print(f"DEBUG: Attempting to load from FIREBASE_CREDENTIALS_BASE64 (length: {len(settings.FIREBASE_CREDENTIALS_BASE64)})")
             decoded = base64.b64decode(settings.FIREBASE_CREDENTIALS_BASE64).decode("utf-8")
             data = json.loads(decoded)
-            print("DEBUG: Loading Firebase credentials from FIREBASE_CREDENTIALS_BASE64")
-            return credentials.Certificate(data)
+            print("DEBUG: Successfully decoded Base64 and parsed JSON")
+            print("DEBUG: Creating Firebase credentials Certificate...")
+            cred_obj = credentials.Certificate(data)
+            print("DEBUG: Firebase credentials Certificate created successfully")
+            return cred_obj
+        except binascii.Error as e:
+            print(f"DEBUG: Invalid Base64 encoding: {e}")
+            import traceback
+            print(traceback.format_exc())
+        except json.JSONDecodeError as e:
+            print(f"DEBUG: Invalid JSON after Base64 decode: {e}")
+            print(f"DEBUG: Decoded string (first 200 chars): {decoded[:200] if 'decoded' in locals() else 'N/A'}")
+            import traceback
+            print(traceback.format_exc())
         except Exception as e:
             print(f"DEBUG: Failed to decode/parse FIREBASE_CREDENTIALS_BASE64: {e}")
             import traceback
