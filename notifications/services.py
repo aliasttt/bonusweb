@@ -16,10 +16,12 @@ except Exception:  # pragma: no cover - optional dependency
 try:
     import firebase_admin
     from firebase_admin import credentials, messaging
+    from firebase_admin import exceptions as firebase_exceptions
 except Exception:  # pragma: no cover - optional dependency
     firebase_admin = None
     credentials = None
     messaging = None
+    firebase_exceptions = None
 
 
 _initialized = False
@@ -48,6 +50,13 @@ def _load_credentials_from_env():
             decoded = base64.b64decode(settings.FIREBASE_CREDENTIALS_BASE64).decode("utf-8")
             data = json.loads(decoded)
             print("DEBUG: Successfully decoded Base64 and parsed JSON")
+            
+            # Log project info for debugging
+            project_id = data.get("project_id", "NOT FOUND")
+            client_email = data.get("client_email", "NOT FOUND")
+            print(f"DEBUG: Project ID from credentials: {project_id}")
+            print(f"DEBUG: Service account email: {client_email}")
+            
             print("DEBUG: Creating Firebase credentials Certificate...")
             cred_obj = credentials.Certificate(data)
             print("DEBUG: Firebase credentials Certificate created successfully")
@@ -190,10 +199,33 @@ def send_push_to_tokens(tokens: Iterable[str], title: str, body: str, data: dict
         
         return response
     except Exception as e:
-        print(f"DEBUG: Firebase send_multicast error: {e}")
-        import traceback
-        print(traceback.format_exc())
-        raise
+        if firebase_exceptions and isinstance(e, firebase_exceptions.NotFoundError):
+            error_msg = (
+                "Firebase Cloud Messaging API is not enabled or not accessible. "
+                "Please enable 'Firebase Cloud Messaging API (V1)' in Google Cloud Console: "
+                "https://console.cloud.google.com/apis/library/fcm.googleapis.com"
+            )
+            print(f"ERROR: {error_msg}")
+            print(f"ERROR: Original error: {e}")
+            import traceback
+            print(traceback.format_exc())
+            raise RuntimeError(error_msg) from e
+        elif firebase_exceptions and isinstance(e, firebase_exceptions.PermissionDeniedError):
+            error_msg = (
+                "Firebase service account does not have permission to send messages. "
+                "Please check service account permissions in Google Cloud Console."
+            )
+            print(f"ERROR: {error_msg}")
+            print(f"ERROR: Original error: {e}")
+            import traceback
+            print(traceback.format_exc())
+            raise RuntimeError(error_msg) from e
+        else:
+            print(f"DEBUG: Firebase send_multicast error: {e}")
+            print(f"DEBUG: Error type: {type(e).__name__}")
+            import traceback
+            print(traceback.format_exc())
+            raise
 
 
 def send_push_notification(device_token: str, title: str, body: str, data: dict | None = None):
