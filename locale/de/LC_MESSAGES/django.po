@@ -217,30 +217,33 @@ msgstr "Alle Rechte vorbehalten"
 
 #: .\templates\marketing\blog.html:3
 msgid "Blog - Latest News & Insights"
-msgstr ""
+msgstr "Blog - Neueste Nachrichten & Einblicke"
 
 #: .\templates\marketing\blog.html:16
 msgid "Our"
-msgstr ""
+msgstr "Unser"
 
 #: .\templates\marketing\blog.html:19
 msgid ""
 "Latest insights, tips, and updates about customer loyalty and business growth"
 msgstr ""
+"Neueste Einblicke, Tipps und Updates zu Kundenbindung und Geschäftswachstum"
 
 #: .\templates\marketing\blog.html:32
 msgid "Coming Soon"
-msgstr ""
+msgstr "Demnächst"
 
 #: .\templates\marketing\blog.html:34
 msgid ""
 "We're working on creating valuable content about customer loyalty, business "
 "growth, and digital marketing strategies."
 msgstr ""
+"Wir arbeiten daran, wertvolle Inhalte über Kundenbindung, Geschäftswachstum "
+"und digitale Marketingstrategien zu erstellen."
 
 #: .\templates\marketing\blog.html:38
 msgid "Back to Home"
-msgstr ""
+msgstr "Zurück zur Startseite"
 
 #: .\templates\marketing\blog.html:41 .\templates\marketing\features.html:349
 #: .\templates\marketing\home.html:51
@@ -249,47 +252,47 @@ msgstr "Preise anzeigen"
 
 #: .\templates\marketing\business_detail.html:9
 msgid "Back to directory"
-msgstr ""
+msgstr "Zurück zum Verzeichnis"
 
 #: .\templates\marketing\business_detail.html:30
 msgid "Verified business owner"
-msgstr ""
+msgstr "Verifizierter Geschäftsinhaber"
 
 #: .\templates\marketing\business_detail.html:32
 msgid "No description provided"
-msgstr ""
+msgstr "Keine Beschreibung vorhanden"
 
 #: .\templates\marketing\business_detail.html:35
 msgid "Average rating"
-msgstr ""
+msgstr "Durchschnittliche Bewertung"
 
 #: .\templates\marketing\business_detail.html:39
 #: .\templates\marketing\business_detail.html:82
 #: .\templates\marketing\business_directory.html:52
 msgid "published reviews"
-msgstr ""
+msgstr "veröffentlichte Bewertungen"
 
 #: .\templates\marketing\business_detail.html:45
 #: .\templates\marketing\business_directory.html:44
 msgid "Address unavailable"
-msgstr ""
+msgstr "Adresse nicht verfügbar"
 
 #: .\templates\marketing\business_detail.html:49
 #: .\templates\marketing\business_directory.html:48
 msgid "Phone unavailable"
-msgstr ""
+msgstr "Telefon nicht verfügbar"
 
 #: .\templates\marketing\business_detail.html:56
 msgid "Website not provided"
-msgstr ""
+msgstr "Website nicht angegeben"
 
 #: .\templates\marketing\business_detail.html:64
 msgid "Services & offerings"
-msgstr ""
+msgstr "Dienstleistungen & Angebote"
 
 #: .\templates\marketing\business_detail.html:72
 msgid "No description yet"
-msgstr ""
+msgstr "Noch keine Beschreibung"
 
 #: .\templates\marketing\business_detail.html:81
 #, fuzzy
@@ -299,15 +302,15 @@ msgstr "Kundenbindung"
 
 #: .\templates\marketing\business_detail.html:94
 msgid "Overall rating"
-msgstr ""
+msgstr "Gesamtbewertung"
 
 #: .\templates\marketing\business_detail.html:97
 msgid "No comment provided"
-msgstr ""
+msgstr "Kein Kommentar vorhanden"
 
 #: .\templates\marketing\business_detail.html:114
 msgid "No reviews have been published yet."
-msgstr ""
+msgstr "Es wurden noch keine Bewertungen veröffentlicht."
 
 #: .\templates\marketing\business_directory.html:3
 #, fuzzy
@@ -317,17 +320,19 @@ msgstr "Unternehmen"
 
 #: .\templates\marketing\business_directory.html:9
 msgid "Verified Partners"
-msgstr ""
+msgstr "Verifizierte Partner"
 
 #: .\templates\marketing\business_directory.html:10
 msgid "All Active Restaurants & Cafés on Bonus"
-msgstr ""
+msgstr "Alle aktiven Restaurants & Cafés auf Bonus"
 
 #: .\templates\marketing\business_directory.html:11
 msgid ""
 "Browse every approved business. Click a card to view full details, services, "
 "and customer reviews."
 msgstr ""
+"Durchsuchen Sie jedes genehmigte Unternehmen. Klicken Sie auf eine Karte, um "
+"vollständige Details, Dienstleistungen und Kundenbewertungen anzuzeigen."
 
 #: .\templates\marketing\business_directory.html:25
 #, fuzzy
@@ -337,39 +342,39 @@ msgstr "Aktive Unternehmen"
 
 #: .\templates\marketing\business_directory.html:34
 msgid "Average Rating"
-msgstr ""
+msgstr "Durchschnittliche Bewertung"
 
 #: .\templates\marketing\business_directory.html:37
 msgid "No Rating Yet"
-msgstr ""
+msgstr "Noch keine Bewertung"
 
 #: .\templates\marketing\business_directory.html:56
 msgid "View details"
-msgstr ""
+msgstr "Details anzeigen"
 
 #: .\templates\marketing\business_directory.html:63
 msgid "No businesses have been onboarded yet."
-msgstr ""
+msgstr "Es wurden noch keine Unternehmen hinzugefügt."
 
 #: .\templates\marketing\faq.html:3
 msgid "FAQ - Frequently Asked Questions"
-msgstr ""
+msgstr "FAQ - Häufig gestellte Fragen"
 
 #: .\templates\marketing\faq.html:16
 msgid "Frequently Asked"
-msgstr ""
+msgstr "Häufig gestellte"
 
 #: .\templates\marketing\faq.html:16
 msgid "Questions"
-msgstr ""
+msgstr "Fragen"
 
 #: .\templates\marketing\faq.html:19
 msgid "Find answers to common questions about our platform"
-msgstr ""
+msgstr "Finden Sie Antworten auf häufige Fragen zu unserer Plattform"
 
 #: .\templates\marketing\faq.html:30
 msgid "Do customers need a mobile app?"
-msgstr ""
+msgstr "Benötigen Kunden eine mobile App?"
 
 #: .\templates\marketing\faq.html:32
 msgid ""
@@ -377,10 +382,13 @@ msgid ""
 "supported and provide the same functionality for scanning QR codes and "
 "managing points."
 msgstr ""
+"Ja, Kunden können entweder unsere mobile App oder die Web-Version verwenden. "
+"Beide werden vollständig unterstützt und bieten die gleiche Funktionalität "
+"zum Scannen von QR-Codes und Verwalten von Punkten."
 
 #: .\templates\marketing\faq.html:37
 msgid "How is QR code security guaranteed?"
-msgstr ""
+msgstr "Wie wird die QR-Code-Sicherheit gewährleistet?"
 
 #: .\templates\marketing\faq.html:39
 msgid ""
@@ -388,10 +396,13 @@ msgid ""
 "used once per customer per visit. We also implement rate limiting and fraud "
 "detection."
 msgstr ""
+"Serverseitige Validierung verhindert Missbrauch und stellt sicher, dass "
+"jeder QR-Code nur einmal pro Kunde pro Besuch verwendet werden kann. Wir "
+"implementieren auch Ratenbegrenzung und Betrugserkennung."
 
 #: .\templates\marketing\faq.html:44
 msgid "Can I customize the points system?"
-msgstr ""
+msgstr "Kann ich das Punktesystem anpassen?"
 
 #: .\templates\marketing\faq.html:46
 msgid ""
@@ -399,30 +410,39 @@ msgid ""
 "tiered rewards, and adjust the points-to-reward ratio based on your business "
 "needs."
 msgstr ""
+"Absolut! Sie können benutzerdefinierte Punktwerte für verschiedene Käufe "
+"festlegen, gestufte Belohnungen erstellen und das Punkte-zu-Belohnungs-"
+"Verhältnis basierend auf Ihren Geschäftsanforderungen anpassen."
 
 #: .\templates\marketing\faq.html:51
 msgid "Is there a setup fee?"
-msgstr ""
+msgstr "Gibt es eine Einrichtungsgebühr?"
 
 #: .\templates\marketing\faq.html:53
 msgid ""
 "No setup fees! We offer a free plan for small businesses and transparent "
 "monthly pricing for larger operations. No hidden costs or surprise charges."
 msgstr ""
+"Keine Einrichtungsgebühren! Wir bieten einen kostenlosen Plan für kleine "
+"Unternehmen und transparente monatliche Preise für größere Betriebe. Keine "
+"versteckten Kosten oder Überraschungsgebühren."
 
 #: .\templates\marketing\faq.html:58
 msgid "How quickly can I get started?"
-msgstr ""
+msgstr "Wie schnell kann ich loslegen?"
 
 #: .\templates\marketing\faq.html:60
 msgid ""
 "You can be up and running in less than 5 minutes! Simply create an account, "
 "generate your QR code, and start rewarding customers immediately."
 msgstr ""
+"Sie können in weniger als 5 Minuten loslegen! Erstellen Sie einfach ein "
+"Konto, generieren Sie Ihren QR-Code und beginnen Sie sofort, Kunden zu "
+"belohnen."
 
 #: .\templates\marketing\faq.html:65
 msgid "Do you offer customer support?"
-msgstr ""
+msgstr "Bieten Sie Kundensupport an?"
 
 #: .\templates\marketing\faq.html:67
 msgid ""
@@ -430,40 +450,49 @@ msgid ""
 "plans, and dedicated support for enterprise customers. Our team is here to "
 "help you succeed."
 msgstr ""
+"Ja! Wir bieten E-Mail-Support für alle Benutzer, Prioritätssupport für "
+"kostenpflichtige Pläne und dedizierten Support für Unternehmenskunden. Unser "
+"Team ist hier, um Ihnen zum Erfolg zu verhelfen."
 
 #: .\templates\marketing\features.html:3
 msgid "Features - Modern Customer Loyalty Platform"
-msgstr ""
+msgstr "Funktionen - Moderne Kundenbindungsplattform"
 
 #: .\templates\marketing\features.html:16
 #: .\templates\marketing\integrations.html:16
 msgid "Powerful"
-msgstr ""
+msgstr "Leistungsstark"
 
 #: .\templates\marketing\features.html:19
 msgid ""
 "Everything you need to build and manage a successful customer loyalty program"
 msgstr ""
+"Alles, was Sie brauchen, um ein erfolgreiches Kundenbindungsprogramm "
+"aufzubauen und zu verwalten"
 
 #: .\templates\marketing\features.html:33
 msgid "QR Code Generation"
-msgstr ""
+msgstr "QR-Code-Generierung"
 
 #: .\templates\marketing\features.html:35
 msgid ""
 "Generate unique QR codes for each business with customizable branding and "
 "tracking capabilities."
 msgstr ""
+"Generieren Sie eindeutige QR-Codes für jedes Unternehmen mit anpassbarem "
+"Branding und Tracking-Funktionen."
 
 #: .\templates\marketing\features.html:43
 msgid "Digital Wallet"
-msgstr ""
+msgstr "Digitale Brieftasche"
 
 #: .\templates\marketing\features.html:45
 msgid ""
 "Digital points wallet with customizable goals and instant reward redemption "
 "system."
 msgstr ""
+"Digitale Punkte-Brieftasche mit anpassbaren Zielen und sofortigem "
+"Belohnungseinlösungssystem."
 
 #: .\templates\marketing\features.html:53
 #, fuzzy
@@ -476,6 +505,8 @@ msgid ""
 "Free menu items and rewards when customers reach their points goals "
 "automatically."
 msgstr ""
+"Kostenlose Menüpunkte und Belohnungen, wenn Kunden ihre Punktziele "
+"automatisch erreichen."
 
 #: .\templates\marketing\features.html:63
 #, fuzzy
@@ -487,26 +518,32 @@ msgstr "Mobile App"
 msgid ""
 "Complete API with JWT authentication for seamless mobile app integration."
 msgstr ""
+"Vollständige API mit JWT-Authentifizierung für nahtlose mobile App-"
+"Integration."
 
 #: .\templates\marketing\features.html:73
 msgid "Analytics Dashboard"
-msgstr ""
+msgstr "Analytics-Dashboard"
 
 #: .\templates\marketing\features.html:75
 msgid ""
 "Real-time analytics and insights to track customer behavior and program "
 "performance."
 msgstr ""
+"Echtzeit-Analysen und Einblicke zur Verfolgung des Kundenverhaltens und der "
+"Programmleistung."
 
 #: .\templates\marketing\features.html:83
 msgid "Customizable Rules"
-msgstr ""
+msgstr "Anpassbare Regeln"
 
 #: .\templates\marketing\features.html:85
 msgid ""
 "Flexible point rules, reward thresholds, and campaign settings for any "
 "business type."
 msgstr ""
+"Flexible Punktregeln, Belohnungsschwellen und Kampagneneinstellungen für "
+"jeden Geschäftstyp."
 
 #: .\templates\marketing\features.html:97
 #: .\templates\marketing\pricing.html:207
@@ -517,11 +554,11 @@ msgstr "Erweiterte Analysen"
 
 #: .\templates\marketing\features.html:100
 msgid "Powerful tools for growing businesses and enterprise customers"
-msgstr ""
+msgstr "Leistungsstarke Tools für wachsende Unternehmen und Unternehmenskunden"
 
 #: .\templates\marketing\features.html:112
 msgid "Customer Segmentation"
-msgstr ""
+msgstr "Kundensegmentierung"
 
 #: .\templates\marketing\features.html:114
 msgid ""
@@ -529,6 +566,9 @@ msgid ""
 "levels. Create targeted campaigns for VIP customers, new customers, and "
 "inactive users."
 msgstr ""
+"Segmentieren Sie Ihre Kunden basierend auf Verhalten, Kaufhistorie und "
+"Engagement-Level. Erstellen Sie gezielte Kampagnen für VIP-Kunden, neue "
+"Kunden und inaktive Benutzer."
 
 #: .\templates\marketing\features.html:124
 #, fuzzy
@@ -542,10 +582,13 @@ msgid ""
 "Trigger campaigns based on customer actions, birthdays, or inactivity "
 "periods."
 msgstr ""
+"Richten Sie automatisierte E-Mail-Kampagnen, Push-Benachrichtigungen und "
+"SMS-Nachrichten ein. Lösen Sie Kampagnen basierend auf Kundenaktionen, "
+"Geburtstagen oder Inaktivitätsperioden aus."
 
 #: .\templates\marketing\features.html:136
 msgid "Fraud Prevention"
-msgstr ""
+msgstr "Betrugsprävention"
 
 #: .\templates\marketing\features.html:138
 msgid ""
@@ -553,10 +596,13 @@ msgid ""
 "distribution. Real-time monitoring and automatic flagging of suspicious "
 "activities."
 msgstr ""
+"Erweiterte Betrugserkennungsalgorithmen verhindern Missbrauch und gewährleisten "
+"eine faire Punkteverteilung. Echtzeitüberwachung und automatische Markierung "
+"verdächtiger Aktivitäten."
 
 #: .\templates\marketing\features.html:148
 msgid "Campaign Performance"
-msgstr ""
+msgstr "Kampagnenleistung"
 
 #: .\templates\marketing\features.html:151
 #, fuzzy
@@ -567,33 +613,33 @@ msgstr "Marketingkampagnen"
 #: .\templates\marketing\features.html:152
 #, python-format
 msgid "+23%% Open Rate"
-msgstr ""
+msgstr "+23%% Öffnungsrate"
 
 #: .\templates\marketing\features.html:155
 msgid "SMS Notifications"
-msgstr ""
+msgstr "SMS-Benachrichtigungen"
 
 #: .\templates\marketing\features.html:156
 #, python-format
 msgid "+45%% Click Rate"
-msgstr ""
+msgstr "+45%% Klickrate"
 
 #: .\templates\marketing\features.html:159
 msgid "Push Notifications"
-msgstr ""
+msgstr "Push-Benachrichtigungen"
 
 #: .\templates\marketing\features.html:160
 #, python-format
 msgid "+67%% Engagement"
-msgstr ""
+msgstr "+67%% Engagement"
 
 #: .\templates\marketing\features.html:168
 msgid "Real-time customer tracking"
-msgstr ""
+msgstr "Echtzeit-Kundentracking"
 
 #: .\templates\marketing\features.html:172
 msgid "Automated reward distribution"
-msgstr ""
+msgstr "Automatisierte Belohnungsverteilung"
 
 #: .\templates\marketing\features.html:176
 #, fuzzy
@@ -603,15 +649,15 @@ msgstr "Erweiterte Analysen"
 
 #: .\templates\marketing\features.html:190
 msgid "Technical"
-msgstr ""
+msgstr "Technisch"
 
 #: .\templates\marketing\features.html:190
 msgid "Specifications"
-msgstr ""
+msgstr "Spezifikationen"
 
 #: .\templates\marketing\features.html:193
 msgid "Built with modern technology for reliability and scalability"
-msgstr ""
+msgstr "Gebaut mit moderner Technologie für Zuverlässigkeit und Skalierbarkeit"
 
 #: .\templates\marketing\features.html:202
 #, fuzzy, python-format
@@ -621,50 +667,52 @@ msgstr "Betriebszeit"
 
 #: .\templates\marketing\features.html:203
 msgid "Enterprise-grade reliability with SLA guarantee"
-msgstr ""
+msgstr "Unternehmensklasse Zuverlässigkeit mit SLA-Garantie"
 
 #: .\templates\marketing\features.html:210
 msgid "<100ms Response"
-msgstr ""
+msgstr "<100ms Antwortzeit"
 
 #: .\templates\marketing\features.html:211
 msgid "Lightning-fast API responses for optimal user experience"
-msgstr ""
+msgstr "Blitzschnelle API-Antworten für optimale Benutzererfahrung"
 
 #: .\templates\marketing\features.html:218
 msgid "Unlimited Scale"
-msgstr ""
+msgstr "Unbegrenzte Skalierung"
 
 #: .\templates\marketing\features.html:219
 msgid "Handle millions of customers and transactions"
-msgstr ""
+msgstr "Verwaltung von Millionen von Kunden und Transaktionen"
 
 #: .\templates\marketing\features.html:226
 msgid "SOC 2 Compliant"
-msgstr ""
+msgstr "SOC 2 konform"
 
 #: .\templates\marketing\features.html:227
 msgid "Enterprise security standards and compliance"
-msgstr ""
+msgstr "Unternehmenssicherheitsstandards und Compliance"
 
 #: .\templates\marketing\features.html:238
 msgid "Popular"
-msgstr ""
+msgstr "Beliebt"
 
 #: .\templates\marketing\features.html:241
 msgid "Connect with the tools you already use"
-msgstr ""
+msgstr "Verbinden Sie sich mit den Tools, die Sie bereits verwenden"
 
 #: .\templates\marketing\features.html:253
 #: .\templates\marketing\integrations.html:63
 msgid "Email Marketing"
-msgstr ""
+msgstr "E-Mail-Marketing"
 
 #: .\templates\marketing\features.html:256
 msgid ""
 "Sync customer data and create targeted email campaigns based on loyalty "
 "behavior."
 msgstr ""
+"Synchronisieren Sie Kundendaten und erstellen Sie gezielte E-Mail-Kampagnen "
+"basierend auf Loyalitätsverhalten."
 
 #: .\templates\marketing\features.html:266
 #, fuzzy
@@ -674,33 +722,33 @@ msgstr "Punktesystem"
 
 #: .\templates\marketing\features.html:269
 msgid "Automatic point tracking with every Square transaction and receipt."
-msgstr ""
+msgstr "Automatische Punkteverfolgung bei jeder Square-Transaktion und Quittung."
 
 #: .\templates\marketing\features.html:279
 #: .\templates\marketing\integrations.html:53
 msgid "Automation"
-msgstr ""
+msgstr "Automatisierung"
 
 #: .\templates\marketing\features.html:282
 msgid "Connect with 5000+ apps and automate your loyalty workflows."
-msgstr ""
+msgstr "Verbinden Sie sich mit über 5000 Apps und automatisieren Sie Ihre Loyalitäts-Workflows."
 
 #: .\templates\marketing\features.html:292
 msgid "CRM"
-msgstr ""
+msgstr "CRM"
 
 #: .\templates\marketing\features.html:295
 msgid "Sync loyalty data with your CRM for complete customer profiles."
-msgstr ""
+msgstr "Synchronisieren Sie Loyalitätsdaten mit Ihrem CRM für vollständige Kundenprofile."
 
 #: .\templates\marketing\features.html:305
 #: .\templates\marketing\use_cases.html:57
 msgid "E-commerce"
-msgstr ""
+msgstr "E-Commerce"
 
 #: .\templates\marketing\features.html:308
 msgid "Integrate loyalty points with your Shopify store seamlessly."
-msgstr ""
+msgstr "Integrieren Sie Loyalitätspunkte nahtlos mit Ihrem Shopify-Shop."
 
 #: .\templates\marketing\features.html:318
 #: .\templates\marketing\pricing.html:205
@@ -711,11 +759,11 @@ msgstr "Erweiterte Analysen"
 
 #: .\templates\marketing\features.html:321
 msgid "Track loyalty program performance with detailed analytics."
-msgstr ""
+msgstr "Verfolgen Sie die Leistung des Loyalitätsprogramms mit detaillierten Analysen."
 
 #: .\templates\marketing\features.html:337
 msgid "Ready to Experience These Features?"
-msgstr ""
+msgstr "Bereit, diese Funktionen zu erleben?"
 
 #: .\templates\marketing\features.html:340
 #, fuzzy
@@ -896,7 +944,7 @@ msgstr ""
 
 #: .\templates\marketing\how_it_works.html:3
 msgid "How It Works - Simple 3-Step Process"
-msgstr ""
+msgstr "Wie es funktioniert - Einfacher 3-Schritte-Prozess"
 
 #: .\templates\marketing\how_it_works.html:16
 #, fuzzy
@@ -906,21 +954,23 @@ msgstr "Wie es funktioniert"
 
 #: .\templates\marketing\how_it_works.html:16
 msgid "Works"
-msgstr ""
+msgstr "funktioniert"
 
 #: .\templates\marketing\how_it_works.html:19
 msgid "Get started in 3 simple steps. No complex setup required."
-msgstr ""
+msgstr "Starten Sie in 3 einfachen Schritten. Keine komplexe Einrichtung erforderlich."
 
 #: .\templates\marketing\how_it_works.html:34
 msgid "Generate QR Code"
-msgstr ""
+msgstr "QR-Code generieren"
 
 #: .\templates\marketing\how_it_works.html:36
 msgid ""
 "Admin logs into the dashboard and generates a unique QR code for their "
 "business with customizable branding."
 msgstr ""
+"Der Administrator meldet sich im Dashboard an und generiert einen eindeutigen "
+"QR-Code für sein Unternehmen mit anpassbarem Branding."
 
 #: .\templates\marketing\how_it_works.html:45
 #, fuzzy
@@ -933,6 +983,8 @@ msgid ""
 "Customer scans the QR code at your store using their mobile app and "
 "instantly earns points for their purchase."
 msgstr ""
+"Der Kunde scannt den QR-Code in Ihrem Geschäft mit seiner mobilen App und "
+"verdient sofort Punkte für seinen Kauf."
 
 #: .\templates\marketing\how_it_works.html:56
 #, fuzzy
@@ -945,25 +997,32 @@ msgid ""
 "When customers reach their goal (e.g., 10 points), they automatically "
 "receive a free menu item or reward."
 msgstr ""
+"Wenn Kunden ihr Ziel erreichen (z.B. 10 Punkte), erhalten sie automatisch "
+"ein kostenloses Menüelement oder eine Belohnung."
 
 #: .\templates\marketing\how_it_works.html:69
 msgid "Unified API"
-msgstr ""
+msgstr "Einheitliche API"
 
 #: .\templates\marketing\how_it_works.html:71
 msgid ""
 "Both web dashboard and mobile app use the same powerful API, ensuring "
 "consistency and real-time synchronization across all platforms."
 msgstr ""
+"Sowohl das Web-Dashboard als auch die mobile App verwenden dieselbe "
+"leistungsstarke API und gewährleisten Konsistenz und Echtzeit-"
+"Synchronisierung auf allen Plattformen."
 
 #: .\templates\marketing\integrations.html:3
 msgid "Integrations - Connect Everything"
-msgstr ""
+msgstr "Integrationen - Alles verbinden"
 
 #: .\templates\marketing\integrations.html:19
 msgid ""
 "API-first approach: Connect to POS systems, webhooks, and automation tools"
 msgstr ""
+"API-First-Ansatz: Verbinden Sie sich mit POS-Systemen, Webhooks und "
+"Automatisierungstools"
 
 #: .\templates\marketing\integrations.html:33
 #, fuzzy
@@ -976,70 +1035,82 @@ msgid ""
 "Seamlessly integrate with popular point-of-sale systems for automatic point "
 "tracking."
 msgstr ""
+"Nahtlose Integration mit beliebten Kassensystemen für automatische "
+"Punkteverfolgung."
 
 #: .\templates\marketing\integrations.html:43
 msgid "Webhooks"
-msgstr ""
+msgstr "Webhooks"
 
 #: .\templates\marketing\integrations.html:45
 msgid ""
 "Real-time notifications and data synchronization with your existing systems."
 msgstr ""
+"Echtzeit-Benachrichtigungen und Datensynchronisierung mit Ihren bestehenden "
+"Systemen."
 
 #: .\templates\marketing\integrations.html:55
 msgid ""
 "Connect with Zapier, Make, and other automation platforms for workflow "
 "optimization."
 msgstr ""
+"Verbinden Sie sich mit Zapier, Make und anderen Automatisierungsplattformen "
+"zur Workflow-Optimierung."
 
 #: .\templates\marketing\integrations.html:65
 msgid ""
 "Sync with Mailchimp, SendGrid, and other email platforms for targeted "
 "campaigns."
 msgstr ""
+"Synchronisieren Sie mit Mailchimp, SendGrid und anderen E-Mail-Plattformen "
+"für gezielte Kampagnen."
 
 #: .\templates\marketing\integrations.html:73
 msgid "CRM Systems"
-msgstr ""
+msgstr "CRM-Systeme"
 
 #: .\templates\marketing\integrations.html:75
 msgid ""
 "Connect with Salesforce, HubSpot, and other CRM platforms for unified "
 "customer data."
 msgstr ""
+"Verbinden Sie sich mit Salesforce, HubSpot und anderen CRM-Plattformen für "
+"einheitliche Kundendaten."
 
 #: .\templates\marketing\integrations.html:83
 msgid "Custom API"
-msgstr ""
+msgstr "Benutzerdefinierte API"
 
 #: .\templates\marketing\integrations.html:85
 msgid "Full REST API with comprehensive documentation for custom integrations."
-msgstr ""
+msgstr "Vollständige REST-API mit umfassender Dokumentation für benutzerdefinierte Integrationen."
 
 #: .\templates\marketing\integrations.html:97
 msgid "API"
-msgstr ""
+msgstr "API"
 
 #: .\templates\marketing\integrations.html:97
 msgid "Example"
-msgstr ""
+msgstr "Beispiel"
 
 #: .\templates\marketing\integrations.html:100
 msgid "Simple, powerful, and well-documented API endpoints"
-msgstr ""
+msgstr "Einfache, leistungsstarke und gut dokumentierte API-Endpunkte"
 
 #: .\templates\marketing\pricing.html:3
 msgid "Pricing - Simple & Transparent"
-msgstr ""
+msgstr "Preise - Einfach & Transparent"
 
 #: .\templates\marketing\pricing.html:16
 msgid "Simple"
-msgstr ""
+msgstr "Einfach"
 
 #: .\templates\marketing\pricing.html:19
 msgid ""
 "Choose the perfect plan for your business. No hidden fees, no surprises."
 msgstr ""
+"Wählen Sie den perfekten Plan für Ihr Unternehmen. Keine versteckten "
+"Gebühren, keine Überraschungen."
 
 #: .\templates\marketing\pricing.html:32 .\templates\marketing\pricing.html:180
 #, fuzzy
@@ -1051,23 +1122,23 @@ msgstr "Kostenlos starten"
 #: .\templates\marketing\pricing.html:230
 #: .\templates\marketing\pricing.html:231
 msgid "Free"
-msgstr ""
+msgstr "Kostenlos"
 
 #: .\templates\marketing\pricing.html:34
 msgid "Perfect for small businesses"
-msgstr ""
+msgstr "Perfekt für kleine Unternehmen"
 
 #: .\templates\marketing\pricing.html:39
 msgid "Up to 100 customers"
-msgstr ""
+msgstr "Bis zu 100 Kunden"
 
 #: .\templates\marketing\pricing.html:43
 msgid "Basic QR codes"
-msgstr ""
+msgstr "Grundlegende QR-Codes"
 
 #: .\templates\marketing\pricing.html:47
 msgid "Simple analytics"
-msgstr ""
+msgstr "Einfache Analysen"
 
 #: .\templates\marketing\pricing.html:51
 #, fuzzy
@@ -1083,27 +1154,27 @@ msgstr "Bereit loszulegen?"
 
 #: .\templates\marketing\pricing.html:63
 msgid "Most Popular"
-msgstr ""
+msgstr "Am beliebtesten"
 
 #: .\templates\marketing\pricing.html:67 .\templates\marketing\pricing.html:181
 msgid "Professional"
-msgstr ""
+msgstr "Professional"
 
 #: .\templates\marketing\pricing.html:68
 msgid "/month"
-msgstr ""
+msgstr "/Monat"
 
 #: .\templates\marketing\pricing.html:69
 msgid "Everything you need to grow"
-msgstr ""
+msgstr "Alles, was Sie zum Wachstum brauchen"
 
 #: .\templates\marketing\pricing.html:74
 msgid "Up to 1,000 customers"
-msgstr ""
+msgstr "Bis zu 1.000 Kunden"
 
 #: .\templates\marketing\pricing.html:78
 msgid "Custom QR codes"
-msgstr ""
+msgstr "Benutzerdefinierte QR-Codes"
 
 #: .\templates\marketing\pricing.html:82
 #, fuzzy
@@ -1119,31 +1190,31 @@ msgstr "Mobile App"
 
 #: .\templates\marketing\pricing.html:90
 msgid "Priority support"
-msgstr ""
+msgstr "Prioritätssupport"
 
 #: .\templates\marketing\pricing.html:101
 #: .\templates\marketing\pricing.html:182
 msgid "Enterprise"
-msgstr ""
+msgstr "Enterprise"
 
 #: .\templates\marketing\pricing.html:102
 #: .\templates\marketing\pricing.html:190
 #: .\templates\marketing\pricing.html:201
 #: .\templates\marketing\pricing.html:232
 msgid "Custom"
-msgstr ""
+msgstr "Individuell"
 
 #: .\templates\marketing\pricing.html:103
 msgid "Tailored for your needs"
-msgstr ""
+msgstr "Maßgeschneidert für Ihre Bedürfnisse"
 
 #: .\templates\marketing\pricing.html:108
 msgid "Unlimited customers"
-msgstr ""
+msgstr "Unbegrenzte Kunden"
 
 #: .\templates\marketing\pricing.html:112
 msgid "White-label solution"
-msgstr ""
+msgstr "White-Label-Lösung"
 
 #: .\templates\marketing\pricing.html:116
 #, fuzzy
@@ -1153,11 +1224,11 @@ msgstr "Integrationen"
 
 #: .\templates\marketing\pricing.html:120
 msgid "Dedicated support"
-msgstr ""
+msgstr "Dedizierter Support"
 
 #: .\templates\marketing\pricing.html:124
 msgid "SLA guarantee"
-msgstr ""
+msgstr "SLA-Garantie"
 
 #: .\templates\marketing\pricing.html:128
 #, fuzzy
@@ -1168,7 +1239,7 @@ msgstr "Kontaktieren Sie uns"
 #: .\templates\marketing\pricing.html:146 .\untranslated_strings_report.txt:39
 #: .\untranslated_strings_report.txt:95
 msgid "Can I change plans anytime?"
-msgstr ""
+msgstr "Kann ich Pläne jederzeit ändern?"
 
 #: .\templates\marketing\pricing.html:147 .\untranslated_strings_report.txt:43
 #: .\untranslated_strings_report.txt:99
@@ -1176,11 +1247,13 @@ msgid ""
 "Yes, you can upgrade or downgrade your plan at any time. Changes take effect "
 "immediately."
 msgstr ""
+"Ja, Sie können Ihren Plan jederzeit upgraden oder downgraden. Änderungen "
+"treten sofort in Kraft."
 
 #: .\templates\marketing\pricing.html:151 .\untranslated_strings_report.txt:47
 #: .\untranslated_strings_report.txt:103
 msgid "Is there a free trial?"
-msgstr ""
+msgstr "Gibt es eine kostenlose Testversion?"
 
 #: .\templates\marketing\pricing.html:152 .\untranslated_strings_report.txt:51
 #: .\untranslated_strings_report.txt:107
@@ -1188,11 +1261,13 @@ msgid ""
 "Yes, we offer a 14-day free trial for all paid plans. No credit card "
 "required."
 msgstr ""
+"Ja, wir bieten eine 14-tägige kostenlose Testversion für alle "
+"kostenpflichtigen Pläne. Keine Kreditkarte erforderlich."
 
 #: .\templates\marketing\pricing.html:156 .\untranslated_strings_report.txt:55
 #: .\untranslated_strings_report.txt:111
 msgid "What payment methods do you accept?"
-msgstr ""
+msgstr "Welche Zahlungsmethoden akzeptieren Sie?"
 
 #: .\templates\marketing\pricing.html:157 .\untranslated_strings_report.txt:59
 #: .\untranslated_strings_report.txt:115
@@ -1200,10 +1275,12 @@ msgid ""
 "We accept all major credit cards, PayPal, and bank transfers for enterprise "
 "plans."
 msgstr ""
+"Wir akzeptieren alle gängigen Kreditkarten, PayPal und Banküberweisungen für "
+"Enterprise-Pläne."
 
 #: .\templates\marketing\pricing.html:168
 msgid "Plan"
-msgstr ""
+msgstr "Plan"
 
 #: .\templates\marketing\pricing.html:168
 #, fuzzy
@@ -1215,10 +1292,12 @@ msgstr "Unternehmen"
 msgid ""
 "Compare features across all plans to find the perfect fit for your business"
 msgstr ""
+"Vergleichen Sie Funktionen aller Pläne, um die perfekte Lösung für Ihr "
+"Unternehmen zu finden"
 
 #: .\templates\marketing\pricing.html:187
 msgid "Monthly Price"
-msgstr ""
+msgstr "Monatspreis"
 
 #: .\templates\marketing\pricing.html:193
 #, fuzzy
@@ -1228,28 +1307,28 @@ msgstr "Kundenbindung"
 
 #: .\templates\marketing\pricing.html:194
 msgid "Up to 100"
-msgstr ""
+msgstr "Bis zu 100"
 
 #: .\templates\marketing\pricing.html:195
 msgid "Up to 1,000"
-msgstr ""
+msgstr "Bis zu 1.000"
 
 #: .\templates\marketing\pricing.html:196
 msgid "Unlimited"
-msgstr ""
+msgstr "Unbegrenzt"
 
 #: .\templates\marketing\pricing.html:199
 msgid "QR Codes"
-msgstr ""
+msgstr "QR-Codes"
 
 #: .\templates\marketing\pricing.html:200
 #: .\templates\marketing\pricing.html:206
 msgid "Basic"
-msgstr ""
+msgstr "Basis"
 
 #: .\templates\marketing\pricing.html:202
 msgid "White-label"
-msgstr ""
+msgstr "White-Label"
 
 #: .\templates\marketing\pricing.html:208
 #, fuzzy
@@ -1259,101 +1338,101 @@ msgstr "Fehlerbericht"
 
 #: .\templates\marketing\pricing.html:217
 msgid "API Access"
-msgstr ""
+msgstr "API-Zugriff"
 
 #: .\templates\marketing\pricing.html:218
 msgid "Limited"
-msgstr ""
+msgstr "Begrenzt"
 
 #: .\templates\marketing\pricing.html:219
 #: .\templates\marketing\pricing.html:220
 msgid "Full"
-msgstr ""
+msgstr "Vollständig"
 
 #: .\templates\marketing\pricing.html:224
 msgid "Email"
-msgstr ""
+msgstr "E-Mail"
 
 #: .\templates\marketing\pricing.html:225
 msgid "Priority"
-msgstr ""
+msgstr "Priorität"
 
 #: .\templates\marketing\pricing.html:226
 msgid "Dedicated"
-msgstr ""
+msgstr "Dediziert"
 
 #: .\templates\marketing\pricing.html:229
 msgid "Setup Fee"
-msgstr ""
+msgstr "Einrichtungsgebühr"
 
 #: .\templates\marketing\pricing.html:248 .\untranslated_strings_report.txt:67
 msgid "Join hundreds of businesses already growing with our platform"
-msgstr ""
+msgstr "Schließen Sie sich Hunderten von Unternehmen an, die bereits mit unserer Plattform wachsen"
 
 #: .\templates\marketing\pricing.html:264
 #: .\templates\marketing\pricing.html:286
 #: .\templates\marketing\pricing.html:308
 msgid "\\"
-msgstr ""
+msgstr "\\"
 
 #: .\templates\marketing\pricing.html:327
 msgid "Calculate Your"
-msgstr ""
+msgstr "Berechnen Sie Ihren"
 
 #: .\templates\marketing\pricing.html:327
 #: .\templates\marketing\pricing.html:372
 msgid "ROI"
-msgstr ""
+msgstr "ROI"
 
 #: .\templates\marketing\pricing.html:330 .\untranslated_strings_report.txt:83
 msgid "See how much you could save and earn with our loyalty program"
-msgstr ""
+msgstr "Sehen Sie, wie viel Sie mit unserem Loyalitätsprogramm sparen und verdienen könnten"
 
 #: .\templates\marketing\pricing.html:337
 msgid "ROI Calculator"
-msgstr ""
+msgstr "ROI-Rechner"
 
 #: .\templates\marketing\pricing.html:340
 #, fuzzy
 #| msgid "Happy Customers"
 msgid "Monthly Customers"
-msgstr "Zufriedene Kunden"
+msgstr "Monatliche Kunden"
 
 #: .\templates\marketing\pricing.html:344
 #: .\templates\marketing\use_cases.html:96
 msgid "Average Order Value"
-msgstr ""
+msgstr "Durchschnittlicher Bestellwert"
 
 #: .\templates\marketing\pricing.html:348
 msgid "Repeat Visit Rate"
-msgstr ""
+msgstr "Wiederholungsbesuchsrate"
 
 #: .\templates\marketing\pricing.html:357
 msgid "Projected Results"
-msgstr ""
+msgstr "Projizierte Ergebnisse"
 
 #: .\templates\marketing\pricing.html:360
 msgid "Additional Revenue"
-msgstr ""
+msgstr "Zusätzlicher Umsatz"
 
 #: .\templates\marketing\pricing.html:364
 #: .\templates\marketing\use_cases.html:167
 #, fuzzy
 #| msgid "Integrations"
 msgid "Customer Retention"
-msgstr "Integrationen"
+msgstr "Kundenbindung"
 
 #: .\templates\marketing\pricing.html:368
 msgid "Monthly Savings"
-msgstr ""
+msgstr "Monatliche Einsparungen"
 
 #: .\templates\marketing\pricing.html:389
 msgid "30-Day Money Back Guarantee"
-msgstr ""
+msgstr "30-Tage-Geld-zurück-Garantie"
 
 #: .\templates\marketing\pricing.html:391 .\untranslated_strings_report.txt:87
 msgid "Not satisfied? Get a full refund within 30 days. No questions asked."
-msgstr ""
+msgstr "Nicht zufrieden? Erhalten Sie innerhalb von 30 Tagen eine vollständige Rückerstattung. Keine Fragen gestellt."
 
 #: .\templates\marketing\pricing.html:395 .\untranslated_strings_report.txt:91
 #, fuzzy
@@ -1363,84 +1442,86 @@ msgstr "Kostenlos starten"
 
 #: .\templates\marketing\pricing.html:398
 msgid "Learn More"
-msgstr ""
+msgstr "Mehr erfahren"
 
 #: .\templates\marketing\use_cases.html:3
 msgid "Use Cases - Perfect for Every Business"
-msgstr ""
+msgstr "Anwendungsfälle - Perfekt für jedes Unternehmen"
 
 #: .\templates\marketing\use_cases.html:16
 msgid "Perfect for"
-msgstr ""
+msgstr "Perfekt für"
 
 #: .\templates\marketing\use_cases.html:16
 #, fuzzy
 #| msgid "Active Businesses"
 msgid "Every Business"
-msgstr "Aktive Unternehmen"
+msgstr "Jedes Unternehmen"
 
 #: .\templates\marketing\use_cases.html:19
 msgid ""
 "From small cafes to large retail chains, our platform adapts to your needs"
 msgstr ""
+"Von kleinen Cafés bis zu großen Einzelhandelsketten passt sich unsere "
+"Plattform Ihren Bedürfnissen an"
 
 #: .\templates\marketing\use_cases.html:33
 msgid "Restaurants & Cafes"
-msgstr ""
+msgstr "Restaurants & Cafés"
 
 #: .\templates\marketing\use_cases.html:34
 msgid "Build loyalty with every meal and coffee order"
-msgstr ""
+msgstr "Bauen Sie Loyalität mit jeder Mahlzeit und Kaffee-Bestellung auf"
 
 #: .\templates\marketing\use_cases.html:41
 msgid "Retail Stores"
-msgstr ""
+msgstr "Einzelhandelsgeschäfte"
 
 #: .\templates\marketing\use_cases.html:42
 msgid "Reward customers for their shopping frequency"
-msgstr ""
+msgstr "Belohnen Sie Kunden für ihre Einkaufshäufigkeit"
 
 #: .\templates\marketing\use_cases.html:49
 msgid "Beauty Salons"
-msgstr ""
+msgstr "Beauty-Salons"
 
 #: .\templates\marketing\use_cases.html:50
 msgid "Encourage repeat visits with beauty rewards"
-msgstr ""
+msgstr "Ermutigen Sie wiederholte Besuche mit Beauty-Belohnungen"
 
 #: .\templates\marketing\use_cases.html:58
 msgid "Integrate loyalty with your online store"
-msgstr ""
+msgstr "Integrieren Sie Loyalität mit Ihrem Online-Shop"
 
 #: .\templates\marketing\use_cases.html:69
 msgid "Real-World"
-msgstr ""
+msgstr "Echte"
 
 #: .\templates\marketing\use_cases.html:69
 msgid "Success Stories"
-msgstr ""
+msgstr "Erfolgsgeschichten"
 
 #: .\templates\marketing\use_cases.html:72
 #: .\untranslated_strings_report.txt:124
 msgid "See how different businesses are using our platform to grow"
-msgstr ""
+msgstr "Sehen Sie, wie verschiedene Unternehmen unsere Plattform nutzen, um zu wachsen"
 
 #: .\templates\marketing\use_cases.html:92
 #, fuzzy
 #| msgid "Happy Customers"
 msgid "Repeat Customers"
-msgstr "Zufriedene Kunden"
+msgstr "Wiederholungskunden"
 
 #: .\templates\marketing\use_cases.html:100
 msgid "Monthly Revenue"
-msgstr ""
+msgstr "Monatlicher Umsatz"
 
 #: .\templates\marketing\use_cases.html:108
 #: .\templates\marketing\use_cases.html:133
 #: .\untranslated_strings_report.txt:128 .\untranslated_strings_report.txt:152
 #: .\untranslated_strings_report.txt:212 .\untranslated_strings_report.txt:232
 msgid "The Challenge"
-msgstr ""
+msgstr "Die Herausforderung"
 
 #: .\templates\marketing\use_cases.html:110
 #: .\untranslated_strings_report.txt:132
@@ -1449,28 +1530,31 @@ msgid ""
 "service, customers weren't returning regularly. They needed a way to "
 "incentivize repeat visits and increase customer lifetime value."
 msgstr ""
+"Bella Vista hatte Probleme mit der Kundenbindung. Trotz großartigem Essen und "
+"Service kehrten Kunden nicht regelmäßig zurück. Sie brauchten einen Weg, um "
+"wiederholte Besuche zu fördern und den Kundenlebenszeitwert zu erhöhen."
 
 #: .\templates\marketing\use_cases.html:112
 #: .\templates\marketing\use_cases.html:137
 #: .\untranslated_strings_report.txt:136 .\untranslated_strings_report.txt:160
 #: .\untranslated_strings_report.txt:216 .\untranslated_strings_report.txt:236
 msgid "The Solution"
-msgstr ""
+msgstr "Die Lösung"
 
 #: .\templates\marketing\use_cases.html:116
 #: .\untranslated_strings_report.txt:140 .\untranslated_strings_report.txt:220
 msgid "Implemented QR-based loyalty program with 10 visits = free appetizer"
-msgstr ""
+msgstr "Implementiertes QR-basiertes Loyalitätsprogramm mit 10 Besuchen = kostenlose Vorspeise"
 
 #: .\templates\marketing\use_cases.html:120
 #: .\untranslated_strings_report.txt:144 .\untranslated_strings_report.txt:224
 msgid "Added birthday rewards and special occasion notifications"
-msgstr ""
+msgstr "Hinzugefügte Geburtstagsbelohnungen und Benachrichtigungen für besondere Anlässe"
 
 #: .\templates\marketing\use_cases.html:124
 #: .\untranslated_strings_report.txt:148 .\untranslated_strings_report.txt:228
 msgid "Integrated with their POS system for automatic point tracking"
-msgstr ""
+msgstr "Integration mit ihrem POS-System für automatische Punkteverfolgung"
 
 #: .\templates\marketing\use_cases.html:135
 #: .\untranslated_strings_report.txt:156
@@ -1479,80 +1563,83 @@ msgid ""
 "create a compelling reason for customers to visit their physical store and "
 "make repeat purchases."
 msgstr ""
+"Fashion Forward verlor Kunden an Online-Händler. Sie mussten einen "
+"überzeugenden Grund schaffen, warum Kunden ihr physisches Geschäft besuchen "
+"und wiederholt einkaufen sollten."
 
 #: .\templates\marketing\use_cases.html:141
 msgid "Created tiered loyalty program: Bronze, Silver, Gold levels"
-msgstr ""
+msgstr "Erstelltes gestuftes Loyalitätsprogramm: Bronze-, Silber-, Gold-Level"
 
 #: .\templates\marketing\use_cases.html:145
 #: .\untranslated_strings_report.txt:164 .\untranslated_strings_report.txt:240
 msgid "Offered exclusive early access to sales for loyalty members"
-msgstr ""
+msgstr "Exklusiver früher Zugang zu Verkäufen für Loyalitätsmitglieder angeboten"
 
 #: .\templates\marketing\use_cases.html:149
 #: .\untranslated_strings_report.txt:168 .\untranslated_strings_report.txt:244
 msgid "Implemented referral rewards for bringing friends"
-msgstr ""
+msgstr "Implementierte Empfehlungsbelohnungen für das Mitbringen von Freunden"
 
 #: .\templates\marketing\use_cases.html:171
 msgid "Average Spend"
-msgstr ""
+msgstr "Durchschnittliche Ausgaben"
 
 #: .\templates\marketing\use_cases.html:175
 msgid "Referral Rate"
-msgstr ""
+msgstr "Empfehlungsrate"
 
 #: .\templates\marketing\use_cases.html:191
 msgid "Industry"
-msgstr ""
+msgstr "Branche"
 
 #: .\templates\marketing\use_cases.html:191
 msgid "Impact"
-msgstr ""
+msgstr "Auswirkungen"
 
 #: .\templates\marketing\use_cases.html:194
 #: .\untranslated_strings_report.txt:172
 msgid "See how loyalty programs are transforming businesses across industries"
-msgstr ""
+msgstr "Sehen Sie, wie Loyalitätsprogramme Unternehmen in verschiedenen Branchen transformieren"
 
 #: .\templates\marketing\use_cases.html:204
 msgid "Average increase in customer retention"
-msgstr ""
+msgstr "Durchschnittliche Steigerung der Kundenbindung"
 
 #: .\templates\marketing\use_cases.html:212
 msgid "Average increase in customer lifetime value"
-msgstr ""
+msgstr "Durchschnittliche Steigerung des Kundenlebenszeitwerts"
 
 #: .\templates\marketing\use_cases.html:220
 #: .\untranslated_strings_report.txt:176 .\untranslated_strings_report.txt:248
 msgid "Of customers prefer businesses with loyalty programs"
-msgstr ""
+msgstr "Von Kunden bevorzugen Unternehmen mit Loyalitätsprogrammen"
 
 #: .\templates\marketing\use_cases.html:228
 msgid "More likely to recommend to friends"
-msgstr ""
+msgstr "Wahrscheinlicher, Freunden zu empfehlen"
 
 #: .\templates\marketing\use_cases.html:239
 #, fuzzy
 #| msgid "Settings"
 msgid "Getting"
-msgstr "Einstellungen"
+msgstr "Loslegen"
 
 #: .\templates\marketing\use_cases.html:239
 #, fuzzy
 #| msgid "Start Free"
 msgid "Started"
-msgstr "Kostenlos starten"
+msgstr ""
 
 #: .\templates\marketing\use_cases.html:242
 #: .\untranslated_strings_report.txt:180
 msgid "Follow these steps to implement your loyalty program successfully"
-msgstr ""
+msgstr "Befolgen Sie diese Schritte, um Ihr Loyalitätsprogramm erfolgreich zu implementieren"
 
 #: .\templates\marketing\use_cases.html:251
 #: .\untranslated_strings_report.txt:184 .\untranslated_strings_report.txt:252
 msgid "Define Your Goals"
-msgstr ""
+msgstr "Definieren Sie Ihre Ziele"
 
 #: .\templates\marketing\use_cases.html:252
 #: .\untranslated_strings_report.txt:188 .\untranslated_strings_report.txt:256
@@ -1560,6 +1647,8 @@ msgid ""
 "Set clear objectives: increase retention, boost average order value, or grow "
 "customer base."
 msgstr ""
+"Setzen Sie klare Ziele: Steigerung der Bindung, Erhöhung des durchschnittlichen "
+"Bestellwerts oder Wachstum der Kundenbasis."
 
 #: .\templates\marketing\use_cases.html:259
 #, fuzzy
@@ -1573,10 +1662,12 @@ msgid ""
 "Create attractive rewards that align with your business model and customer "
 "preferences."
 msgstr ""
+"Erstellen Sie attraktive Belohnungen, die zu Ihrem Geschäftsmodell und den "
+"Kundenpräferenzen passen."
 
 #: .\templates\marketing\use_cases.html:267
 msgid "Launch & Promote"
-msgstr ""
+msgstr "Starten & Bewerben"
 
 #: .\templates\marketing\use_cases.html:268
 #: .\untranslated_strings_report.txt:196 .\untranslated_strings_report.txt:264
@@ -1584,10 +1675,12 @@ msgid ""
 "Announce your program to existing customers and promote it to attract new "
 "ones."
 msgstr ""
+"Kündigen Sie Ihr Programm bestehenden Kunden an und bewerben Sie es, um neue "
+"anzuziehen."
 
 #: .\templates\marketing\use_cases.html:275
 msgid "Monitor & Optimize"
-msgstr ""
+msgstr "Überwachen & Optimieren"
 
 #: .\templates\marketing\use_cases.html:276
 #: .\untranslated_strings_report.txt:200 .\untranslated_strings_report.txt:268
@@ -1595,11 +1688,13 @@ msgid ""
 "Track performance metrics and continuously improve your program based on "
 "data insights."
 msgstr ""
+"Verfolgen Sie Leistungskennzahlen und verbessern Sie Ihr Programm "
+"kontinuierlich basierend auf Dateneinblicken."
 
 #: .\templates\marketing\use_cases.html:292
 #: .\untranslated_strings_report.txt:204
 msgid "Ready to Grow Your Business?"
-msgstr ""
+msgstr "Bereit, Ihr Unternehmen zu vergrößern?"
 
 #: .\templates\marketing\use_cases.html:295
 #: .\untranslated_strings_report.txt:208
@@ -1607,12 +1702,15 @@ msgid ""
 "Join hundreds of businesses already using our platform to build stronger "
 "customer relationships and increase revenue."
 msgstr ""
+"Schließen Sie sich Hunderten von Unternehmen an, die bereits unsere "
+"Plattform nutzen, um stärkere Kundenbeziehungen aufzubauen und den Umsatz zu "
+"steigern."
 
 #: .\templates\marketing\use_cases.html:304
 #, fuzzy
 #| msgid "Features"
 msgid "Explore Features"
-msgstr "Funktionen"
+msgstr "Funktionen erkunden"
 
 #: .\templates\partners\business_settings.html:3
 #: .\templates\partners\business_settings.html:7
@@ -1625,27 +1723,27 @@ msgstr "Unternehmen"
 #: .\templates\partners\business_settings.html:8
 #: .\untranslated_strings_report.txt:278 .\untranslated_strings_report.txt:283
 msgid "Manage your business information and restaurant images"
-msgstr ""
+msgstr "Verwalten Sie Ihre Unternehmensinformationen und Restaurantbilder"
 
 #: .\templates\partners\dashboard.html:3
 msgid "Partner Dashboard"
-msgstr ""
+msgstr "Partner-Dashboard"
 
 #: .\templates\partners\dashboard.html:6
 msgid "Dashboard"
-msgstr ""
+msgstr "Dashboard"
 
 #: .\templates\partners\dashboard.html:10
 msgid "Business Information"
-msgstr ""
+msgstr "Unternehmensinformationen"
 
 #: .\templates\partners\dashboard.html:11
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #: .\templates\partners\dashboard.html:12
 msgid "Phone"
-msgstr ""
+msgstr "Telefon"
 
 #: .\templates\partners\dashboard.html:13
 #, fuzzy
@@ -1655,28 +1753,28 @@ msgstr "Unternehmen"
 
 #: .\templates\partners\dashboard.html:14
 msgid "Description"
-msgstr ""
+msgstr "Beschreibung"
 
 #: .\templates\partners\dashboard.html:14
 msgid "No description"
-msgstr ""
+msgstr "Keine Beschreibung"
 
 #: .\templates\partners\dashboard.html:18
 msgid "No Business Found"
-msgstr ""
+msgstr "Kein Unternehmen gefunden"
 
 #: .\templates\partners\dashboard.html:19
 msgid "You need to register a business first."
-msgstr ""
+msgstr "Sie müssen zuerst ein Unternehmen registrieren."
 
 #: .\templates\partners\dashboard.html:25
 msgid "Orders"
-msgstr ""
+msgstr "Bestellungen"
 
 #: .\templates\partners\dashboard.html:33
 #: .\templates\partners\dashboard.html:56
 msgid "Reviews"
-msgstr ""
+msgstr "Bewertungen"
 
 #: .\templates\partners\dashboard.html:37
 #, fuzzy
@@ -1688,70 +1786,70 @@ msgstr "Marketingkampagnen"
 #: .\templates\partners\qr_generator.html:3
 #: .\templates\partners\qr_generator.html:13 .\templates\qr\generator.html:5
 msgid "QR Code Generator"
-msgstr ""
+msgstr "QR-Code-Generator"
 
 #: .\templates\partners\dashboard.html:45
 msgid "Generate QR codes for your business"
-msgstr ""
+msgstr "Generieren Sie QR-Codes für Ihr Unternehmen"
 
 #: .\templates\partners\dashboard.html:48
 #: .\templates\partners\products_list.html:3
 #, fuzzy
 #| msgid "Products"
 msgid "Manage Products"
-msgstr "Produkte"
+msgstr "Produkte verwalten"
 
 #: .\templates\partners\dashboard.html:49
 msgid "Add and manage your products"
-msgstr ""
+msgstr "Hinzufügen und Verwalten Ihrer Produkte"
 
 #: .\templates\partners\dashboard.html:52
 msgid "Users"
-msgstr ""
+msgstr "Benutzer"
 
 #: .\templates\partners\dashboard.html:53
 #: .\templates\partners\users_list.html:9 .\untranslated_strings_report.txt:473
 #: .\untranslated_strings_report.txt:483
 msgid "View your customers and their activity"
-msgstr ""
+msgstr "Sehen Sie Ihre Kunden und ihre Aktivitäten"
 
 #: .\templates\partners\dashboard.html:57
 msgid "See feedback and reply to customers"
-msgstr ""
+msgstr "Feedback sehen und Kunden antworten"
 
 #: .\templates\partners\dashboard.html:61
 msgid "Update your business information"
-msgstr ""
+msgstr "Aktualisieren Sie Ihre Unternehmensinformationen"
 
 #: .\templates\partners\dashboard.html:65
 msgid "Send Notification"
-msgstr ""
+msgstr "Benachrichtigung senden"
 
 #: .\templates\partners\dashboard.html:66
 msgid "New"
-msgstr ""
+msgstr "Neu"
 
 #: .\templates\partners\dashboard.html:68
 msgid "Craft push messages for your customers"
-msgstr ""
+msgstr "Erstellen Sie Push-Nachrichten für Ihre Kunden"
 
 #: .\templates\partners\login.html:7
 msgid "Enter your phone number and password to access the admin panel."
-msgstr ""
+msgstr "Geben Sie Ihre Telefonnummer und Ihr Passwort ein, um auf das Admin-Panel zuzugreifen."
 
 #: .\templates\partners\login.html:29
 #, fuzzy
 #| msgid "Businesses"
 msgid "Business Admin Panel"
-msgstr "Unternehmen"
+msgstr "Unternehmens-Admin-Panel"
 
 #: .\templates\partners\notifications_center.html:3
 msgid "Notifications"
-msgstr ""
+msgstr "Benachrichtigungen"
 
 #: .\templates\partners\notifications_center.html:9
 msgid "Send Push Notification"
-msgstr ""
+msgstr "Push-Benachrichtigung senden"
 
 #: .\templates\partners\notifications_center.html:11
 #: .\untranslated_strings_report.txt:293
@@ -1760,16 +1858,21 @@ msgid ""
 "through Firebase and appear inside the Bonus mobile app and partner web "
 "panel."
 msgstr ""
+"Erstellen Sie eine Nachricht und liefern Sie sie sofort an Ihre Kunden. "
+"Benachrichtigungen gehen über Firebase und erscheinen in der Bonus-Mobile-App "
+"und im Partner-Web-Panel."
 
 #: .\templates\partners\notifications_center.html:17
 msgid "No business found"
-msgstr ""
+msgstr "Kein Unternehmen gefunden"
 
 #: .\templates\partners\notifications_center.html:18
 #: .\untranslated_strings_report.txt:298 .\untranslated_strings_report.txt:333
 msgid ""
 "You need to register at least one business before sending notifications."
 msgstr ""
+"Sie müssen mindestens ein Unternehmen registrieren, bevor Sie "
+"Benachrichtigungen senden können."
 
 #: .\templates\partners\notifications_center.html:23
 #, fuzzy
@@ -1779,29 +1882,29 @@ msgstr "Unternehmen"
 
 #: .\templates\partners\notifications_center.html:32
 msgid "Not Selected"
-msgstr ""
+msgstr "Nicht ausgewählt"
 
 #: .\templates\partners\notifications_center.html:35
 #: .\untranslated_strings_report.txt:303 .\untranslated_strings_report.txt:338
 msgid "Notifications will be sent to customers of this business."
-msgstr ""
+msgstr "Benachrichtigungen werden an Kunden dieses Unternehmens gesendet."
 
 #: .\templates\partners\notifications_center.html:38
 msgid "Delivery"
-msgstr ""
+msgstr "Zustellung"
 
 #: .\templates\partners\notifications_center.html:39
 msgid "Instant"
-msgstr ""
+msgstr "Sofort"
 
 #: .\templates\partners\notifications_center.html:40
 #: .\untranslated_strings_report.txt:308 .\untranslated_strings_report.txt:343
 msgid "Sent immediately after you hit send."
-msgstr ""
+msgstr "Wird sofort nach dem Senden gesendet."
 
 #: .\templates\partners\notifications_center.html:61
 msgid "Recipients"
-msgstr ""
+msgstr "Empfänger"
 
 #: .\templates\partners\notifications_center.html:62
 #: .\untranslated_strings_report.txt:313 .\untranslated_strings_report.txt:348
@@ -1809,18 +1912,20 @@ msgid ""
 "Select individual customers or leave empty to notify all customers of this "
 "business."
 msgstr ""
+"Wählen Sie einzelne Kunden aus oder lassen Sie es leer, um alle Kunden "
+"dieses Unternehmens zu benachrichtigen."
 
 #: .\templates\partners\notifications_center.html:65
 msgid "Select all"
-msgstr ""
+msgstr "Alle auswählen"
 
 #: .\templates\partners\notifications_center.html:66
 msgid "Clear"
-msgstr ""
+msgstr "Löschen"
 
 #: .\templates\partners\notifications_center.html:69
 msgid "Search by name, email, or phone"
-msgstr ""
+msgstr "Suche nach Name, E-Mail oder Telefon"
 
 #: .\templates\partners\notifications_center.html:71
 #: .\untranslated_strings_report.txt:318 .\untranslated_strings_report.txt:353
@@ -1828,16 +1933,20 @@ msgid ""
 "No specific recipients selected. All customers of this business will receive "
 "this notification."
 msgstr ""
+"Keine spezifischen Empfänger ausgewählt. Alle Kunden dieses Unternehmens "
+"erhalten diese Benachrichtigung."
 
 #: .\templates\partners\notifications_center.html:90
 msgid ""
 "Send no more than 2 promotions per day per business to avoid user fatigue."
 msgstr ""
+"Senden Sie nicht mehr als 2 Werbeaktionen pro Tag pro Unternehmen, um "
+"Benutzerermüdung zu vermeiden."
 
 #: .\templates\partners\notifications_center.html:91
 #: .\untranslated_strings_report.txt:323 .\untranslated_strings_report.txt:358
 msgid "Keep the title short (under 60 characters) and the body actionable."
-msgstr ""
+msgstr "Halten Sie den Titel kurz (unter 60 Zeichen) und den Text umsetzbar."
 
 #: .\templates\partners\notifications_center.html:92
 #: .\untranslated_strings_report.txt:328 .\untranslated_strings_report.txt:363
@@ -1845,109 +1954,113 @@ msgid ""
 "Use the optional JSON data to deep-link users directly to menus, offers, or "
 "campaigns."
 msgstr ""
+"Verwenden Sie die optionale JSON-Daten, um Benutzer direkt zu Menüs, "
+"Angeboten oder Kampagnen zu verlinken."
 
 #: .\templates\partners\product_form.html:3
 #: .\templates\partners\product_form.html:8
 msgid "Edit Item"
-msgstr ""
+msgstr "Element bearbeiten"
 
 #: .\templates\partners\product_form.html:3
 #: .\templates\partners\product_form.html:8
 msgid "New Item"
-msgstr ""
+msgstr "Neues Element"
 
 #: .\templates\partners\product_form.html:61
 msgid "Menu Item: User earns points when they purchase this item"
-msgstr ""
+msgstr "Menüelement: Benutzer verdient Punkte, wenn er dieses Element kauft"
 
 #: .\templates\partners\product_form.html:62
 #: .\untranslated_strings_report.txt:373
 msgid "Reward Item: User spends points to redeem this item"
-msgstr ""
+msgstr "Belohnungselement: Benutzer gibt Punkte aus, um dieses Element einzulösen"
 
 #: .\templates\partners\products_list.html:16
 #: .\untranslated_strings_report.txt:383 .\untranslated_strings_report.txt:408
 #, fuzzy
 #| msgid "Products"
 msgid "Your Products"
-msgstr "Produkte"
+msgstr "Ihre Produkte"
 
 #: .\templates\partners\products_list.html:28
 msgid "Menu Items"
-msgstr ""
+msgstr "Menüelemente"
 
 #: .\templates\partners\products_list.html:29
 #: .\untranslated_strings_report.txt:388
 msgid "(Items that give points to customers)"
-msgstr ""
+msgstr "(Elemente, die Kunden Punkte geben)"
 
 #: .\templates\partners\products_list.html:62
 #: .\untranslated_strings_report.txt:393 .\untranslated_strings_report.txt:413
 msgid "Add your first menu item →"
-msgstr ""
+msgstr "Fügen Sie Ihr erstes Menüelement hinzu →"
 
 #: .\templates\partners\products_list.html:71
 #, fuzzy
 #| msgid "Rewards"
 msgid "Reward Items"
-msgstr "Belohnungen"
+msgstr "Belohnungselemente"
 
 #: .\templates\partners\products_list.html:72
 #: .\untranslated_strings_report.txt:398
 msgid "(Items that customers can redeem with points)"
-msgstr ""
+msgstr "(Elemente, die Kunden mit Punkten einlösen können)"
 
 #: .\templates\partners\products_list.html:105
 #: .\untranslated_strings_report.txt:403 .\untranslated_strings_report.txt:418
 msgid "Add your first reward item →"
-msgstr ""
+msgstr "Fügen Sie Ihr erstes Belohnungselement hinzu →"
 
 #: .\templates\partners\qr_generator.html:14
 #: .\untranslated_strings_report.txt:428 .\untranslated_strings_report.txt:443
 msgid "Show this code to customers to scan."
-msgstr ""
+msgstr "Zeigen Sie diesen Code Kunden zum Scannen."
 
 #: .\templates\partners\qr_generator.html:125
 #: .\untranslated_strings_report.txt:433
 msgid "QR Code will appear here"
-msgstr ""
+msgstr "QR-Code wird hier angezeigt"
 
 #: .\templates\partners\qr_generator.html:129
 msgid "Success!"
-msgstr ""
+msgstr "Erfolg!"
 
 #: .\templates\partners\qr_generator.html:130
 #: .\untranslated_strings_report.txt:438 .\untranslated_strings_report.txt:448
 msgid "This QR code has been scanned"
-msgstr ""
+msgstr "Dieser QR-Code wurde gescannt"
 
 #: .\templates\partners\reviews_list.html:3
 #, fuzzy
 #| msgid "Customer Loyalty"
 msgid "Customer Reviews"
-msgstr "Kundenbindung"
+msgstr "Kundenbewertungen"
 
 #: .\templates\partners\reviews_list.html:264
 #: .\templates\partners\reviews_list.html:287
 #: .\untranslated_strings_report.txt:458 .\untranslated_strings_report.txt:463
 msgid "Show this reply to customers"
-msgstr ""
+msgstr "Diese Antwort Kunden anzeigen"
 
 #: .\templates\partners\users_list.html:3
 #: .\templates\partners\users_list.html:8
 msgid "Users List"
-msgstr ""
+msgstr "Benutzerliste"
 
 #: .\templates\partners\users_list.html:176
 #: .\untranslated_strings_report.txt:478 .\untranslated_strings_report.txt:488
 msgid "No customers have registered for your business yet."
-msgstr ""
+msgstr "Es haben sich noch keine Kunden für Ihr Unternehmen registriert."
 
 #: .\templates\qr\generator.html:20
 msgid ""
 "Create QR codes for your customers' in-person payments. Customers can scan "
 "these codes to receive stamps."
 msgstr ""
+"Erstellen Sie QR-Codes für die persönlichen Zahlungen Ihrer Kunden. Kunden "
+"können diese Codes scannen, um Stempel zu erhalten."
 
 #: .\templates\qr\no_business.html:4
 #, fuzzy
@@ -1960,27 +2073,31 @@ msgid ""
 "You haven't registered a business yet. To use the QR code system, you need "
 "to register your business first."
 msgstr ""
+"Sie haben noch kein Unternehmen registriert. Um das QR-Code-System zu "
+"verwenden, müssen Sie zuerst Ihr Unternehmen registrieren."
 
 #: .\templates\qr\scan.html:5
 msgid "QR Code Scanner - In-Person Payment"
-msgstr ""
+msgstr "QR-Code-Scanner - Persönliche Zahlung"
 
 #: .\templates\qr\scan.html:27 .\untranslated_strings_report.txt:522
 #: .\untranslated_strings_report.txt:537
 msgid "Click the button below to start scanning"
-msgstr ""
+msgstr "Klicken Sie auf die Schaltfläche unten, um mit dem Scannen zu beginnen"
 
 #: .\templates\qr\scan.html:35 .\untranslated_strings_report.txt:527
 #: .\untranslated_strings_report.txt:542
 msgid "Or enter QR code manually:"
-msgstr ""
+msgstr "Oder QR-Code manuell eingeben:"
 
 #: .\templates\qr\scan.html:60 .\untranslated_strings_report.txt:547
 msgid ""
 "Only required if the business has set a password for in-person payments."
 msgstr ""
+"Nur erforderlich, wenn das Unternehmen ein Passwort für persönliche "
+"Zahlungen festgelegt hat."
 
 #: .\templates\qr\scan.html:89 .\untranslated_strings_report.txt:532
 #: .\untranslated_strings_report.txt:552
 msgid "Your Wallet Status"
-msgstr ""
+msgstr "Ihr Wallet-Status"
