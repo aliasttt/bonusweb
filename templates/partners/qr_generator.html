@@ -306,6 +306,9 @@
       document.getElementById('qr-placeholder').style.display = 'block';
       document.getElementById('qr-success').classList.add('hidden');
       
+      // Clear QR code src to prevent caching
+      document.getElementById('qr').src = '';
+      
       // Clear payload display
       document.getElementById('payload').innerText = '';
       
@@ -363,8 +366,18 @@
       return;
     }
     
-    // Generate unique timestamp for this QR code to ensure uniqueness
-    const qrTimestamp = Date.now();
+    // Stop any existing interval first
+    if (window.qrCheckInterval) {
+      clearInterval(window.qrCheckInterval);
+      window.qrCheckInterval = null;
+    }
+    
+    // Clear previous QR payload
+    window.currentQRPayload = null;
+    
+    // Generate unique timestamp with random component to ensure absolute uniqueness
+    // Combine timestamp with random number to prevent collisions
+    const qrTimestamp = Date.now() + Math.floor(Math.random() * 1000000);
     
     const payload = JSON.stringify({
       business_id: biz,
@@ -376,8 +389,17 @@
       qr_timestamp: qrTimestamp
     });
     
+    // Clear previous QR code first to prevent caching
+    document.getElementById('qr').src = '';
+    
+    // Update payload display
     document.getElementById('payload').innerText = payload;
-    const dataUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=' + encodeURIComponent(payload);
+    
+    // Generate new QR code URL with cache-busting parameter
+    const cacheBuster = Date.now() + Math.random();
+    const dataUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=' + encodeURIComponent(payload) + '&_=' + cacheBuster;
+    
+    // Set new QR code image
     document.getElementById('qr').src = dataUrl;
     document.getElementById('qr').style.display = 'block';
     document.getElementById('qr-placeholder').style.display = 'none';
@@ -395,10 +417,6 @@
     generateBtn.textContent = 'Refresh';
     
     // Periodically check if QR code has been scanned
-    if (window.qrCheckInterval) {
-      clearInterval(window.qrCheckInterval);
-    }
-    
     window.qrCheckInterval = setInterval(async () => {
       if (!window.currentQRPayload) return;
       
@@ -435,59 +453,97 @@
     }, 2000); // Check every 2 seconds
   }
 
-  // Initialize product card click handlers
-  document.addEventListener('DOMContentLoaded', function() {
-    // Handle menu product card clicks
-    document.querySelectorAll('.menu-product-card').forEach(card => {
-      card.addEventListener('click', function() {
-        const checkbox = this.querySelector('.prod');
-        const isSelected = this.dataset.selected === 'true';
+    // Function to reset QR code when product selection changes
+    function resetQRCodeOnProductChange() {
+      const generateBtn = document.getElementById('generate-btn');
+      // If QR code is already generated, reset it
+      if (generateBtn && generateBtn.textContent.trim() === 'Refresh') {
+        // Hide QR code
+        document.getElementById('qr').style.display = 'none';
+        document.getElementById('qr-placeholder').style.display = 'block';
+        document.getElementById('qr-success').classList.add('hidden');
         
-        if (isSelected) {
-          this.style.borderColor = '#d1d5db'; // gray-300
-          this.dataset.selected = 'false';
-          checkbox.checked = false;
-        } else {
-          this.style.borderColor = '#22c55e'; // green-500
-          this.dataset.selected = 'true';
-          checkbox.checked = true;
+        // Clear QR code src to prevent caching
+        document.getElementById('qr').src = '';
+        
+        // Clear payload display
+        document.getElementById('payload').innerText = '';
+        
+        // Stop checking interval
+        if (window.qrCheckInterval) {
+          clearInterval(window.qrCheckInterval);
+          window.qrCheckInterval = null;
         }
         
-        recalc();
-      });
-    });
-
-    // Handle reward product card clicks
-    document.querySelectorAll('.reward-product-card').forEach(card => {
-      card.addEventListener('click', function() {
-        const checkbox = this.querySelector('.prod');
-        const isSelected = this.dataset.selected === 'true';
+        // Clear payload data
+        window.currentQRPayload = null;
         
-        if (isSelected) {
-          this.style.borderColor = '#d1d5db'; // gray-300
-          this.dataset.selected = 'false';
-          checkbox.checked = false;
-        } else {
-          this.style.borderColor = '#ef4444'; // red-500
-          this.dataset.selected = 'true';
-          checkbox.checked = true;
-        }
-        
-        recalc();
-      });
-    });
-
-    // Hook product selection changes to recalc points automatically
-    document.querySelectorAll('.prod').forEach(cb => {
-      cb.addEventListener('change', recalc);
-    });
-
-    // Allow Enter key to submit phone
-    document.getElementById('phone').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        checkPhone();
+        // Change button back to Generate QR Code
+        generateBtn.textContent = 'Generate QR Code';
       }
+    }
+
+    // Initialize product card click handlers
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle menu product card clicks
+      document.querySelectorAll('.menu-product-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const checkbox = this.querySelector('.prod');
+          const isSelected = this.dataset.selected === 'true';
+          
+          if (isSelected) {
+            this.style.borderColor = '#d1d5db'; // gray-300
+            this.dataset.selected = 'false';
+            checkbox.checked = false;
+          } else {
+            this.style.borderColor = '#22c55e'; // green-500
+            this.dataset.selected = 'true';
+            checkbox.checked = true;
+          }
+          
+          recalc();
+          // Reset QR code when product selection changes
+          resetQRCodeOnProductChange();
+        });
+      });
+
+      // Handle reward product card clicks
+      document.querySelectorAll('.reward-product-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const checkbox = this.querySelector('.prod');
+          const isSelected = this.dataset.selected === 'true';
+          
+          if (isSelected) {
+            this.style.borderColor = '#d1d5db'; // gray-300
+            this.dataset.selected = 'false';
+            checkbox.checked = false;
+          } else {
+            this.style.borderColor = '#ef4444'; // red-500
+            this.dataset.selected = 'true';
+            checkbox.checked = true;
+          }
+          
+          recalc();
+          // Reset QR code when product selection changes
+          resetQRCodeOnProductChange();
+        });
+      });
+
+      // Hook product selection changes to recalc points automatically
+      document.querySelectorAll('.prod').forEach(cb => {
+        cb.addEventListener('change', function() {
+          recalc();
+          // Reset QR code when product selection changes
+          resetQRCodeOnProductChange();
+        });
+      });
+
+      // Allow Enter key to submit phone
+      document.getElementById('phone').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          checkPhone();
+        }
+      });
     });
-  });
 </script>
 {% endblock %}
