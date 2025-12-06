@@ -14,8 +14,16 @@ from loyalty.models import Business, Product, Slider
 
 class Command(BaseCommand):
     help = 'Add fake businesses with real images and menus for testing'
+    
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            help='Force creation even if business already exists',
+        )
 
     def handle(self, *args, **options):
+        force = options.get('force', False)
         self.stdout.write(self.style.SUCCESS('Starting to add fake businesses...'))
         
         # Get or create a superuser for business owners
@@ -369,6 +377,16 @@ class Command(BaseCommand):
                     'reward_point_cost': 100,
                 }
             )
+            
+            # If business exists and force is True, update it
+            if not created and force:
+                business.description = biz_data['description']
+                business.address = biz_data['address']
+                business.phone = biz_data['phone']
+                business.email = biz_data['email']
+                business.website = biz_data['website']
+                business.save()
+                created = True  # Treat as created to add products
             
             if created:
                 created_count += 1
