@@ -205,8 +205,10 @@ class QRProductScanView(APIView):
             return Response({
                 "error": "This QR code has already been scanned",
                 "scanned": True,
+                "is_first_scan": False,  # This is NOT the first scan
+                "already_scanned": True,  # Alternative flag for clarity
                 "scanned_at": existing_scan.scanned_at,
-                "message": "Success! This QR code was already used."
+                "message": "این QR کد قبلاً استفاده شده است"
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # Get business
@@ -316,6 +318,8 @@ class QRProductScanView(APIView):
         # Return response for React Native
         return Response({
             "success": True,
+            "is_first_scan": True,  # This IS the first scan
+            "already_scanned": False,  # Alternative flag for clarity
             "is_new_user": is_new_user,
             "user_id": user.id,
             "customer_id": customer.id,
@@ -325,7 +329,8 @@ class QRProductScanView(APIView):
                 {
                     "id": p.id,
                     "title": p.title,
-                    "points_reward": p.points_reward
+                    "points_reward": p.points_reward,
+                    "is_reward": p.is_reward  # مشخص می‌کند که این منو است (false) یا ریوارد (true)
                 } for p in products
             ],
             "total_points_awarded": total_points,
@@ -372,12 +377,16 @@ class CheckQRCodeStatusView(APIView):
         if existing_scan:
             return Response({
                 "scanned": True,
+                "is_first_scan": False,  # This is NOT the first scan
+                "already_scanned": True,  # Alternative flag for clarity
                 "scanned_at": existing_scan.scanned_at,
-                "message": "Success! This QR code was already used."
+                "message": "این QR کد قبلاً استفاده شده است"
             }, status=status.HTTP_200_OK)
         else:
             return Response({
                 "scanned": False,
+                "is_first_scan": True,  # This would be the first scan
+                "already_scanned": False,  # Alternative flag for clarity
                 "message": "QR code is valid and ready to scan"
             }, status=status.HTTP_200_OK)
 
