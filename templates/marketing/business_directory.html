@@ -1,13 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Business Directory{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Business Directory" %}{% endblock %}
 {% block content %}
 <section class="py-20 min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark-lighter relative overflow-hidden">
   <div class="absolute inset-0 opacity-30 blur-3xl bg-gradient-to-r from-primary/30 via-secondary/20 to-amber-500/20 animate-pulse-slow"></div>
   <div class="relative max-w-6xl mx-auto px-4">
     <div class="text-center mb-12 fade-up show">
-      <p class="text-primary font-semibold mb-3">Verified Partners</p>
-      <h1 class="text-4xl font-black mb-4">All Active Restaurants & Cafés on Bonus</h1>
-      <p class="text-gray-400 max-w-2xl mx-auto">Browse every approved business. Click a card to view full details, services, and customer reviews.</p>
+      <p class="text-primary font-semibold mb-3">{% trans "Verified Partners" %}</p>
+      <h1 class="text-4xl font-black mb-4">{% trans "All Active Restaurants & Cafés on Bonus" %}</h1>
+      <p class="text-gray-400 max-w-2xl mx-auto">{% trans "Browse every approved business. Click a card to view full details, services, and customer reviews." %}</p>
     </div>
     <div class="grid gap-8 md:grid-cols-2">
       {% for business in businesses %}
@@ -21,7 +22,7 @@
               <div class="w-full h-full bg-gradient-to-r from-primary/60 via-secondary/40 to-amber-400/50 flex items-center justify-center text-white text-3xl font-black tracking-wide animate-gradient">BONUS</div>
             {% endif %}
             <div class="absolute bottom-4 left-4 z-20">
-              <p class="text-xs uppercase tracking-[0.3em] text-gray-200">Featured business</p>
+              <p class="text-xs uppercase tracking-[0.3em] text-gray-200">{% trans "Featured business" %}</p>
               <p class="text-2xl font-black text-white drop-shadow-lg">{{ business.name }}</p>
             </div>
           </div>
@@ -30,36 +31,36 @@
             <div class="text-right">
               {% if business.average_rating_value %}
                 <p class="text-3xl font-bold text-amber-400">{{ business.average_rating_value|floatformat:1 }}</p>
-                <p class="text-xs text-gray-500">Average Rating</p>
+                <p class="text-xs text-gray-500">{% trans "Average Rating" %}</p>
               {% else %}
                 <p class="text-lg font-semibold text-gray-500">—</p>
-                <p class="text-xs text-gray-500">No Rating Yet</p>
+                <p class="text-xs text-gray-500">{% trans "No Rating Yet" %}</p>
               {% endif %}
             </div>
           </div>
           <div class="space-y-2 text-sm text-gray-300">
             <p class="flex items-center gap-2">
               <i data-lucide="map-pin" class="w-4 h-4"></i>
-              {{ business.address|default:"Address unavailable" }}
+              {{ business.address|default:_("Address unavailable") }}
             </p>
             <p class="flex items-center gap-2">
               <i data-lucide="phone" class="w-4 h-4"></i>
-              {{ business.phone|default:"Phone unavailable" }}
+              {{ business.phone|default:_("Phone unavailable") }}
             </p>
             <p class="flex items-center gap-2">
               <i data-lucide="message-square" class="w-4 h-4"></i>
-              {{ business.review_count_value|default:0 }} published reviews
+              {{ business.review_count_value|default:0 }} {% trans "published reviews" %}
             </p>
           </div>
           <div class="mt-4 inline-flex items-center text-primary font-semibold gap-2">
-            View details
+            {% trans "View details" %}
             <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i>
           </div>
         </a>
         {% endwith %}
       {% empty %}
         <div class="col-span-2 text-center text-gray-400 py-16">
-          No businesses have been onboarded yet.
+          {% trans "No businesses have been onboarded yet." %}
         </div>
       {% endfor %}
     </div>

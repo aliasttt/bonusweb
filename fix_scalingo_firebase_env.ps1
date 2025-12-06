@@ -115,3 +115,5 @@ Write-Host ""
 Write-Host "3. Verify Firebase is initialized (look for 'Firebase Admin SDK initialized successfully')" -ForegroundColor White
 Write-Host ""
 
+
+

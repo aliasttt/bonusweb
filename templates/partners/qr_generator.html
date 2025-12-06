@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% block title %}QR Code Generator{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "QR Code Generator" %}{% endblock %}
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 py-8">
   <div class="mb-6">
@@ -9,8 +10,8 @@
     >
       ← Back to Dashboard
     </a>
-    <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">QR Code Generator</h1>
-    <p class="mt-2 text-gray-600">Show this code to customers to scan.</p>
+    <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{% trans "QR Code Generator" %}</h1>
+    <p class="mt-2 text-gray-600">{% trans "Show this code to customers to scan." %}</p>
   </div>
   
   <div id="main-content" class="mt-8">
@@ -121,12 +122,12 @@
               <div class="w-full max-w-xs mx-auto p-4 bg-white rounded-xl border-2 border-dashed border-gray-300">
                 <img id="qr" class="w-full h-auto mx-auto" style="display: none;" />
                 <div id="qr-placeholder" class="py-16 text-gray-400 text-sm">
-                  QR Code will appear here
+                  {% trans "QR Code will appear here" %}
                 </div>
                 <div id="qr-success" class="hidden py-16 bg-green-500 rounded-xl text-white">
                   <div class="text-4xl mb-2">✓</div>
-                  <div class="text-lg font-semibold">Success!</div>
-                  <div class="text-sm mt-2">This QR code has been scanned</div>
+                  <div class="text-lg font-semibold">{% trans "Success!" %}</div>
+                  <div class="text-sm mt-2">{% trans "This QR code has been scanned" %}</div>
                 </div>
               </div>
               <p class="mt-4 text-center text-xs text-gray-500 font-mono break-all" id="payload"></p>

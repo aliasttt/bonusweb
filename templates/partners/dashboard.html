@@ -1,70 +1,71 @@
 {% extends 'base.html' %}
-{% block title %}Partner Dashboard{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Partner Dashboard" %}{% endblock %}
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 py-16">
-  <h1 class="text-4xl font-extrabold">Dashboard</h1>
+  <h1 class="text-4xl font-extrabold">{% trans "Dashboard" %}</h1>
   
   {% if business %}
     <div class="mt-6 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-      <h2 class="text-2xl font-bold text-white mb-4">Business Information</h2>
-      <p class="text-gray-300"><strong>Name:</strong> {{ business.name }}</p>
-      <p class="text-gray-300"><strong>Phone:</strong> {{ business.phone }}</p>
-      <p class="text-gray-300"><strong>Business ID:</strong> <span class="text-yellow-400 font-mono">{{ business.id }}</span></p>
-      <p class="text-gray-300"><strong>Description:</strong> {{ business.description|default:"No description" }}</p>
+      <h2 class="text-2xl font-bold text-white mb-4">{% trans "Business Information" %}</h2>
+      <p class="text-gray-300"><strong>{% trans "Name" %}:</strong> {{ business.name }}</p>
+      <p class="text-gray-300"><strong>{% trans "Phone" %}:</strong> {{ business.phone }}</p>
+      <p class="text-gray-300"><strong>{% trans "Business ID" %}:</strong> <span class="text-yellow-400 font-mono">{{ business.id }}</span></p>
+      <p class="text-gray-300"><strong>{% trans "Description" %}:</strong> {{ business.description|default:_("No description") }}</p>
     </div>
   {% else %}
     <div class="mt-6 bg-red-500/20 backdrop-blur-sm rounded-2xl p-6 border border-red-500/30">
-      <h2 class="text-2xl font-bold text-red-300 mb-4">No Business Found</h2>
-      <p class="text-red-200">You need to register a business first.</p>
+      <h2 class="text-2xl font-bold text-red-300 mb-4">{% trans "No Business Found" %}</h2>
+      <p class="text-red-200">{% trans "You need to register a business first." %}</p>
     </div>
   {% endif %}
 
   <div class="mt-6 grid md:grid-cols-4 gap-6">
     <div class="p-6 rounded-2xl border bg-white/10 backdrop-blur-sm border-white/20">
-      <h3 class="text-lg font-semibold text-white">Orders</h3>
+      <h3 class="text-lg font-semibold text-white">{% trans "Orders" %}</h3>
       <p class="text-3xl font-bold text-blue-400">{{ orders_count }}</p>
     </div>
     <div class="p-6 rounded-2xl border bg-white/10 backdrop-blur-sm border-white/20">
-      <h3 class="text-lg font-semibold text-white">Products</h3>
+      <h3 class="text-lg font-semibold text-white">{% trans "Products" %}</h3>
       <p class="text-3xl font-bold text-green-400">{{ products_count }}</p>
     </div>
     <div class="p-6 rounded-2xl border bg-white/10 backdrop-blur-sm border-white/20">
-      <h3 class="text-lg font-semibold text-white">Reviews</h3>
+      <h3 class="text-lg font-semibold text-white">{% trans "Reviews" %}</h3>
       <p class="text-3xl font-bold text-yellow-400">{{ reviews_count }}</p>
     </div>
     <div class="p-6 rounded-2xl border bg-white/10 backdrop-blur-sm border-white/20">
-      <h3 class="text-lg font-semibold text-white">Campaigns</h3>
+      <h3 class="text-lg font-semibold text-white">{% trans "Campaigns" %}</h3>
       <p class="text-3xl font-bold text-purple-400">{{ campaigns_count }}</p>
     </div>
   </div>
 
   <div class="mt-8 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
     <a href="/partners/qr/" class="p-6 rounded-2xl border bg-white/10 backdrop-blur-sm border-white/20 hover:shadow-lg hover:bg-white/20 transition-all duration-200">
-      <h3 class="text-lg font-semibold text-white mb-2">QR Code Generator</h3>
-      <p class="text-gray-300">Generate QR codes for your business</p>
+      <h3 class="text-lg font-semibold text-white mb-2">{% trans "QR Code Generator" %}</h3>
+      <p class="text-gray-300">{% trans "Generate QR codes for your business" %}</p>
     </a>
     <a href="/partners/products/" class="p-6 rounded-2xl border bg-white/10 backdrop-blur-sm border-white/20 hover:shadow-lg hover:bg-white/20 transition-all duration-200">
-      <h3 class="text-lg font-semibold text-white mb-2">Manage Products</h3>
-      <p class="text-gray-300">Add and manage your products</p>
+      <h3 class="text-lg font-semibold text-white mb-2">{% trans "Manage Products" %}</h3>
+      <p class="text-gray-300">{% trans "Add and manage your products" %}</p>
     </a>
     <a href="/partners/users/" class="p-6 rounded-2xl border bg-white/10 backdrop-blur-sm border-white/20 hover:shadow-lg hover:bg-white/20 transition-all duration-200">
-      <h3 class="text-lg font-semibold text-white mb-2">Users</h3>
-      <p class="text-gray-300">View your customers and their activity</p>
+      <h3 class="text-lg font-semibold text-white mb-2">{% trans "Users" %}</h3>
+      <p class="text-gray-300">{% trans "View your customers and their activity" %}</p>
     </a>
     <a href="/partners/reviews/" class="p-6 rounded-2xl border bg-white/10 backdrop-blur-sm border-white/20 hover:shadow-lg hover:bg-white/20 transition-all duration-200">
-      <h3 class="text-lg font-semibold text-white mb-2">Reviews</h3>
-      <p class="text-gray-300">See feedback and reply to customers</p>
+      <h3 class="text-lg font-semibold text-white mb-2">{% trans "Reviews" %}</h3>
+      <p class="text-gray-300">{% trans "See feedback and reply to customers" %}</p>
     </a>
     <a href="/partners/settings/" class="p-6 rounded-2xl border bg-white/10 backdrop-blur-sm border-white/20 hover:shadow-lg hover:bg-white/20 transition-all duration-200">
-      <h3 class="text-lg font-semibold text-white mb-2">Business Settings</h3>
-      <p class="text-gray-300">Update your business information</p>
+      <h3 class="text-lg font-semibold text-white mb-2">{% trans "Business Settings" %}</h3>
+      <p class="text-gray-300">{% trans "Update your business information" %}</p>
     </a>
     <a href="/partners/notifications/" class="p-6 rounded-2xl border bg-white/10 backdrop-blur-sm border-white/20 hover:shadow-lg hover:bg-white/20 transition-all duration-200">
       <div class="flex items-center justify-between mb-2">
-        <h3 class="text-lg font-semibold text-white">Send Notification</h3>
-        <span class="px-3 py-1 rounded-full text-xs bg-primary/20 text-primary border border-primary/30">New</span>
+        <h3 class="text-lg font-semibold text-white">{% trans "Send Notification" %}</h3>
+        <span class="px-3 py-1 rounded-full text-xs bg-primary/20 text-primary border border-primary/30">{% trans "New" %}</span>
       </div>
-      <p class="text-gray-300">Craft push messages for your customers</p>
+      <p class="text-gray-300">{% trans "Craft push messages for your customers" %}</p>
     </a>
   </div>
 </div>

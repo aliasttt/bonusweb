@@ -77,3 +77,5 @@ scalingo --app mywebsite deploy
 4. ⏳ یک notification تست بفرستید
 5. ⏳ لاگ‌ها را بررسی کنید
 
+
+

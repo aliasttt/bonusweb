@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}QR Code Scanner - In-Person Payment{% endblock %}
+{% block title %}{% trans "QR Code Scanner - In-Person Payment" %}{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -23,7 +24,7 @@
                             <div id="scanner-placeholder" class="d-flex align-items-center justify-content-center" style="height: 300px; background-color: #f8f9fa;">
                                 <div class="text-center">
                                     <i class="fas fa-camera fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted">Click the button below to start scanning</p>
+                                    <p class="text-muted">{% trans "Click the button below to start scanning" %}</p>
                                 </div>
                             </div>
                         </div>
@@ -31,7 +32,7 @@
 
                     <!-- Manual Input -->
                     <div class="mb-4">
-                        <label for="manual-token" class="form-label">Or enter QR code manually:</label>
+                        <label for="manual-token" class="form-label">{% trans "Or enter QR code manually:" %}</label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="manual-token" placeholder="Enter QR code here">
                             <button class="btn btn-outline-primary" type="button" onclick="processManualToken()">
@@ -56,7 +57,7 @@
                             <div class="mb-3">
                                 <label for="business_password" class="form-label">Business Password (Optional):</label>
                                 <input type="password" class="form-control" id="business_password" placeholder="Enter business password if required">
-                                <small class="form-text text-muted">Only required if the business has set a password for in-person payments.</small>
+                                <small class="form-text text-muted">{% trans "Only required if the business has set a password for in-person payments." %}</small>
                             </div>
                             
                             <div class="mb-3">
@@ -85,7 +86,7 @@
             <!-- Wallet Status -->
             <div class="card mt-4" id="wallet-status" style="display: none;">
                 <div class="card-header">
-                    <h5 class="mb-0">Your Wallet Status</h5>
+                    <h5 class="mb-0">{% trans "Your Wallet Status" %}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">

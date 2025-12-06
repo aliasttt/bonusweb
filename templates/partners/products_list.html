@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% block title %}Manage Products{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Manage Products" %}{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
   <div class="flex items-center justify-between mb-6">
@@ -12,7 +13,7 @@
   </div>
   
   <div class="flex items-center justify-between mb-8">
-    <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Your Products</h1>
+    <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{% trans "Your Products" %}</h1>
     <a 
       href="/partners/products/new/" 
       class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-semibold shadow-lg hover:shadow-xl"
@@ -24,8 +25,8 @@
   <!-- Menu Items Section -->
   <div class="mb-12">
     <h2 class="text-2xl font-semibold text-gray-800 mb-6 pb-3 border-b border-gray-200">
-      Menu Items 
-      <span class="text-sm font-normal text-gray-500">(Items that give points to customers)</span>
+      {% trans "Menu Items" %} 
+      <span class="text-sm font-normal text-gray-500">{% trans "(Items that give points to customers)" %}</span>
     </h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {% for p in menu_items %}
@@ -58,7 +59,7 @@
       {% empty %}
         <div class="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
           <p class="text-gray-500 mb-4">No menu items yet.</p>
-          <a href="/partners/products/new/" class="text-purple-600 hover:text-purple-700 font-medium">Add your first menu item →</a>
+          <a href="/partners/products/new/" class="text-purple-600 hover:text-purple-700 font-medium">{% trans "Add your first menu item →" %}</a>
         </div>
       {% endfor %}
     </div>
@@ -67,8 +68,8 @@
   <!-- Reward Items Section -->
   <div>
     <h2 class="text-2xl font-semibold text-gray-800 mb-6 pb-3 border-b border-gray-200">
-      Reward Items 
-      <span class="text-sm font-normal text-gray-500">(Items that customers can redeem with points)</span>
+      {% trans "Reward Items" %} 
+      <span class="text-sm font-normal text-gray-500">{% trans "(Items that customers can redeem with points)" %}</span>
     </h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {% for p in reward_items %}
@@ -101,7 +102,7 @@
       {% empty %}
         <div class="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
           <p class="text-gray-500 mb-4">No reward items yet.</p>
-          <a href="/partners/products/new/" class="text-purple-600 hover:text-purple-700 font-medium">Add your first reward item →</a>
+          <a href="/partners/products/new/" class="text-purple-600 hover:text-purple-700 font-medium">{% trans "Add your first reward item →" %}</a>
         </div>
       {% endfor %}
     </div>

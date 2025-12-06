@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Admin Login - Bonus{% endblock %}
+{% block title %}{% trans "Admin Login - Bonus" %}{% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center">
@@ -11,8 +12,8 @@
             <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i data-lucide="shield-check" class="w-8 h-8 text-white"></i>
             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">Admin Login</h1>
-            <p class="text-gray-300">Enter your phone number and password to access the admin panel</p>
+            <h1 class="text-3xl font-bold text-white mb-2">{% trans "Admin Login" %}</h1>
+            <p class="text-gray-300">{% trans "Enter your phone number and password to access the admin panel" %}</p>
         </div>
 
         <!-- Login Form -->
@@ -23,10 +24,10 @@
                 <!-- Login Type Toggle -->
                 <div class="flex space-x-4 mb-6">
                     <button type="button" id="business-login" class="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg font-medium">
-                        Business Login
+                        {% trans "Business Login" %}
                     </button>
                     <button type="button" id="superuser-login" class="flex-1 py-2 px-4 bg-gray-600 text-white rounded-lg font-medium">
-                        Superuser Login
+                        {% trans "Superuser Login" %}
                     </button>
                 </div>
                 
@@ -35,14 +36,14 @@
                     <!-- Phone Number -->
                     <div>
                         <label for="phone" class="block text-sm font-medium text-gray-300 mb-2">
-                            Phone Number
+                            {% trans "Phone Number" %}
                         </label>
                         <input 
                             type="tel" 
                             id="phone" 
                             name="phone" 
                             class="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                            placeholder="Enter your phone number"
+                            placeholder="{% trans 'Enter your phone number' %}"
                             style="color: #000000; background-color: #ffffff;"
                         >
                     </div>
@@ -53,14 +54,14 @@
                     <!-- Username -->
                     <div>
                         <label for="username" class="block text-sm font-medium text-gray-300 mb-2">
-                            Username
+                            {% trans "Username" %}
                         </label>
                         <input 
                             type="text" 
                             id="username" 
                             name="username" 
                             class="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                            placeholder="Enter your username"
+                            placeholder="{% trans 'Enter your username' %}"
                             style="color: #000000; background-color: #ffffff;"
                         >
                     </div>
@@ -69,7 +70,7 @@
                 <!-- Password -->
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
-                        Password
+                        {% trans "Password" %}
                     </label>
                     <input 
                         type="password" 
@@ -77,7 +78,7 @@
                         name="password" 
                         required
                         class="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                        placeholder="Enter your password"
+                        placeholder="{% trans 'Enter your password' %}"
                         style="color: #000000; background-color: #ffffff;"
                     >
                 </div>
@@ -87,7 +88,7 @@
                     type="submit" 
                     class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-transparent"
                 >
-                    Login
+                    {% trans "Login" %}
                 </button>
             </form>
         </div>
@@ -95,7 +96,7 @@
         <!-- Footer -->
         <div class="text-center mt-8">
             <p class="text-gray-400 text-sm">
-                Business Admin Panel Access
+                {% trans "Business Admin Panel Access" %}
             </p>
         </div>
     </div>

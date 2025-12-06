@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% block title %}Integrations - Connect Everything{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Integrations - Connect Everything" %}{% endblock %}
 {% block content %}
 
 <!-- Hero Section -->
@@ -12,10 +13,10 @@
   <div class="relative z-10 max-w-7xl mx-auto px-4 text-center">
     <div class="fade-up">
       <h1 class="text-5xl lg:text-7xl font-black text-white mb-6">
-        Powerful <span class="text-gradient">Integrations</span>
+        {% trans "Powerful" %} <span class="text-gradient">{% trans "Integrations" %}</span>
       </h1>
       <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-        API-first approach: Connect to POS systems, webhooks, and automation tools
+        {% trans "API-first approach: Connect to POS systems, webhooks, and automation tools" %}
       </p>
     </div>
   </div>
@@ -29,9 +30,9 @@
         <div class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <i data-lucide="credit-card" class="w-8 h-8 text-white"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-4">POS Systems</h3>
+        <h3 class="text-2xl font-bold text-white mb-4">{% trans "POS Systems" %}</h3>
         <p class="text-gray-400 leading-relaxed">
-          Seamlessly integrate with popular point-of-sale systems for automatic point tracking.
+          {% trans "Seamlessly integrate with popular point-of-sale systems for automatic point tracking." %}
         </p>
       </div>
       
@@ -39,9 +40,9 @@
         <div class="w-16 h-16 bg-gradient-to-br from-secondary to-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <i data-lucide="webhook" class="w-8 h-8 text-white"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-4">Webhooks</h3>
+        <h3 class="text-2xl font-bold text-white mb-4">{% trans "Webhooks" %}</h3>
         <p class="text-gray-400 leading-relaxed">
-          Real-time notifications and data synchronization with your existing systems.
+          {% trans "Real-time notifications and data synchronization with your existing systems." %}
         </p>
       </div>
       
@@ -49,9 +50,9 @@
         <div class="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <i data-lucide="zap" class="w-8 h-8 text-white"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-4">Automation</h3>
+        <h3 class="text-2xl font-bold text-white mb-4">{% trans "Automation" %}</h3>
         <p class="text-gray-400 leading-relaxed">
-          Connect with Zapier, Make, and other automation platforms for workflow optimization.
+          {% trans "Connect with Zapier, Make, and other automation platforms for workflow optimization." %}
         </p>
       </div>
       
@@ -59,9 +60,9 @@
         <div class="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <i data-lucide="mail" class="w-8 h-8 text-white"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-4">Email Marketing</h3>
+        <h3 class="text-2xl font-bold text-white mb-4">{% trans "Email Marketing" %}</h3>
         <p class="text-gray-400 leading-relaxed">
-          Sync with Mailchimp, SendGrid, and other email platforms for targeted campaigns.
+          {% trans "Sync with Mailchimp, SendGrid, and other email platforms for targeted campaigns." %}
         </p>
       </div>
       
@@ -69,9 +70,9 @@
         <div class="w-16 h-16 bg-gradient-to-br from-secondary to-primary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <i data-lucide="database" class="w-8 h-8 text-white"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-4">CRM Systems</h3>
+        <h3 class="text-2xl font-bold text-white mb-4">{% trans "CRM Systems" %}</h3>
         <p class="text-gray-400 leading-relaxed">
-          Connect with Salesforce, HubSpot, and other CRM platforms for unified customer data.
+          {% trans "Connect with Salesforce, HubSpot, and other CRM platforms for unified customer data." %}
         </p>
       </div>
       
@@ -79,9 +80,9 @@
         <div class="w-16 h-16 bg-gradient-to-br from-accent to-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <i data-lucide="code" class="w-8 h-8 text-white"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-4">Custom API</h3>
+        <h3 class="text-2xl font-bold text-white mb-4">{% trans "Custom API" %}</h3>
         <p class="text-gray-400 leading-relaxed">
-          Full REST API with comprehensive documentation for custom integrations.
+          {% trans "Full REST API with comprehensive documentation for custom integrations." %}
         </p>
       </div>
     </div>
@@ -93,10 +94,10 @@
   <div class="max-w-4xl mx-auto px-4">
     <div class="fade-up text-center mb-12">
       <h2 class="text-4xl font-black text-white mb-6">
-        API <span class="text-gradient">Example</span>
+        {% trans "API" %} <span class="text-gradient">{% trans "Example" %}</span>
       </h2>
       <p class="text-xl text-gray-300">
-        Simple, powerful, and well-documented API endpoints
+        {% trans "Simple, powerful, and well-documented API endpoints" %}
       </p>
     </div>
     

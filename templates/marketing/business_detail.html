@@ -1,11 +1,12 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block title %}{{ business.name }}{% endblock %}
 {% block content %}
 <section class="bg-gradient-to-b from-dark via-dark-light to-dark-lighter pt-16 pb-24 min-h-screen">
   <div class="max-w-5xl mx-auto px-4">
     <a href="{% url 'business_directory' %}" class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-primary mb-6">
       <i data-lucide="arrow-left" class="w-4 h-4"></i>
-      Back to directory
+      {% trans "Back to directory" %}
     </a>
     <div class="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl">
       {% if cover_sliders %}
@@ -26,33 +27,33 @@
       {% endif %}
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
         <div>
-          <p class="text-primary font-semibold mb-2">Verified business owner</p>
+          <p class="text-primary font-semibold mb-2">{% trans "Verified business owner" %}</p>
           <h1 class="text-4xl font-black mb-3">{{ business.name }}</h1>
-          <p class="text-gray-300 leading-relaxed max-w-2xl">{{ business.description|default:"No description provided" }}</p>
+          <p class="text-gray-300 leading-relaxed max-w-2xl">{{ business.description|default:_("No description provided") }}</p>
         </div>
         <div class="text-right bg-white/5 rounded-2xl p-6 border border-white/10 w-full md:w-64">
-          <p class="text-sm text-gray-400 mb-2">Average rating</p>
+          <p class="text-sm text-gray-400 mb-2">{% trans "Average rating" %}</p>
           <p class="text-5xl font-black {% if average_rating %}text-amber-400{% else %}text-gray-500{% endif %}">
             {% if average_rating %}{{ average_rating|floatformat:1 }}{% else %}—{% endif %}
           </p>
-          <p class="text-sm text-gray-500">{{ review_count }} published reviews</p>
+          <p class="text-sm text-gray-500">{{ review_count }} {% trans "published reviews" %}</p>
         </div>
       </div>
       <div class="grid gap-4 md:grid-cols-2 text-sm text-gray-300">
         <p class="flex items-center gap-2">
           <i data-lucide="map-pin" class="w-4 h-4 text-primary"></i>
-          {{ business.address|default:"Address unavailable" }}
+          {{ business.address|default:_("Address unavailable") }}
         </p>
         <p class="flex items-center gap-2">
           <i data-lucide="phone" class="w-4 h-4 text-primary"></i>
-          {{ business.phone|default:"Phone unavailable" }}
+          {{ business.phone|default:_("Phone unavailable") }}
         </p>
         <p class="flex items-center gap-2">
           <i data-lucide="globe" class="w-4 h-4 text-primary"></i>
           {% if business.website %}
             <a href="{{ business.website }}" target="_blank" class="hover:text-primary">{{ business.website }}</a>
           {% else %}
-            Website not provided
+            {% trans "Website not provided" %}
           {% endif %}
         </p>
       </div>
@@ -60,7 +61,7 @@
 
     {% if services %}
       <div class="mt-12">
-        <h2 class="text-2xl font-bold mb-6">Services & offerings</h2>
+        <h2 class="text-2xl font-bold mb-6">{% trans "Services & offerings" %}</h2>
         <div class="grid gap-4 md:grid-cols-2">
           {% for service in services %}
             <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
@@ -68,7 +69,7 @@
                 <p class="font-semibold">{{ service.name }}</p>
                 <span class="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary">{{ service.get_category_display }}</span>
               </div>
-              <p class="text-sm text-gray-400">{{ service.description|default:"No description yet" }}</p>
+              <p class="text-sm text-gray-400">{{ service.description|default:_("No description yet") }}</p>
             </div>
           {% endfor %}
         </div>
@@ -77,8 +78,8 @@
 
     <div class="mt-14">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold">Customer reviews</h2>
-        <span class="text-sm text-gray-400">{{ review_count }} published reviews</span>
+        <h2 class="text-2xl font-bold">{% trans "Customer reviews" %}</h2>
+        <span class="text-sm text-gray-400">{{ review_count }} {% trans "published reviews" %}</span>
       </div>
       <div class="space-y-6">
         {% for review in reviews %}
@@ -90,10 +91,10 @@
               </div>
               <div class="text-right">
                 <p class="text-3xl font-black text-amber-400">{{ review.rating }}</p>
-                <p class="text-xs text-gray-500">{% if review.service %}{{ review.service.name }}{% else %}Overall rating{% endif %}</p>
+                <p class="text-xs text-gray-500">{% if review.service %}{{ review.service.name }}{% else %}{% trans "Overall rating" %}{% endif %}</p>
               </div>
             </div>
-            <p class="text-gray-200 leading-relaxed">{{ review.comment|default:"No comment provided" }}</p>
+            <p class="text-gray-200 leading-relaxed">{{ review.comment|default:_("No comment provided") }}</p>
             {% if review.responses.all %}
               <div class="border-t border-white/10 pt-4 space-y-3">
                 {% for response in review.responses.all %}
@@ -110,7 +111,7 @@
           </div>
         {% empty %}
           <div class="text-center text-gray-400 py-20 rounded-2xl border border-dashed border-white/10">
-            No reviews have been published yet.
+            {% trans "No reviews have been published yet." %}
           </div>
         {% endfor %}
       </div>

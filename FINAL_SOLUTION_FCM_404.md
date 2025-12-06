@@ -82,3 +82,5 @@ scalingo --app mywebsite logs --follow | Select-String "DEBUG.*Firebase|ERROR|Su
 
 بعد از generate کردن Service Account جدید و set کردن در Scalingo، باید کار کند.
 
+
+

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% block title %}Features - Modern Customer Loyalty Platform{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Features - Modern Customer Loyalty Platform" %}{% endblock %}
 {% block content %}
 
 <!-- Hero Section -->
@@ -12,10 +13,10 @@
   <div class="relative z-10 max-w-7xl mx-auto px-4 text-center">
     <div class="fade-up">
       <h1 class="text-5xl lg:text-7xl font-black text-white mb-6">
-        Powerful <span class="text-gradient">Features</span>
+        {% trans "Powerful" %} <span class="text-gradient">{% trans "Features" %}</span>
       </h1>
       <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-        Everything you need to build and manage a successful customer loyalty program
+        {% trans "Everything you need to build and manage a successful customer loyalty program" %}
       </p>
     </div>
   </div>
@@ -29,9 +30,9 @@
         <div class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <i data-lucide="qrcode" class="w-8 h-8 text-white"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-4">QR Code Generation</h3>
+        <h3 class="text-2xl font-bold text-white mb-4">{% trans "QR Code Generation" %}</h3>
         <p class="text-gray-400 leading-relaxed">
-          Generate unique QR codes for each business with customizable branding and tracking capabilities.
+          {% trans "Generate unique QR codes for each business with customizable branding and tracking capabilities." %}
         </p>
       </div>
       
@@ -39,9 +40,9 @@
         <div class="w-16 h-16 bg-gradient-to-br from-secondary to-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <i data-lucide="wallet" class="w-8 h-8 text-white"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-4">Digital Wallet</h3>
+        <h3 class="text-2xl font-bold text-white mb-4">{% trans "Digital Wallet" %}</h3>
         <p class="text-gray-400 leading-relaxed">
-          Digital points wallet with customizable goals and instant reward redemption system.
+          {% trans "Digital points wallet with customizable goals and instant reward redemption system." %}
         </p>
       </div>
       
@@ -49,9 +50,9 @@
         <div class="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <i data-lucide="gift" class="w-8 h-8 text-white"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-4">Reward System</h3>
+        <h3 class="text-2xl font-bold text-white mb-4">{% trans "Reward System" %}</h3>
         <p class="text-gray-400 leading-relaxed">
-          Free menu items and rewards when customers reach their points goals automatically.
+          {% trans "Free menu items and rewards when customers reach their points goals automatically." %}
         </p>
       </div>
       
@@ -59,9 +60,9 @@
         <div class="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <i data-lucide="smartphone" class="w-8 h-8 text-white"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-4">Mobile API</h3>
+        <h3 class="text-2xl font-bold text-white mb-4">{% trans "Mobile API" %}</h3>
         <p class="text-gray-400 leading-relaxed">
-          Complete API with JWT authentication for seamless mobile app integration.
+          {% trans "Complete API with JWT authentication for seamless mobile app integration." %}
         </p>
       </div>
       
@@ -69,9 +70,9 @@
         <div class="w-16 h-16 bg-gradient-to-br from-secondary to-primary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <i data-lucide="bar-chart-3" class="w-8 h-8 text-white"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-4">Analytics Dashboard</h3>
+        <h3 class="text-2xl font-bold text-white mb-4">{% trans "Analytics Dashboard" %}</h3>
         <p class="text-gray-400 leading-relaxed">
-          Real-time analytics and insights to track customer behavior and program performance.
+          {% trans "Real-time analytics and insights to track customer behavior and program performance." %}
         </p>
       </div>
       
@@ -79,9 +80,9 @@
         <div class="w-16 h-16 bg-gradient-to-br from-accent to-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
           <i data-lucide="settings" class="w-8 h-8 text-white"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-4">Customizable Rules</h3>
+        <h3 class="text-2xl font-bold text-white mb-4">{% trans "Customizable Rules" %}</h3>
         <p class="text-gray-400 leading-relaxed">
-          Flexible point rules, reward thresholds, and campaign settings for any business type.
+          {% trans "Flexible point rules, reward thresholds, and campaign settings for any business type." %}
         </p>
       </div>
     </div>
@@ -93,10 +94,10 @@
   <div class="max-w-7xl mx-auto px-4">
     <div class="text-center mb-16 fade-up">
       <h2 class="text-4xl lg:text-5xl font-black text-white mb-6">
-        Advanced <span class="text-gradient">Features</span>
+        {% trans "Advanced" %} <span class="text-gradient">{% trans "Features" %}</span>
       </h2>
       <p class="text-xl text-gray-400 max-w-3xl mx-auto">
-        Powerful tools for growing businesses and enterprise customers
+        {% trans "Powerful tools for growing businesses and enterprise customers" %}
       </p>
     </div>
     
@@ -108,9 +109,9 @@
               <i data-lucide="users" class="w-6 h-6 text-white"></i>
             </div>
             <div>
-              <h3 class="text-2xl font-bold text-white mb-3">Customer Segmentation</h3>
+              <h3 class="text-2xl font-bold text-white mb-3">{% trans "Customer Segmentation" %}</h3>
               <p class="text-gray-400 leading-relaxed">
-                Segment your customers based on behavior, purchase history, and engagement levels. Create targeted campaigns for VIP customers, new customers, and inactive users.
+                {% trans "Segment your customers based on behavior, purchase history, and engagement levels. Create targeted campaigns for VIP customers, new customers, and inactive users." %}
               </p>
             </div>
           </div>
@@ -120,9 +121,9 @@
               <i data-lucide="calendar" class="w-6 h-6 text-white"></i>
             </div>
             <div>
-              <h3 class="text-2xl font-bold text-white mb-3">Automated Campaigns</h3>
+              <h3 class="text-2xl font-bold text-white mb-3">{% trans "Automated Campaigns" %}</h3>
               <p class="text-gray-400 leading-relaxed">
-                Set up automated email campaigns, push notifications, and SMS messages. Trigger campaigns based on customer actions, birthdays, or inactivity periods.
+                {% trans "Set up automated email campaigns, push notifications, and SMS messages. Trigger campaigns based on customer actions, birthdays, or inactivity periods." %}
               </p>
             </div>
           </div>
@@ -132,9 +133,9 @@
               <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
             </div>
             <div>
-              <h3 class="text-2xl font-bold text-white mb-3">Fraud Prevention</h3>
+              <h3 class="text-2xl font-bold text-white mb-3">{% trans "Fraud Prevention" %}</h3>
               <p class="text-gray-400 leading-relaxed">
-                Advanced fraud detection algorithms prevent abuse and ensure fair point distribution. Real-time monitoring and automatic flagging of suspicious activities.
+                {% trans "Advanced fraud detection algorithms prevent abuse and ensure fair point distribution. Real-time monitoring and automatic flagging of suspicious activities." %}
               </p>
             </div>
           </div>
@@ -144,19 +145,19 @@
       <div class="fade-right">
         <div class="glass-effect p-8 rounded-3xl">
           <div class="bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl p-6 mb-6">
-            <h4 class="text-xl font-bold text-white mb-4">Campaign Performance</h4>
+            <h4 class="text-xl font-bold text-white mb-4">{% trans "Campaign Performance" %}</h4>
             <div class="space-y-4">
               <div class="flex justify-between items-center">
-                <span class="text-gray-300">Email Campaign</span>
-                <span class="text-green-400 font-semibold">+23% Open Rate</span>
+                <span class="text-gray-300">{% trans "Email Campaign" %}</span>
+                <span class="text-green-400 font-semibold">{% trans "+23% Open Rate" %}</span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="text-gray-300">SMS Notifications</span>
-                <span class="text-green-400 font-semibold">+45% Click Rate</span>
+                <span class="text-gray-300">{% trans "SMS Notifications" %}</span>
+                <span class="text-green-400 font-semibold">{% trans "+45% Click Rate" %}</span>
               </div>
               <div class="flex justify-between items-center">
-                <span class="text-gray-300">Push Notifications</span>
-                <span class="text-green-400 font-semibold">+67% Engagement</span>
+                <span class="text-gray-300">{% trans "Push Notifications" %}</span>
+                <span class="text-green-400 font-semibold">{% trans "+67% Engagement" %}</span>
               </div>
             </div>
           </div>
@@ -164,15 +165,15 @@
           <div class="space-y-4">
             <div class="flex items-center gap-3">
               <div class="w-3 h-3 bg-green-400 rounded-full"></div>
-              <span class="text-gray-300">Real-time customer tracking</span>
+              <span class="text-gray-300">{% trans "Real-time customer tracking" %}</span>
             </div>
             <div class="flex items-center gap-3">
               <div class="w-3 h-3 bg-blue-400 rounded-full"></div>
-              <span class="text-gray-300">Automated reward distribution</span>
+              <span class="text-gray-300">{% trans "Automated reward distribution" %}</span>
             </div>
             <div class="flex items-center gap-3">
               <div class="w-3 h-3 bg-purple-400 rounded-full"></div>
-              <span class="text-gray-300">Advanced analytics reporting</span>
+              <span class="text-gray-300">{% trans "Advanced analytics reporting" %}</span>
             </div>
           </div>
         </div>
@@ -186,10 +187,10 @@
   <div class="max-w-7xl mx-auto px-4">
     <div class="text-center mb-16 fade-up">
       <h2 class="text-4xl lg:text-5xl font-black text-white mb-6">
-        Technical <span class="text-gradient">Specifications</span>
+        {% trans "Technical" %} <span class="text-gradient">{% trans "Specifications" %}</span>
       </h2>
       <p class="text-xl text-gray-400 max-w-3xl mx-auto">
-        Built with modern technology for reliability and scalability
+        {% trans "Built with modern technology for reliability and scalability" %}
       </p>
     </div>
     
@@ -198,32 +199,32 @@
         <div class="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mx-auto mb-6">
           <i data-lucide="zap" class="w-10 h-10 text-white"></i>
         </div>
-        <h3 class="text-xl font-bold text-white mb-3">99.9% Uptime</h3>
-        <p class="text-gray-400">Enterprise-grade reliability with SLA guarantee</p>
+        <h3 class="text-xl font-bold text-white mb-3">{% trans "99.9% Uptime" %}</h3>
+        <p class="text-gray-400">{% trans "Enterprise-grade reliability with SLA guarantee" %}</p>
       </div>
       
       <div class="fade-up text-center" style="animation-delay: 0.1s;">
         <div class="w-20 h-20 bg-gradient-to-br from-secondary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6">
           <i data-lucide="clock" class="w-10 h-10 text-white"></i>
         </div>
-        <h3 class="text-xl font-bold text-white mb-3">&lt;100ms Response</h3>
-        <p class="text-gray-400">Lightning-fast API responses for optimal user experience</p>
+        <h3 class="text-xl font-bold text-white mb-3">{% trans "<100ms Response" %}</h3>
+        <p class="text-gray-400">{% trans "Lightning-fast API responses for optimal user experience" %}</p>
       </div>
       
       <div class="fade-up text-center" style="animation-delay: 0.2s;">
         <div class="w-20 h-20 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-6">
           <i data-lucide="database" class="w-10 h-10 text-white"></i>
         </div>
-        <h3 class="text-xl font-bold text-white mb-3">Unlimited Scale</h3>
-        <p class="text-gray-400">Handle millions of customers and transactions</p>
+        <h3 class="text-xl font-bold text-white mb-3">{% trans "Unlimited Scale" %}</h3>
+        <p class="text-gray-400">{% trans "Handle millions of customers and transactions" %}</p>
       </div>
       
       <div class="fade-up text-center" style="animation-delay: 0.3s;">
         <div class="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6">
           <i data-lucide="lock" class="w-10 h-10 text-white"></i>
         </div>
-        <h3 class="text-xl font-bold text-white mb-3">SOC 2 Compliant</h3>
-        <p class="text-gray-400">Enterprise security standards and compliance</p>
+        <h3 class="text-xl font-bold text-white mb-3">{% trans "SOC 2 Compliant" %}</h3>
+        <p class="text-gray-400">{% trans "Enterprise security standards and compliance" %}</p>
       </div>
     </div>
   </div>
@@ -234,10 +235,10 @@
   <div class="max-w-7xl mx-auto px-4">
     <div class="text-center mb-16 fade-up">
       <h2 class="text-4xl lg:text-5xl font-black text-white mb-6">
-        Popular <span class="text-gradient">Integrations</span>
+        {% trans "Popular" %} <span class="text-gradient">{% trans "Integrations" %}</span>
       </h2>
       <p class="text-xl text-gray-400 max-w-3xl mx-auto">
-        Connect with the tools you already use
+        {% trans "Connect with the tools you already use" %}
       </p>
     </div>
     
@@ -249,10 +250,10 @@
           </div>
           <div>
             <h3 class="text-lg font-bold text-white">Mailchimp</h3>
-            <p class="text-sm text-gray-400">Email Marketing</p>
+            <p class="text-sm text-gray-400">{% trans "Email Marketing" %}</p>
           </div>
         </div>
-        <p class="text-gray-400 text-sm">Sync customer data and create targeted email campaigns based on loyalty behavior.</p>
+        <p class="text-gray-400 text-sm">{% trans "Sync customer data and create targeted email campaigns based on loyalty behavior." %}</p>
       </div>
       
       <div class="fade-up card-hover glass-effect p-6 rounded-2xl group" style="animation-delay: 0.1s;">
@@ -262,10 +263,10 @@
           </div>
           <div>
             <h3 class="text-lg font-bold text-white">Square</h3>
-            <p class="text-sm text-gray-400">POS System</p>
+            <p class="text-sm text-gray-400">{% trans "POS System" %}</p>
           </div>
         </div>
-        <p class="text-gray-400 text-sm">Automatic point tracking with every Square transaction and receipt.</p>
+        <p class="text-gray-400 text-sm">{% trans "Automatic point tracking with every Square transaction and receipt." %}</p>
       </div>
       
       <div class="fade-up card-hover glass-effect p-6 rounded-2xl group" style="animation-delay: 0.2s;">
@@ -275,10 +276,10 @@
           </div>
           <div>
             <h3 class="text-lg font-bold text-white">Zapier</h3>
-            <p class="text-sm text-gray-400">Automation</p>
+            <p class="text-sm text-gray-400">{% trans "Automation" %}</p>
           </div>
         </div>
-        <p class="text-gray-400 text-sm">Connect with 5000+ apps and automate your loyalty workflows.</p>
+        <p class="text-gray-400 text-sm">{% trans "Connect with 5000+ apps and automate your loyalty workflows." %}</p>
       </div>
       
       <div class="fade-up card-hover glass-effect p-6 rounded-2xl group" style="animation-delay: 0.3s;">
@@ -288,10 +289,10 @@
           </div>
           <div>
             <h3 class="text-lg font-bold text-white">Salesforce</h3>
-            <p class="text-sm text-gray-400">CRM</p>
+            <p class="text-sm text-gray-400">{% trans "CRM" %}</p>
           </div>
         </div>
-        <p class="text-gray-400 text-sm">Sync loyalty data with your CRM for complete customer profiles.</p>
+        <p class="text-gray-400 text-sm">{% trans "Sync loyalty data with your CRM for complete customer profiles." %}</p>
       </div>
       
       <div class="fade-up card-hover glass-effect p-6 rounded-2xl group" style="animation-delay: 0.4s;">
@@ -301,10 +302,10 @@
           </div>
           <div>
             <h3 class="text-lg font-bold text-white">Shopify</h3>
-            <p class="text-sm text-gray-400">E-commerce</p>
+            <p class="text-sm text-gray-400">{% trans "E-commerce" %}</p>
           </div>
         </div>
-        <p class="text-gray-400 text-sm">Integrate loyalty points with your Shopify store seamlessly.</p>
+        <p class="text-gray-400 text-sm">{% trans "Integrate loyalty points with your Shopify store seamlessly." %}</p>
       </div>
       
       <div class="fade-up card-hover glass-effect p-6 rounded-2xl group" style="animation-delay: 0.5s;">
@@ -314,10 +315,10 @@
           </div>
           <div>
             <h3 class="text-lg font-bold text-white">Google Analytics</h3>
-            <p class="text-sm text-gray-400">Analytics</p>
+            <p class="text-sm text-gray-400">{% trans "Analytics" %}</p>
           </div>
         </div>
-        <p class="text-gray-400 text-sm">Track loyalty program performance with detailed analytics.</p>
+        <p class="text-gray-400 text-sm">{% trans "Track loyalty program performance with detailed analytics." %}</p>
       </div>
     </div>
   </div>
@@ -333,19 +334,19 @@
   <div class="relative z-10 max-w-4xl mx-auto px-4 text-center">
     <div class="fade-up">
       <h2 class="text-4xl lg:text-6xl font-black text-white mb-6">
-        Ready to Experience These Features?
+        {% trans "Ready to Experience These Features?" %}
       </h2>
       <p class="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-        Start your free trial today and see how our platform can transform your customer loyalty program.
+        {% trans "Start your free trial today and see how our platform can transform your customer loyalty program." %}
       </p>
       <div class="flex flex-col sm:flex-row gap-6 justify-center">
         <a href="/partners/login/" class="group px-10 py-5 rounded-2xl bg-white text-dark font-bold text-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3">
           <i data-lucide="rocket" class="w-6 h-6 group-hover:rotate-12 transition-transform"></i>
-          Start Free Trial
+          {% trans "Start Free Trial" %}
         </a>
         <a href="/pricing/" class="px-10 py-5 rounded-2xl glass-effect text-white font-bold text-xl hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-3">
           <i data-lucide="dollar-sign" class="w-6 h-6"></i>
-          View Pricing
+          {% trans "View Pricing" %}
         </a>
       </div>
     </div>

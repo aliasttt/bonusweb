@@ -1,25 +1,26 @@
 {% extends 'base.html' %}
-{% block title %}Notifications{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Notifications" %}{% endblock %}
 {% block content %}
 <script id="business-customers" type="application/json">{{ business_customers_json|safe }}</script>
 <div class="max-w-6xl mx-auto px-4 py-12">
   <div class="mb-8">
     <a href="/partners/dashboard/" class="inline-flex items-center px-4 py-2 rounded-md border border-white/20 bg-white/5 hover:bg-white/10 transition text-slate-200 mb-4">← Back to Dashboard</a>
-    <h1 class="text-4xl font-bold text-white">Send Push Notification</h1>
+    <h1 class="text-4xl font-bold text-white">{% trans "Send Push Notification" %}</h1>
     <p class="mt-2 text-slate-400 max-w-3xl">
-      Craft a message and deliver it instantly to your customers. Notifications go through Firebase and appear inside the Bonus mobile app and partner web panel.
+      {% trans "Craft a message and deliver it instantly to your customers. Notifications go through Firebase and appear inside the Bonus mobile app and partner web panel." %}
     </p>
   </div>
 
   {% if not businesses %}
     <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-6 text-red-200">
-      <h2 class="text-xl font-semibold mb-2">No business found</h2>
-      <p class="text-sm text-red-100">You need to register at least one business before sending notifications.</p>
+      <h2 class="text-xl font-semibold mb-2">{% trans "No business found" %}</h2>
+      <p class="text-sm text-red-100">{% trans "You need to register at least one business before sending notifications." %}</p>
     </div>
   {% else %}
   <div class="grid lg:grid-cols-2 gap-6 mb-10">
     <div class="bg-white/5 rounded-2xl border border-white/10 p-5">
-      <p class="text-sm text-slate-400">Business</p>
+      <p class="text-sm text-slate-400">{% trans "Business" %}</p>
       <p class="text-2xl font-semibold text-white mt-1">
         {% if default_business_id %}
           {% for biz in businesses %}
@@ -28,15 +29,15 @@
             {% endif %}
           {% endfor %}
         {% else %}
-          Not Selected
+          {% trans "Not Selected" %}
         {% endif %}
       </p>
-      <p class="text-xs text-slate-400 mt-1">Notifications will be sent to customers of this business.</p>
+      <p class="text-xs text-slate-400 mt-1">{% trans "Notifications will be sent to customers of this business." %}</p>
     </div>
     <div class="bg-white/5 rounded-2xl border border-white/10 p-5">
-      <p class="text-sm text-slate-400">Delivery</p>
-      <p class="text-2xl font-semibold text-white mt-1">Instant</p>
-      <p class="text-xs text-slate-400 mt-1">Sent immediately after you hit send.</p>
+      <p class="text-sm text-slate-400">{% trans "Delivery" %}</p>
+      <p class="text-2xl font-semibold text-white mt-1">{% trans "Instant" %}</p>
+      <p class="text-xs text-slate-400 mt-1">{% trans "Sent immediately after you hit send." %}</p>
     </div>
   </div>
 
@@ -57,17 +58,17 @@
       <div id="recipientSection" class="rounded-2xl border border-white/15 bg-white/5 p-5">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h3 class="text-lg font-semibold text-white">Recipients</h3>
-            <p class="text-xs text-slate-400">Select individual customers or leave empty to notify all customers of this business.</p>
+            <h3 class="text-lg font-semibold text-white">{% trans "Recipients" %}</h3>
+            <p class="text-xs text-slate-400">{% trans "Select individual customers or leave empty to notify all customers of this business." %}</p>
           </div>
           <div class="flex items-center gap-3">
-            <button type="button" id="selectAllBtn" class="px-3 py-1 rounded-lg border border-white/20 text-xs text-white hover:bg-white/10 transition">Select all</button>
-            <button type="button" id="clearAllBtn" class="px-3 py-1 rounded-lg border border-white/20 text-xs text-white hover:bg-white/10 transition">Clear</button>
+            <button type="button" id="selectAllBtn" class="px-3 py-1 rounded-lg border border-white/20 text-xs text-white hover:bg-white/10 transition">{% trans "Select all" %}</button>
+            <button type="button" id="clearAllBtn" class="px-3 py-1 rounded-lg border border-white/20 text-xs text-white hover:bg-white/10 transition">{% trans "Clear" %}</button>
           </div>
         </div>
-        <input type="search" id="customerSearch" placeholder="Search by name, email, or phone" class="w-full px-4 py-2 rounded-xl bg-dark-lighter text-white border border-white/10 focus:border-primary outline-none transition mb-4">
+        <input type="search" id="customerSearch" placeholder="{% trans 'Search by name, email, or phone' %}" class="w-full px-4 py-2 rounded-xl bg-dark-lighter text-white border border-white/10 focus:border-primary outline-none transition mb-4">
         <div id="customerList" class="max-h-64 overflow-y-auto grid md:grid-cols-2 gap-3 text-sm"></div>
-        <p class="text-xs text-slate-400 mt-3" id="selectionSummary">No specific recipients selected. All customers of this business will receive this notification.</p>
+        <p class="text-xs text-slate-400 mt-3" id="selectionSummary">{% trans "No specific recipients selected. All customers of this business will receive this notification." %}</p>
       </div>
 
       <div class="flex items-center gap-4">
@@ -86,9 +87,9 @@
   <div class="mt-10 bg-white/5 border border-white/10 rounded-3xl p-8">
     <h2 class="text-2xl font-semibold text-white mb-3">Best practices</h2>
     <ul class="list-disc list-inside text-slate-300 space-y-2 text-sm">
-      <li>Send no more than 2 promotions per day per business to avoid user fatigue.</li>
-      <li>Keep the title short (under 60 characters) and the body actionable.</li>
-      <li>Use the optional JSON data to deep-link users directly to menus, offers, or campaigns.</li>
+      <li>{% trans "Send no more than 2 promotions per day per business to avoid user fatigue." %}</li>
+      <li>{% trans "Keep the title short (under 60 characters) and the body actionable." %}</li>
+      <li>{% trans "Use the optional JSON data to deep-link users directly to menus, offers, or campaigns." %}</li>
     </ul>
   </div>
   {% endif %}

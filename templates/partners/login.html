@@ -1,31 +1,32 @@
 {% extends 'base.html' %}
-{% block title %}Admin Login{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Admin Login" %}{% endblock %}
 {% block content %}
 <div class="max-w-md mx-auto px-4 py-16">
-  <h1 class="text-3xl font-extrabold">Admin Login</h1>
-  <p class="mt-3 text-slate-600">Enter your phone number and password to access the admin panel.</p>
+  <h1 class="text-3xl font-extrabold">{% trans "Admin Login" %}</h1>
+  <p class="mt-3 text-slate-600">{% trans "Enter your phone number and password to access the admin panel." %}</p>
   <form method="post" class="mt-6 p-6 rounded-2xl border bg-white/70 backdrop-blur">
     {% csrf_token %}
-    <label class="block text-sm text-slate-600">Phone Number</label>
+    <label class="block text-sm text-slate-600">{% trans "Phone Number" %}</label>
     <input 
       name="phone" 
       type="tel"
       class="mt-2 w-full px-3 py-2 border rounded-md text-black" 
-      placeholder="Enter your phone number"
+      placeholder="{% trans 'Enter your phone number' %}"
       style="color: #000000; background-color: #ffffff;"
     />
-    <label class="mt-4 block text-sm text-slate-600">Password</label>
+    <label class="mt-4 block text-sm text-slate-600">{% trans "Password" %}</label>
     <input 
       name="password" 
       type="password" 
       class="mt-2 w-full px-3 py-2 border rounded-md text-black" 
-      placeholder="Enter your password"
+      placeholder="{% trans 'Enter your password' %}"
       style="color: #000000; background-color: #ffffff;"
     />
-    <button class="mt-6 w-full px-4 py-3 bg-primary text-white rounded-md">Login</button>
+    <button class="mt-6 w-full px-4 py-3 bg-primary text-white rounded-md">{% trans "Login" %}</button>
   </form>
   <div class="mt-6 text-center">
-    <p class="text-sm text-slate-500">Business Admin Panel</p>
+    <p class="text-sm text-slate-500">{% trans "Business Admin Panel" %}</p>
   </div>
  </div>
 

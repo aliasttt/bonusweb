@@ -1,0 +1,6 @@
+UNTRANSLATED STRINGS REPORT
+================================================================================
+
+Total templates with untranslated strings: 0
+Total untranslated strings: 0
+

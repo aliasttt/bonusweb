@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}{% if product %}Edit Item{% else %}New Item{% endif %}{% endblock %}
+{% load i18n %}
+{% block title %}{% if product %}{% trans "Edit Item" %}{% else %}{% trans "New Item" %}{% endif %}{% endblock %}
 {% block content %}
 <div class="max-w-2xl mx-auto px-4 py-8">
   <div class="mb-6">
-    <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-      {% if product %}Edit Item{% else %}New Item{% endif %}
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+      {% if product %}{% trans "Edit Item" %}{% else %}{% trans "New Item" %}{% endif %}
     </h1>
   </div>
   
@@ -57,8 +58,8 @@
           </label>
         </div>
         <p class="text-xs text-gray-500 mt-2">
-          Menu Item: User earns points when they purchase this item<br>
-          Reward Item: User spends points to redeem this item
+          {% trans "Menu Item: User earns points when they purchase this item" %}<br>
+          {% trans "Reward Item: User spends points to redeem this item" %}
         </p>
       </div>
 
