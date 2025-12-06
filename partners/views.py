@@ -15,7 +15,7 @@ from campaigns.models import Campaign
 from reviews.models import Review, ReviewResponse
 from accounts.models import Profile
 from rewards.models import PointsTransaction
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q, Q
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
@@ -511,21 +511,34 @@ def notifications_center(request):
 
     business_customers = {}
     for biz in businesses:
-        customers = (
-            Customer.objects.filter(wallets__business=biz)
-            .select_related("user")
-            .distinct()
-        )
-        business_customers[biz.id] = [
-            {
-                "user_id": customer.user_id,
-                "customer_id": customer.id,
-                "name": customer.user.get_full_name() or customer.user.username,
-                "email": customer.user.email or "",
-                "phone": customer.phone or "",
-            }
-            for customer in customers
-        ]
+        # Get all users with phone numbers (from Customer or Profile)
+        # This includes all users, not just those with wallets
+        # Get phone from Customer.phone or Profile.phone
+        all_users_with_phone = User.objects.filter(
+            Q(customer__phone__isnull=False) | Q(profile__phone__isnull=False)
+        ).exclude(
+            Q(customer__phone="") & Q(profile__phone="")
+        ).select_related("customer", "profile").distinct()
+        
+        customer_list = []
+        for user in all_users_with_phone:
+            # Get phone from Customer first, then Profile
+            phone = ""
+            if hasattr(user, 'customer') and user.customer and user.customer.phone:
+                phone = user.customer.phone.strip()
+            elif hasattr(user, 'profile') and user.profile and user.profile.phone:
+                phone = user.profile.phone.strip()
+            
+            # Only add if has phone
+            if phone:
+                customer_id = user.customer.id if hasattr(user, 'customer') and user.customer else None
+                customer_list.append({
+                    "user_id": user.id,
+                    "customer_id": customer_id,
+                    "phone": phone,
+                })
+        
+        business_customers[biz.id] = customer_list
 
     context = {
         "businesses": businesses,
